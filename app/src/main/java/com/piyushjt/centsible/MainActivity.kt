@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -30,19 +31,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CentsibleTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize()
-                ) { innerPadding ->
+                Surface(
+                    modifier = Modifier
+                        .background(colorResource(id = R.color.background))
+                        .fillMaxSize()
+                        .padding(top = 42.dp)
+                ) {
 
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                    ) {
+                    MainScreen()
 
-                        MainScreen()
-
-                    }
                 }
             }
         }
@@ -56,7 +53,7 @@ fun MainScreen(
 
 ) {
 
-    DayDate()
+    Header()
 
 }
 
@@ -68,10 +65,7 @@ val readexPro = FontFamily(
 @Composable
 fun DayDate() {
     
-    Column(
-        modifier = Modifier
-            .padding(start = 24.dp)
-    ) {
+    Column {
 
         Text(
             text = SimpleDateFormat("EEEE,", Locale.getDefault()).format(Date()),
@@ -92,25 +86,65 @@ fun DayDate() {
 }
 
 
+@Composable
+fun TotalBalance() {
+
+    Column(
+        modifier = Modifier
+            .padding(top = 24.dp)
+    ) {
+
+        Text(
+            text = "Total Balance",
+            color = colorResource(id = R.color.light_text),
+            fontSize = 18.sp,
+            fontFamily = readexPro
+        )
+
+        Text(
+            text = "\$521,985.00",
+            color = colorResource(id = R.color.lime),
+            fontSize = 34.sp,
+            fontFamily = readexPro
+        )
+    }
+
+
+}
+
+
+
+@Composable
+fun Header() {
+
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+    ) {
+
+        DayDate()
+
+        TotalBalance()
+
+    }
+
+}
+
 @Preview(
     showSystemUi = true
 )
 @Composable
 fun CentsiblePreview() {
     CentsibleTheme {
-        Scaffold(
-            modifier = Modifier.fillMaxSize()
-        ) { innerPadding ->
+        Surface(
+            modifier = Modifier
+                .background(colorResource(id = R.color.background))
+                .fillMaxSize()
+                .padding(top = 42.dp)
+        ) {
 
-            Surface(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
+            MainScreen()
 
-                MainScreen()
-
-            }
         }
     }
 }
