@@ -1,0 +1,38 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="800dp"
+    android:height="800dp"
+    android:viewportWidth="60"
+    android:viewportHeight="60">
+
+  <!-- Transparent background covering the entire canvas -->
+  <path
+      android:pathData="M10,0L50,0A10,10 0,0 1,60 10L60,50A10,10 0,0 1,50 60L10,60A10,10 0,0 1,0 50L0,10A10,10 0,0 1,10 0z"
+      android:fillColor="#00000000"/>
+
+  <!-- Left vertical bar - Dark Red -->
+  <path
+      android:pathData="M24,8l-10,0l0,44l10,-2l0,-42z"
+      android:fillColor="#E57373"/> <!-- Darker red -->
+
+  <path
+      android:pathData="M14,53.5A1.5,1.5 0,0 1,12.5 52L12.5,8A1.5,1.5 0,0 1,14 6.5L24,6.5A1.5,1.5 0,0 1,25.5 8L25.5,50a1.5,1.5 0,0 1,-1.206 1.471l-10,2A1.542,1.542 0,0 1,14 53.5ZM15.5,9.5L15.5,50.17l7,-1.4L22.5,9.5Z"
+      android:fillColor="#EF5350"/> <!-- Dark red -->
+
+  <!-- Right vertical bar - Deep Red -->
+  <path
+      android:pathData="M46,8l-10,0l0,42l10,2l0,-44z"
+      android:fillColor="#E57373"/> <!-- Darker red -->
+
+  <path
+      android:pathData="M46,53.5a1.542,1.542 0,0 1,-0.294 -0.029l-10,-2A1.5,1.5 0,0 1,34.5 50L34.5,8A1.5,1.5 0,0 1,36 6.5L46,6.5A1.5,1.5 0,0 1,47.5 8L47.5,52A1.5,1.5 0,0 1,46 53.5ZM37.5,48.771 L44.5,50.171L44.5,9.5h-7Z"
+      android:fillColor="#EF5350"/> <!-- Dark red -->
+
+  <!-- Diagonal bar - Deep Crimson -->
+  <path
+      android:pathData="M26,8l-12,0l20,42l12,2l-20,-44z"
+      android:fillColor="#F44336"/> <!-- Deep crimson red -->
+
+  <path
+      android:pathData="M46,53.5a1.48,1.48 0,0 1,-0.247 -0.021l-12,-2a1.5,1.5 0,0 1,-1.107 -0.834l-20,-42A1.5,1.5 0,0 1,14 6.5H26a1.5,1.5 0,0 1,1.366 0.879l20,44A1.5,1.5 0,0 1,46 53.5ZM35.018,48.649l8.452,1.409L25.034,9.5H16.375Z"
+      android:fillColor="#E53935"/> <!-- Darker crimson red -->
+</vector>

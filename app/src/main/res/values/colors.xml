@@ -11,6 +11,12 @@
     <color name="red">#F8445A</color>
     <color name="lime">#44F85A</color>
     <color name="trans">#00000000</color>
+
+
     <color name="green_bg">#EBF9FF</color>
+    <color name="pink_bg">#FFEEF5</color>
+    <color name="gray_bg">#F4F4F4</color>
+    <color name="red_bg">#FFECEC</color>
+    <color name="cream_bg">#FFF4EC</color>
 
 </resources>

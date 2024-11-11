@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -203,7 +204,23 @@ fun ListOfExpenses(
 
         Heading()
 
-        Expense()
+
+        Expense("misc")
+
+        Expense("food")
+
+        Expense("shopping")
+
+        Expense("travel")
+
+        Expense("ent")
+
+        Expense("grocery")
+
+        Expense("everyday")
+
+        Expense("skill")
+
 
     }
 
@@ -211,77 +228,112 @@ fun ListOfExpenses(
 
 
 @Composable
-fun Expense() {
+fun Expense(
+    type: String
+) {
 
-    Row(
+    val image = when (type) {
+        "misc" -> painterResource(id = R.drawable.misc)
+        "food" -> painterResource(id = R.drawable.food)
+        "shopping" -> painterResource(id = R.drawable.shopping_cart)
+        "travel" -> painterResource(id = R.drawable.travel)
+        "ent" -> painterResource(id = R.drawable.ent_netflix)
+        "grocery" -> painterResource(id = R.drawable.grocery)
+        "everyday" -> painterResource(id = R.drawable.everyday)
+        "skill" -> painterResource(id = R.drawable.skill)
+        else -> painterResource(id = R.drawable.shopping_cart)
+    }
+
+    val bgColors = mapOf(
+        1 to colorResource(id = R.color.green_bg),
+        2 to colorResource(id = R.color.red_bg),
+        3 to colorResource(id = R.color.pink_bg),
+        4 to colorResource(id = R.color.gray_bg),
+        5 to colorResource(id = R.color.cream_bg)
+    )
+
+    val bgColor =  bgColors[(1..5).random()]!!
+
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(colorResource(id = R.color.card_background))
-            .height(80.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(colorResource(id = R.color.card_background))
+                .height(80.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
-        Row {
-            Box(
-                modifier = Modifier
-                    .aspectRatio(1f)
-                    .fillMaxWidth()
-                    .padding(12.dp)
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(colorResource(id = R.color.green_bg))
-            ) {
-
-
-                Image(
-                    painter = painterResource(id = R.drawable.shopping_cart),
-                    contentDescription = "Shopping cart image",
+            Row {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .aspectRatio(1f)
-                        .padding(14.dp)
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                        .background(bgColor)
+                ) {
 
-                )
+
+                    Image(
+                        painter = image,
+                        contentDescription = "Shopping cart image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .padding(10.dp)
+
+                    )
 
 
+                }
+
+                Column(
+                    modifier = Modifier
+                        .height(90.dp)
+                        .padding(start = 10.dp),
+                    verticalArrangement = Arrangement.Center
+
+                ) {
+
+                    Text(
+                        text = "ABCDEFGHIJKLMNO",
+                        color = colorResource(id = R.color.text),
+                        fontSize = 14.sp,
+                        fontFamily = readexPro
+                    )
+
+                    Text(
+                        // display type if description is null
+                        text = "Ent",
+                        color = colorResource(id = R.color.light_text),
+                        fontSize = 12.sp,
+                        fontFamily = readexPro
+                    )
+                }
             }
 
-            Column(
+
+            Text(
                 modifier = Modifier
-                    .height(90.dp)
-                    .padding(start = 10.dp),
-                verticalArrangement = Arrangement.Center
+                    .padding(14.dp),
+                text = "-\$145.00",
+                color = colorResource(id = R.color.main_text),
+                fontSize = 16.sp,
+                fontFamily = readexPro
+            )
 
-            ) {
-
-                Text(
-                    text = "ABCDEFGHIJKLMNO",
-                    color = colorResource(id = R.color.text),
-                    fontSize = 14.sp,
-                    fontFamily = readexPro
-                )
-
-                Text(
-                    // display type if description is null
-                    text = "Ent",
-                    color = colorResource(id = R.color.light_text),
-                    fontSize = 12.sp,
-                    fontFamily = readexPro
-                )
-            }
         }
 
-
-        Text(
+        Spacer(
             modifier = Modifier
-                .padding(14.dp),
-            text = "-\$145.00",
-            color = colorResource(id = R.color.main_text),
-            fontSize = 16.sp,
-            fontFamily = readexPro
+                .height(2.dp)
         )
-
 
     }
 

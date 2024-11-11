@@ -1,0 +1,32 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="800dp"
+    android:height="800dp"
+    android:viewportWidth="800"
+    android:viewportHeight="800">
+
+  <!-- Transparent background covering the entire canvas -->
+  <path
+      android:pathData="M0,0h800v800h-800z"
+      android:fillColor="#00000000"/>
+
+  <!-- Top-left rectangle -->
+  <path
+      android:pathData="M67,66h264v267h-264z"
+      android:fillColor="#8EC5FC"/> <!-- Light blue -->
+
+  <!-- Bottom-left rectangle -->
+  <path
+      android:pathData="M67,433h264v267h-264z"
+      android:fillColor="#FDCB6E"/> <!-- Light orange -->
+
+  <!-- Diagonal rectangle -->
+  <path
+      android:pathData="M399,565.12l166.12,-166.12l168.01,168.01l-166.12,166.12z"
+      android:fillColor="#FF9FF3"/> <!-- Light pink -->
+
+  <!-- Center-right rectangle -->
+  <path
+      android:pathData="M433,66h264v267h-264z"
+      android:fillColor="#A29BFE"/> <!-- Light purple -->
+
+</vector>
