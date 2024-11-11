@@ -1,22 +1,35 @@
 package com.piyushjt.centsible
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -81,13 +94,21 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
 @Composable
 fun MainScreen(
 
 ) {
 
-    Header()
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+    ) {
+
+        Header()
+
+        ListOfExpenses()
+
+    }
 
 }
 
@@ -98,7 +119,7 @@ val readexPro = FontFamily(
 
 @Composable
 fun DayDate() {
-    
+
     Column {
 
         Text(
@@ -147,14 +168,10 @@ fun TotalBalance() {
 }
 
 
-
 @Composable
 fun Header() {
 
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 24.dp)
-    ) {
+    Column {
 
         DayDate()
 
@@ -164,8 +181,116 @@ fun Header() {
 
 }
 
+
+@Composable
+fun Heading() {
+
+    Text(
+        modifier = Modifier
+            .padding(top = 24.dp, bottom = 18.dp),
+        text = "Recent Transactions",
+        color = colorResource(id = R.color.heading_text),
+        fontSize = 18.sp,
+        fontFamily = readexPro
+    )
+
+}
+
+@Composable
+fun ListOfExpenses(
+) {
+    Column {
+
+        Heading()
+
+        Expense()
+
+    }
+
+}
+
+
+@Composable
+fun Expense() {
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(colorResource(id = R.color.card_background))
+            .height(80.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Row {
+            Box(
+                modifier = Modifier
+                    .aspectRatio(1f)
+                    .fillMaxWidth()
+                    .padding(12.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(colorResource(id = R.color.green_bg))
+            ) {
+
+
+                Image(
+                    painter = painterResource(id = R.drawable.shopping_cart),
+                    contentDescription = "Shopping cart image",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .padding(14.dp)
+
+                )
+
+
+            }
+
+            Column(
+                modifier = Modifier
+                    .height(90.dp)
+                    .padding(start = 10.dp),
+                verticalArrangement = Arrangement.Center
+
+            ) {
+
+                Text(
+                    text = "ABCDEFGHIJKLMNO",
+                    color = colorResource(id = R.color.text),
+                    fontSize = 14.sp,
+                    fontFamily = readexPro
+                )
+
+                Text(
+                    // display type if description is null
+                    text = "Ent",
+                    color = colorResource(id = R.color.light_text),
+                    fontSize = 12.sp,
+                    fontFamily = readexPro
+                )
+            }
+        }
+
+
+        Text(
+            modifier = Modifier
+                .padding(14.dp),
+            text = "-\$145.00",
+            color = colorResource(id = R.color.main_text),
+            fontSize = 16.sp,
+            fontFamily = readexPro
+        )
+
+
+    }
+
+}
+
+
 @Preview(
-    showSystemUi = true
+    showSystemUi = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
 fun CentsiblePreview() {
