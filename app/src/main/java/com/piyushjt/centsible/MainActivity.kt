@@ -13,13 +13,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusModifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -86,7 +96,9 @@ class MainActivity : ComponentActivity() {
                         .padding(top = 42.dp)
                 ) {
 
-                    MainScreen()
+                    MainScreen(
+                        state = state
+                    )
 
                 }
             }
@@ -97,20 +109,30 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(
-
+    state: ExpenseState
 ) {
 
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 24.dp)
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
 
-        Header()
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+        ) {
 
-        ListOfExpenses()
+            Header()
+
+            ListOfExpenses()
+
+        }
+
+        NavBar(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            state = state
+        )
 
     }
-
 }
 
 // Custom font
@@ -200,7 +222,10 @@ fun Heading() {
 @Composable
 fun ListOfExpenses(
 ) {
-    Column {
+    Column(
+        modifier = Modifier
+            .verticalScroll(rememberScrollState()),
+    ) {
 
         Heading()
 
@@ -215,11 +240,6 @@ fun ListOfExpenses(
 
         Expense("ent")
 
-        Expense("grocery")
-
-        Expense("everyday")
-
-        Expense("skill")
 
 
     }
@@ -252,7 +272,7 @@ fun Expense(
         5 to colorResource(id = R.color.cream_bg)
     )
 
-    val bgColor =  bgColors[(1..5).random()]!!
+    val bgColor = bgColors[(1..5).random()]!!
 
 
     Column(
@@ -295,8 +315,7 @@ fun Expense(
 
                 Column(
                     modifier = Modifier
-                        .height(90.dp)
-                        .padding(start = 10.dp),
+                        .height(90.dp),
                     verticalArrangement = Arrangement.Center
 
                 ) {
@@ -332,11 +351,103 @@ fun Expense(
 
         Spacer(
             modifier = Modifier
-                .height(2.dp)
+                .height(10.dp)
         )
 
     }
 
+}
+
+@Composable
+fun NavBarButton(
+    buttonLogo: String,
+    filled: String
+) {
+
+    val icon =
+
+        if(buttonLogo == "home")
+            if(buttonLogo == filled)
+                 painterResource(id = R.drawable.home_filled)
+            else
+                painterResource(id = R.drawable.home)
+
+        else if(buttonLogo == "stats")
+            if(buttonLogo == filled)
+                painterResource(id = R.drawable.stats_filled)
+            else
+                painterResource(id = R.drawable.stats)
+
+        else
+            if(buttonLogo == filled)
+                painterResource(id = R.drawable.add_filled)
+            else
+                painterResource(id = R.drawable.add)
+
+
+    IconButton(
+        modifier = Modifier
+            .width(100.dp)
+            .height(60.dp),
+        onClick = {
+
+        },
+    ) {
+        Icon(
+            tint = colorResource(id = R.color.main_text),
+            painter = icon,
+            modifier = Modifier
+                .height(25.dp)
+                .width(25.dp),
+            contentDescription = "icon"
+        )
+    }
+}
+
+
+@Composable
+fun NavBar(
+    modifier: Modifier = Modifier,
+    state: ExpenseState
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(30.dp))
+            .background(colorResource(id = R.color.card_background)),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(90.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            NavBarButton(
+                buttonLogo = "home",
+                filled = state.navFilled
+            )
+            NavBarButton(
+                buttonLogo = "stats",
+                filled = state.navFilled
+            )
+            NavBarButton(
+                buttonLogo = "add",
+                filled = state.navFilled
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .height(
+                    WindowInsets.navigationBars
+                    .asPaddingValues()
+                    .calculateBottomPadding()
+                )
+                .background(Color.Transparent)
+        )
+
+    }
 }
 
 
@@ -354,7 +465,19 @@ fun CentsiblePreview() {
                 .padding(top = 42.dp)
         ) {
 
-            MainScreen()
+            MainScreen(
+                state = ExpenseState(
+                    expenses = emptyList(),
+                    id = -1,
+                    title = "tit",
+                    description = "des",
+                    date = 30072007,
+                    type = "good",
+                    amount = 100.0f,
+                    sortType = SortType.DATE,
+                    navFilled = "add"
+                )
+            )
 
         }
     }
