@@ -7,4 +7,5 @@ sealed interface ExpenseEvent {
     object SaveExpense : ExpenseEvent
     data class SortExpense(val sortType: SortType = SortType.DATE): ExpenseEvent
     data class DeleteExpense(val expense: Expense): ExpenseEvent
+    data class ChangeNavState(val navFilled: String): ExpenseEvent
 }

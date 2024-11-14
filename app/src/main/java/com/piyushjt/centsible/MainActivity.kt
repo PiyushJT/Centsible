@@ -25,8 +25,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -37,7 +35,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -97,7 +94,8 @@ class MainActivity : ComponentActivity() {
                 ) {
 
                     MainScreen(
-                        state = state
+                        state = state,
+                        onEvent = viewModel::onEvent
                     )
 
                 }
@@ -109,27 +107,25 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(
-    state: ExpenseState
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
 ) {
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
 
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 24.dp)
-        ) {
-
-            Header()
-
-            ListOfExpenses()
-
+        when (state.navFilled) {
+            "home" -> ALlExpenses()
+            "stats" -> Stats()
+            else -> AddExpense()
         }
+
 
         NavBar(
             modifier = Modifier.align(Alignment.BottomCenter),
-            state = state
+            state = state,
+            onEvent = onEvent
         )
 
     }
@@ -169,7 +165,7 @@ fun TotalBalance() {
 
     Column(
         modifier = Modifier
-            .padding(top = 24.dp)
+            .padding(top = 24.dp, bottom = 12.dp)
     ) {
 
         Text(
@@ -210,7 +206,7 @@ fun Heading() {
 
     Text(
         modifier = Modifier
-            .padding(top = 24.dp, bottom = 18.dp),
+            .padding(top = 12.dp, bottom = 18.dp),
         text = "Recent Transactions",
         color = colorResource(id = R.color.heading_text),
         fontSize = 18.sp,
@@ -240,7 +236,21 @@ fun ListOfExpenses(
 
         Expense("ent")
 
+        Expense("shopping")
 
+        Expense("travel")
+
+        Expense("ent")
+
+        Spacer(
+            modifier = Modifier
+                .height(
+                    WindowInsets.navigationBars
+                        .asPaddingValues()
+                        .calculateBottomPadding()
+                    + 110.dp
+                )
+        )
 
     }
 
@@ -358,10 +368,40 @@ fun Expense(
 
 }
 
+
+@Composable
+fun ALlExpenses() {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+    ) {
+
+        Header()
+
+        ListOfExpenses()
+
+    }
+}
+
+@Composable
+fun Stats() {
+    
+}
+
+
+@Composable
+fun AddExpense() {
+
+}
+
+
+
+
 @Composable
 fun NavBarButton(
     buttonLogo: String,
-    filled: String
+    filled: String,
+    onEvent: (ExpenseEvent) -> Unit
 ) {
 
     val icon =
@@ -391,6 +431,8 @@ fun NavBarButton(
             .height(60.dp),
         onClick = {
 
+            onEvent(ExpenseEvent.ChangeNavState(buttonLogo))
+
         },
     ) {
         Icon(
@@ -408,7 +450,8 @@ fun NavBarButton(
 @Composable
 fun NavBar(
     modifier: Modifier = Modifier,
-    state: ExpenseState
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -425,15 +468,18 @@ fun NavBar(
         ) {
             NavBarButton(
                 buttonLogo = "home",
-                filled = state.navFilled
+                filled = state.navFilled,
+                onEvent = onEvent
             )
             NavBarButton(
                 buttonLogo = "stats",
-                filled = state.navFilled
+                filled = state.navFilled,
+                onEvent = onEvent
             )
             NavBarButton(
                 buttonLogo = "add",
-                filled = state.navFilled
+                filled = state.navFilled,
+                onEvent = onEvent
             )
         }
 
@@ -441,8 +487,8 @@ fun NavBar(
             modifier = Modifier
                 .height(
                     WindowInsets.navigationBars
-                    .asPaddingValues()
-                    .calculateBottomPadding()
+                        .asPaddingValues()
+                        .calculateBottomPadding()
                 )
                 .background(Color.Transparent)
         )
@@ -475,8 +521,9 @@ fun CentsiblePreview() {
                     type = "good",
                     amount = 100.0f,
                     sortType = SortType.DATE,
-                    navFilled = "add"
-                )
+                    navFilled = "home"
+                ),
+                onEvent = {}
             )
 
         }

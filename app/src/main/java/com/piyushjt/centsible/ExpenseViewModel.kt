@@ -136,6 +136,15 @@ class ExpenseViewModel(
                 _sortType.value = event.sortType
             }
 
+            // Setting the Type
+            is ExpenseEvent.ChangeNavState -> {
+                _state.update {
+                    it.copy(
+                        navFilled = event.navFilled
+                    )
+                }
+            }
+
         }
     }
 }
