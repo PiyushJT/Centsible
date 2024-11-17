@@ -105,6 +105,12 @@ class MainActivity : ComponentActivity() {
 }
 
 
+// Custom font
+val readexPro = FontFamily(
+    Font(R.font.readex_pro, FontWeight.Medium)
+)
+
+
 @Composable
 fun MainScreen(
     state: ExpenseState,
@@ -116,7 +122,9 @@ fun MainScreen(
     ) {
 
         when (state.navFilled) {
-            "home" -> ALlExpenses()
+            "home" -> ALlExpenses(
+                state = state
+            )
             "stats" -> Stats()
             else -> AddExpense()
         }
@@ -131,10 +139,6 @@ fun MainScreen(
     }
 }
 
-// Custom font
-val readexPro = FontFamily(
-    Font(R.font.readex_pro, FontWeight.Medium)
-)
 
 @Composable
 fun DayDate() {
@@ -217,6 +221,7 @@ fun Heading() {
 
 @Composable
 fun ListOfExpenses(
+    state : ExpenseState
 ) {
     Column(
         modifier = Modifier
@@ -225,22 +230,16 @@ fun ListOfExpenses(
 
         Heading()
 
+        for(expense in state.expenses){
 
-        Expense("misc")
+            Expense(
+                title = expense.title,
+                description = expense.description,
+                amount = expense.amount,
+                type = expense.type,
+                )
 
-        Expense("food")
-
-        Expense("shopping")
-
-        Expense("travel")
-
-        Expense("ent")
-
-        Expense("shopping")
-
-        Expense("travel")
-
-        Expense("ent")
+        }
 
         Spacer(
             modifier = Modifier
@@ -259,6 +258,9 @@ fun ListOfExpenses(
 
 @Composable
 fun Expense(
+    title: String,
+    description: String?,
+    amount: Float,
     type: String
 ) {
 
@@ -312,7 +314,7 @@ fun Expense(
 
                     Image(
                         painter = image,
-                        contentDescription = "Shopping cart image",
+                        contentDescription = type,
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(1f)
@@ -331,15 +333,14 @@ fun Expense(
                 ) {
 
                     Text(
-                        text = "ABCDEFGHIJKLMNO",
+                        text = title,
                         color = colorResource(id = R.color.text),
                         fontSize = 14.sp,
                         fontFamily = readexPro
                     )
 
                     Text(
-                        // display type if description is null
-                        text = "Ent",
+                        text = if(description.isNullOrEmpty()) type else description,
                         color = colorResource(id = R.color.light_text),
                         fontSize = 12.sp,
                         fontFamily = readexPro
@@ -351,7 +352,7 @@ fun Expense(
             Text(
                 modifier = Modifier
                     .padding(14.dp),
-                text = "-\$145.00",
+                text = "-₹${amount}",
                 color = colorResource(id = R.color.main_text),
                 fontSize = 16.sp,
                 fontFamily = readexPro
@@ -370,7 +371,10 @@ fun Expense(
 
 
 @Composable
-fun ALlExpenses() {
+fun ALlExpenses(
+    state : ExpenseState
+) {
+
     Column(
         modifier = Modifier
             .padding(horizontal = 24.dp)
@@ -378,20 +382,30 @@ fun ALlExpenses() {
 
         Header()
 
-        ListOfExpenses()
-
+        ListOfExpenses(
+            state = state
+        )
     }
 }
 
+
 @Composable
 fun Stats() {
-    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Cyan)
+    )
 }
 
 
 @Composable
 fun AddExpense() {
-
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Yellow)
+    )
 }
 
 
@@ -456,7 +470,7 @@ fun NavBar(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(30.dp))
+            .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
             .background(colorResource(id = R.color.card_background)),
     ) {
         Row(
