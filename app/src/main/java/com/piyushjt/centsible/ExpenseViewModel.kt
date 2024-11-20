@@ -58,9 +58,10 @@ class ExpenseViewModel(
                 val type = state.value.type
                 val date = state.value.date
                 val amount = state.value.amount
+                val amountToShow = state.value.amountToShow
                 val id = state.value.id
 
-                if (title.isBlank()) {
+                if (title.isBlank() || amountToShow.isBlank()) {
                     return
                 }
 
@@ -97,9 +98,9 @@ class ExpenseViewModel(
                         id = -1,
                         title = "",
                         description = "",
-                        type = "",
+                        type = "ent",
                         date = 30072007,
-                        amount = 0.0f,
+                        amount = -100.0f,
                     )
                 }
             }
@@ -112,6 +113,18 @@ class ExpenseViewModel(
                     )
                 }
             }
+
+            // Setting the amount
+            is ExpenseEvent.SetAmount -> {
+
+                _state.update {
+                    it.copy(
+                        amountToShow = event.amount,
+                        amount = event.amount.toFloat()
+                    )
+                }
+            }
+
 
             // Setting the Id
             is ExpenseEvent.SetID -> {

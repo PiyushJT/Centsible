@@ -8,4 +8,9 @@
     <color name="light_text">#E6E6E6</color>
     <color name="heading_text">#D4C6CB</color>
 
+
+    <color name="hint_text">#99ffffff</color>
+    <color name="hint_main_text">#99E2D5CF</color>
+    <color name="hint_light_text">#99E6E6E6</color>
+
 </resources>

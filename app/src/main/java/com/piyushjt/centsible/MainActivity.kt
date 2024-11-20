@@ -24,11 +24,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,9 +42,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -126,7 +133,10 @@ fun MainScreen(
                 state = state
             )
             "stats" -> Stats()
-            else -> AddExpense()
+            else -> AddExpense(
+                state = state,
+                onEvent = onEvent
+            )
         }
 
 
@@ -218,6 +228,7 @@ fun Heading() {
     )
 
 }
+
 
 @Composable
 fun ListOfExpenses(
@@ -352,7 +363,7 @@ fun Expense(
             Text(
                 modifier = Modifier
                     .padding(14.dp),
-                text = "-₹${amount}",
+                text = "₹${amount}",
                 color = colorResource(id = R.color.main_text),
                 fontSize = 16.sp,
                 fontFamily = readexPro
@@ -400,15 +411,261 @@ fun Stats() {
 
 
 @Composable
-fun AddExpense() {
-    Box(
+fun AddExpense(
+    state : ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
+) {
+
+    Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Yellow)
-    )
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        // Header
+        Text(
+            text = "Add an Expense",
+            color = colorResource(id = R.color.main_text),
+            fontSize = 18.sp,
+            fontFamily = readexPro
+        )
+
+        EditExpense(
+            state = state,
+            onEvent = onEvent
+        )
+
+    }
 }
 
 
+@Composable
+fun EditExpense(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
+) {
+
+    val image = when (state.type) {
+        "misc" -> painterResource(id = R.drawable.misc)
+        "food" -> painterResource(id = R.drawable.food)
+        "shopping" -> painterResource(id = R.drawable.shopping_cart)
+        "travel" -> painterResource(id = R.drawable.travel)
+        "ent" -> painterResource(id = R.drawable.ent_netflix)
+        "grocery" -> painterResource(id = R.drawable.grocery)
+        "everyday" -> painterResource(id = R.drawable.everyday)
+        "skill" -> painterResource(id = R.drawable.skill)
+        else -> painterResource(id = R.drawable.shopping_cart)
+    }
+
+    val bgColors = mapOf(
+        1 to colorResource(id = R.color.green_bg),
+        2 to colorResource(id = R.color.red_bg),
+        3 to colorResource(id = R.color.pink_bg),
+        4 to colorResource(id = R.color.gray_bg),
+        5 to colorResource(id = R.color.cream_bg)
+    )
+
+    val bgColor = bgColors[(1..5).random()]!!
+
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(colorResource(id = R.color.card_background))
+                .height(80.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Row {
+                Box(
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                        .background(bgColor)
+                ) {
+
+
+                    Image(
+                        painter = image,
+                        contentDescription = state.type,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .padding(10.dp)
+
+                    )
+
+
+                }
+
+                Column(
+                    modifier = Modifier
+                        .height(110.dp),
+                    verticalArrangement = Arrangement.Center
+
+                ) {
+
+                    BasicTextField(
+                        value = state.title,
+                        onValueChange = {
+
+                            onEvent(ExpenseEvent.SetTitle(it))
+
+                        },
+
+                        textStyle = TextStyle(
+                            color = colorResource(id = R.color.text),
+                            fontFamily = readexPro,
+                            fontSize = 16.sp,
+                        ),
+                        singleLine = true,
+
+
+                        decorationBox = { innerTextField ->
+                            // Placeholder Text
+                            if (state.title.isEmpty()) {
+                                Text(
+                                    text = "Enter Title",
+                                    fontFamily = readexPro,
+                                    fontSize = 16.sp,
+                                    color = colorResource(id = R.color.hint_text),
+                                )
+                            } else {
+                                innerTextField()
+                            }
+
+                        },
+
+                        )
+
+
+                    BasicTextField(
+                        value = state.description ?: "",
+                        onValueChange = {
+
+                            onEvent(ExpenseEvent.SetDescription(it))
+
+                        },
+
+                        textStyle = TextStyle(
+                            color = colorResource(id = R.color.light_text),
+                            fontFamily = readexPro,
+                            fontSize = 14.sp,
+                        ),
+                        singleLine = true,
+
+
+                        decorationBox = { innerTextField ->
+                            // Placeholder Text
+                            if (state.description.isNullOrEmpty()) {
+                                Text(
+                                    text = "Description (optional)",
+                                    fontFamily = readexPro,
+                                    fontSize = 14.sp,
+                                    color = colorResource(id = R.color.hint_light_text),
+                                )
+                            } else {
+                                innerTextField()
+                            }
+
+                        },
+
+                        )
+
+                }
+            }
+
+
+
+            BasicTextField(
+                modifier = Modifier
+                    .padding(end = 24.dp),
+                value = state.amountToShow,
+                onValueChange = { newValue ->
+
+                    // Validation for valid float input
+                    val regex =
+                        "^-?\\d*(\\.\\d{0,2})?$".toRegex() // Allows optional '-' at the start, one decimal point, and up to 2 decimal places
+                    if (regex.matches(newValue) && !newValue.contains(" ") && !newValue.contains(",")) {
+                        onEvent(ExpenseEvent.SetAmount(newValue))
+                    }
+
+                },
+                textStyle = TextStyle(
+                    color = colorResource(id = R.color.main_text),
+                    fontFamily = readexPro,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.End
+                ),
+
+                decorationBox = { innerTextField ->
+                    // Placeholder Text
+                    if (state.title.isEmpty()) {
+                        Text(
+                            text = "Amount",
+                            fontFamily = readexPro,
+                            fontSize = 16.sp,
+                            color = colorResource(id = R.color.hint_main_text),
+                        )
+                    } else {
+                        innerTextField()
+                    }
+
+                },
+
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number
+                )
+            )
+
+
+        }
+
+        Spacer(
+            modifier = Modifier
+                .height(30.dp)
+        )
+
+
+        TextButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp),
+            onClick = {
+                onEvent(ExpenseEvent.SaveExpense)
+            },
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonColors(
+                containerColor = colorResource(id = R.color.logo_theme),
+                contentColor = colorResource(id = R.color.lime),
+                disabledContainerColor = colorResource(id = R.color.logo_theme),
+                disabledContentColor = colorResource(id = R.color.lime)
+            )
+        ) {
+
+
+            Text(
+                text = "Save Expense",
+                color = colorResource(id = R.color.lime),
+                fontSize = 20.sp,
+                fontFamily = readexPro
+            )
+
+        }
+
+    }
+}
 
 
 @Composable
@@ -529,13 +786,14 @@ fun CentsiblePreview() {
                 state = ExpenseState(
                     expenses = emptyList(),
                     id = -1,
-                    title = "tit",
+                    title = "title",
                     description = "des",
                     date = 30072007,
                     type = "good",
-                    amount = 100.0f,
+                    amount = -100.0f,
+                    amountToShow = "-100",
                     sortType = SortType.DATE,
-                    navFilled = "home"
+                    navFilled = "add"
                 ),
                 onEvent = {}
             )
