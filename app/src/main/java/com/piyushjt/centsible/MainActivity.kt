@@ -6,8 +6,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -436,6 +440,16 @@ fun AddExpense(
             onEvent = onEvent
         )
 
+        TypeSelector(
+            state = state,
+            onEvent = onEvent
+        )
+
+        SaveButton(
+            state = state,
+            onEvent = onEvent
+        )
+
     }
 }
 
@@ -492,6 +506,9 @@ fun EditExpense(
                         .padding(12.dp)
                         .clip(RoundedCornerShape(15.dp))
                         .background(bgColor)
+                        .clickable {
+                            onEvent(ExpenseEvent.SetTypeBoxExpanded(!state.typeBoxExpanded))
+                        }
                 ) {
 
 
@@ -610,7 +627,7 @@ fun EditExpense(
 
                 decorationBox = { innerTextField ->
                     // Placeholder Text
-                    if (state.title.isEmpty()) {
+                    if (state.amountToShow.isEmpty()) {
                         Text(
                             text = "Amount",
                             fontFamily = readexPro,
@@ -632,37 +649,139 @@ fun EditExpense(
 
         }
 
-        Spacer(
-            modifier = Modifier
-                .height(30.dp)
-        )
+
+    }
+}
 
 
-        TextButton(
+@Composable
+fun TypeSelector(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
+) {
+
+    val list = listOf("misc", "food", "shopping", "travel", "ent", "grocery", "everyday", "skill")
+
+
+    val images = mapOf(
+        "misc" to painterResource(id = R.drawable.misc),
+        "food" to painterResource(id = R.drawable.food),
+        "shopping" to painterResource(id = R.drawable.shopping_cart),
+        "travel" to painterResource(id = R.drawable.travel),
+        "ent" to painterResource(id = R.drawable.ent_netflix),
+        "grocery" to painterResource(id = R.drawable.grocery),
+        "everyday" to painterResource(id = R.drawable.everyday),
+        "skill" to painterResource(id = R.drawable.skill)
+    )
+
+    val bgColors = mapOf(
+        1 to colorResource(id = R.color.green_bg),
+        2 to colorResource(id = R.color.red_bg),
+        3 to colorResource(id = R.color.pink_bg),
+        4 to colorResource(id = R.color.gray_bg),
+        5 to colorResource(id = R.color.cream_bg)
+    )
+
+    val bgColor = bgColors[(1..5).random()]!!
+
+
+    AnimatedVisibility(
+        visible = state.typeBoxExpanded,
+        enter = expandVertically(),
+        exit = shrinkVertically()
+    ) {
+
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(60.dp),
-            onClick = {
-                onEvent(ExpenseEvent.SaveExpense)
-            },
-            shape = RoundedCornerShape(20.dp),
-            colors = ButtonColors(
-                containerColor = colorResource(id = R.color.logo_theme),
-                contentColor = colorResource(id = R.color.lime),
-                disabledContainerColor = colorResource(id = R.color.logo_theme),
-                disabledContentColor = colorResource(id = R.color.lime)
-            )
         ) {
+            Column(
+                modifier = Modifier
+                    .width(80.dp)
+                    .height(283.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(colorResource(id = R.color.card_background))
+                    .verticalScroll(rememberScrollState()),
+            ) {
 
 
-            Text(
-                text = "Save Expense",
-                color = colorResource(id = R.color.lime),
-                fontSize = 20.sp,
-                fontFamily = readexPro
-            )
+                for (item in list) {
 
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 12.dp, start = 12.dp, end = 12.dp)
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(15.dp))
+                            .background(bgColor)
+                            .clickable {
+                                onEvent(ExpenseEvent.SetType(item))
+                                onEvent(ExpenseEvent.SetTypeBoxExpanded(false))
+                            }
+                    ) {
+
+
+                        Image(
+                            painter = images[item]?: painterResource(id = R.drawable.shopping_cart),
+                            contentDescription = state.type,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .padding(10.dp)
+
+                        )
+                    }
+
+                }
+
+                Spacer(
+                    modifier = Modifier
+                        .height(12.dp)
+                )
+
+            }
         }
+    }
+}
+
+
+@Composable
+fun SaveButton(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
+) {
+
+    TextButton(
+        modifier = Modifier
+            .padding(top = 24.dp)
+            .fillMaxWidth()
+            .height(60.dp),
+        onClick = {
+            if (!(state.title.isBlank() || state.amountToShow.isBlank())) {
+
+                onEvent(ExpenseEvent.SaveExpense)
+
+                onEvent(ExpenseEvent.ChangeNavState("home"))
+
+            }
+
+        },
+        shape = RoundedCornerShape(20.dp),
+        colors = ButtonColors(
+            containerColor = colorResource(id = R.color.logo_theme),
+            contentColor = colorResource(id = R.color.lime),
+            disabledContainerColor = colorResource(id = R.color.logo_theme),
+            disabledContentColor = colorResource(id = R.color.lime)
+        )
+    ) {
+
+
+        Text(
+            text = "Save Expense",
+            color = colorResource(id = R.color.lime),
+            fontSize = 20.sp,
+            fontFamily = readexPro
+        )
 
     }
 }
@@ -793,7 +912,8 @@ fun CentsiblePreview() {
                     amount = -100.0f,
                     amountToShow = "-100",
                     sortType = SortType.DATE,
-                    navFilled = "add"
+                    navFilled = "add",
+                    typeBoxExpanded= true
                 ),
                 onEvent = {}
             )

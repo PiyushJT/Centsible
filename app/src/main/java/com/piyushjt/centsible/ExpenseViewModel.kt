@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.sql.Date
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -98,9 +100,9 @@ class ExpenseViewModel(
                         id = -1,
                         title = "",
                         description = "",
-                        type = "ent",
                         date = 30072007,
                         amount = -100.0f,
+                        amountToShow = "-100"
                     )
                 }
             }
@@ -120,7 +122,11 @@ class ExpenseViewModel(
                 _state.update {
                     it.copy(
                         amountToShow = event.amount,
-                        amount = event.amount.toFloat()
+
+                        amount = if(event.amount in arrayOf("", " ", ".", "-"))
+                            -100.0f
+                        else
+                            event.amount.toFloat()
                     )
                 }
             }
@@ -134,6 +140,17 @@ class ExpenseViewModel(
                     )
                 }
             }
+
+
+            // Setting the Id
+            is ExpenseEvent.SetType -> {
+                _state.update {
+                    it.copy(
+                        type = event.type
+                    )
+                }
+            }
+
 
             // Setting the Description
             is ExpenseEvent.SetDescription -> {
@@ -154,6 +171,16 @@ class ExpenseViewModel(
                 _state.update {
                     it.copy(
                         navFilled = event.navFilled
+                    )
+                }
+            }
+
+
+            // Setting Type box expand state
+            is ExpenseEvent.SetTypeBoxExpanded -> {
+                _state.update {
+                    it.copy(
+                        typeBoxExpanded = event.expanded
                     )
                 }
             }
