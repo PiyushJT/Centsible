@@ -6,6 +6,7 @@ sealed interface ExpenseEvent {
     data class SetType(val type: String) : ExpenseEvent
     data class SetDescription(val description: String) : ExpenseEvent
     data class SetAmount(val amount: String) : ExpenseEvent
+    data class SetDate(val date: Long) : ExpenseEvent
     object SaveExpense : ExpenseEvent
     data class SortExpense(val sortType: SortType = SortType.DATE): ExpenseEvent
     data class DeleteExpense(val expense: Expense): ExpenseEvent

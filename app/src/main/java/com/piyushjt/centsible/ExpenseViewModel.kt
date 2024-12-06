@@ -100,7 +100,7 @@ class ExpenseViewModel(
                         id = -1,
                         title = "",
                         description = "",
-                        date = 30072007,
+                        date = getTodayDateInYYYYMMDDFormat(),
                         amount = -100.0f,
                         amountToShow = "-100"
                     )
@@ -129,6 +129,18 @@ class ExpenseViewModel(
                             event.amount.toFloat()
                     )
                 }
+            }
+
+
+            // Setting date
+            is ExpenseEvent.SetDate -> {
+
+                _state.update {
+                    it.copy(
+                        date = event.date
+                    )
+                }
+
             }
 
 

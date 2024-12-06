@@ -1,5 +1,6 @@
 package com.piyushjt.centsible
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -32,18 +33,26 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -60,6 +69,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -313,7 +325,7 @@ fun Expense(
                 .background(colorResource(id = R.color.card_background))
                 .height(80.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = CenterVertically
         ) {
 
             Row {
@@ -363,11 +375,13 @@ fun Expense(
                 }
             }
 
+            val amountToShow = if(amount < 0) "-₹${-amount}" else "₹$amount"
+
 
             Text(
                 modifier = Modifier
                     .padding(14.dp),
-                text = "₹${amount}",
+                text = amountToShow,
                 color = colorResource(id = R.color.main_text),
                 fontSize = 16.sp,
                 fontFamily = readexPro
@@ -445,6 +459,11 @@ fun AddExpense(
             onEvent = onEvent
         )
 
+        DatePickerUI(
+            state = state,
+            onEvent = onEvent
+        )
+
         SaveButton(
             state = state,
             onEvent = onEvent
@@ -495,7 +514,7 @@ fun EditExpense(
                 .background(colorResource(id = R.color.card_background))
                 .height(80.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = CenterVertically
         ) {
 
             Row {
@@ -534,6 +553,7 @@ fun EditExpense(
 
                     BasicTextField(
                         value = state.title,
+                        cursorBrush = SolidColor(Color.Blue),
                         onValueChange = {
 
                             onEvent(ExpenseEvent.SetTitle(it))
@@ -568,6 +588,7 @@ fun EditExpense(
 
                     BasicTextField(
                         value = state.description ?: "",
+                        cursorBrush = SolidColor(Color.Blue),
                         onValueChange = {
 
                             onEvent(ExpenseEvent.SetDescription(it))
@@ -608,6 +629,7 @@ fun EditExpense(
                 modifier = Modifier
                     .padding(end = 24.dp),
                 value = state.amountToShow,
+                cursorBrush = SolidColor(Color.Blue),
                 onValueChange = { newValue ->
 
                     // Validation for valid float input
@@ -745,6 +767,112 @@ fun TypeSelector(
 }
 
 
+
+fun formatDateToMonthDayYear(dateInLong: Long): String {
+    // Ensure the input is valid for yyyyMMdd format
+    if (dateInLong.toString().length != 8) {
+        throw IllegalArgumentException("Invalid date format. Expected yyyyMMdd, but got $dateInLong")
+    }
+
+    val day = (dateInLong % 100).toInt()
+    val month = ((dateInLong / 100) % 100).toInt()
+    val year = (dateInLong / 10000).toInt()
+
+
+    val monthNames =  arrayOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    val monthName = monthNames[month - 1]
+
+
+    return "$monthName $day, $year"
+}
+
+
+@SuppressLint("AutoboxingStateValueProperty")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DatePickerUI(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
+) {
+
+    val datePickerState = rememberDatePickerState()
+    val showDialog = remember { mutableStateOf(false) }
+
+
+    val formattedDate = formatDateToMonthDayYear(state.date)
+
+
+    Row(
+        modifier = Modifier
+            .padding(top = 24.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(colorResource(id = R.color.card_background))
+                .clickable { showDialog.value = true }
+                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .align(CenterVertically)
+        ) {
+            Text(
+                text = formattedDate,
+                color = colorResource(id = R.color.text),
+                fontSize = 16.sp,
+                fontFamily = readexPro
+            )
+        }
+    }
+
+    if (showDialog.value) {
+        DatePickerDialog(
+
+            onDismissRequest = {
+                showDialog.value = false
+            },
+
+
+            confirmButton = {
+
+                androidx.compose.material3.Button(
+                    onClick = {
+
+                        showDialog.value = false
+                        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+                        val formattedDate =
+                            Instant.ofEpochMilli(datePickerState.selectedDateMillis!!)
+                                .atZone(ZoneId.systemDefault())
+                                .format(formatter)
+
+                        onEvent(ExpenseEvent.SetDate(formattedDate.toLong()))
+
+                    }
+                ) {
+                    Text("OK")
+                }
+
+            },
+
+            dismissButton = {
+                androidx.compose.material3.Button(
+                    onClick = {
+                        showDialog.value = false
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+}
+
+
+
+
+
 @Composable
 fun SaveButton(
     state: ExpenseState,
@@ -854,7 +982,7 @@ fun NavBar(
                 .fillMaxWidth()
                 .height(90.dp),
             horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = CenterVertically
         ) {
             NavBarButton(
                 buttonLogo = "home",
@@ -907,7 +1035,7 @@ fun CentsiblePreview() {
                     id = -1,
                     title = "title",
                     description = "des",
-                    date = 30072007,
+                    date = 20241206L,
                     type = "good",
                     amount = -100.0f,
                     amountToShow = "-100",
