@@ -1,5 +1,8 @@
+// This is ViewModel used to update the state
+
 package com.piyushjt.centsible
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -10,9 +13,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.math.BigDecimal
-import java.math.RoundingMode
-import java.sql.Date
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExpenseViewModel(
@@ -33,6 +33,7 @@ class ExpenseViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
 
+    // State
     private val _state = MutableStateFlow(ExpenseState())
 
     val state = combine(_state, _sortType, _expenses) { state, sortType, expenses ->
@@ -43,47 +44,136 @@ class ExpenseViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ExpenseState())
 
 
+
+    // Main Events
     fun onEvent(event: ExpenseEvent) {
+
+
         when (event) {
 
-            // Delete a Task
-            is ExpenseEvent.DeleteExpense -> {
-                viewModelScope.launch {
-                    dao.deleteExpense(event.expense)
+
+            // Setting the Title
+            is ExpenseEvent.SetTitle -> {
+                _state.update {
+                    it.copy(
+                        title = event.title
+                    )
                 }
+
+                Log.d("Title", state.value.title)
             }
 
-            // Save or Update a Task
+
+            // Setting the Description
+            is ExpenseEvent.SetDescription -> {
+                _state.update {
+                    it.copy(
+                        description = event.description
+                    )
+                }
+
+                Log.d("Description", state.value.description?: "")
+            }
+
+
+            // Setting the Type
+            is ExpenseEvent.SetType -> {
+                _state.update {
+                    it.copy(
+                        type = event.type
+                    )
+                }
+
+                Log.d("Type", state.value.type)
+            }
+
+
+            // Setting the amount
+            is ExpenseEvent.SetAmount -> {
+                _state.update {
+                    it.copy(
+                        amountToShow = event.amount,
+
+                        amount = if(event.amount in arrayOf("", " ", ".", "-"))
+                            -100.0f
+                        else
+                            event.amount.toFloat()
+                    )
+                }
+
+                Log.d("Amount", state.value.amount.toString())
+                Log.d("Amount To Show", state.value.amountToShow)
+            }
+
+
+            // Setting the date
+            is ExpenseEvent.SetDate -> {
+                _state.update {
+                    it.copy(
+                        date = event.date
+                    )
+                }
+
+                Log.d("Date", state.value.date.toString())
+            }
+
+
+            // Setting the Id
+            is ExpenseEvent.SetID -> {
+                _state.update {
+                    it.copy(
+                        id = event.id
+                    )
+                }
+
+                Log.d("ID", state.value.id.toString())
+            }
+
+
+
+
+
+            // Save or Update an Expense
             is ExpenseEvent.SaveExpense -> {
+
+
+                // Declaring the values
                 val title = state.value.title
                 val description = state.value.description
                 val type = state.value.type
-                val date = state.value.date
                 val amount = state.value.amount
                 val amountToShow = state.value.amountToShow
+                val date = state.value.date
                 val id = state.value.id
+
 
                 if (title.isBlank() || amountToShow.isBlank()) {
                     return
                 }
 
+
+                // To Update the Expense
                 val updateExpense = Expense(
-                    id = id,
                     title = title,
                     description = description,
                     type = type,
+                    amount = amount,
                     date = date,
-                    amount = amount
+                    id = id
                 )
 
+
+                // To Create a new Expense
                 val newExpense = Expense(
                     title = title,
                     description = description,
                     type = type,
-                    date = date,
-                    amount = amount
+                    amount = amount,
+                    date = date
                 )
 
+
+                // if id is -1 -> new Expense needs to be created
                 if (updateExpense.id != -1) {
                     viewModelScope.launch {
                         dao.upsertExpense(updateExpense)
@@ -95,97 +185,41 @@ class ExpenseViewModel(
                     }
                 }
 
+
+                // Updating the State
                 _state.update {
                     it.copy(
-                        id = -1,
                         title = "",
                         description = "",
-                        date = getTodayDateInYYYYMMDDFormat(),
+                        type = "ent",
                         amount = -100.0f,
-                        amountToShow = "-100"
+                        amountToShow = "-100",
+                        date = getTodayDateInYYYYMMDDFormat(),
+                        id = -1,
                     )
                 }
+
+                Log.d("Saved", "Saved the Expense and updated the state as below")
+                Log.d("Title", state.value.title)
+                Log.d("Description", state.value.description?: "")
+                Log.d("Type", state.value.type)
+                Log.d("Amount", state.value.amount.toString())
+                Log.d("Amount To Show", state.value.amountToShow)
+                Log.d("Date", state.value.date.toString())
+                Log.d("ID", state.value.id.toString())
+
             }
 
-            // Setting the Title
-            is ExpenseEvent.SetTitle -> {
-                _state.update {
-                    it.copy(
-                        title = event.title
-                    )
-                }
-            }
 
-            // Setting the amount
-            is ExpenseEvent.SetAmount -> {
-
-                _state.update {
-                    it.copy(
-                        amountToShow = event.amount,
-
-                        amount = if(event.amount in arrayOf("", " ", ".", "-"))
-                            -100.0f
-                        else
-                            event.amount.toFloat()
-                    )
+            // Delete an Expense
+            is ExpenseEvent.DeleteExpense -> {
+                viewModelScope.launch {
+                    dao.deleteExpense(event.expense)
                 }
             }
 
 
-            // Setting date
-            is ExpenseEvent.SetDate -> {
 
-                _state.update {
-                    it.copy(
-                        date = event.date
-                    )
-                }
-
-            }
-
-
-            // Setting the Id
-            is ExpenseEvent.SetID -> {
-                _state.update {
-                    it.copy(
-                        id = event.id
-                    )
-                }
-            }
-
-
-            // Setting the Id
-            is ExpenseEvent.SetType -> {
-                _state.update {
-                    it.copy(
-                        type = event.type
-                    )
-                }
-            }
-
-
-            // Setting the Description
-            is ExpenseEvent.SetDescription -> {
-                _state.update {
-                    it.copy(
-                        description = event.description
-                    )
-                }
-            }
-
-            // Sort the list
-            is ExpenseEvent.SortExpense -> {
-                _sortType.value = event.sortType
-            }
-
-            // Setting the Type
-            is ExpenseEvent.ChangeNavState -> {
-                _state.update {
-                    it.copy(
-                        navFilled = event.navFilled
-                    )
-                }
-            }
 
 
             // Setting Type box expand state
@@ -195,7 +229,23 @@ class ExpenseViewModel(
                         typeBoxExpanded = event.expanded
                     )
                 }
+
+                Log.d("Type Box Expanded", event.expanded.toString())
             }
+
+
+            // Setting the Navigation State
+            is ExpenseEvent.ChangeNavState -> {
+                _state.update {
+                    it.copy(
+                        navFilled = event.navFilled
+                    )
+                }
+
+                Log.d("Nav", event.navFilled)
+            }
+
+
 
         }
     }

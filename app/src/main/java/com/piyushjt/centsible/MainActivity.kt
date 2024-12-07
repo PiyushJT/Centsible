@@ -100,12 +100,14 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Edge to Edge -> No Status Bar
         enableEdgeToEdge()
 
         setContent {
             CentsibleTheme {
 
 
+                // State
                 val state by viewModel.state.collectAsState()
 
 
@@ -134,6 +136,7 @@ val readexPro = FontFamily(
 )
 
 
+
 @Composable
 fun MainScreen(
     state: ExpenseState,
@@ -144,18 +147,24 @@ fun MainScreen(
         modifier = Modifier.fillMaxSize()
     ) {
 
+        // Different screens for different navigation items
         when (state.navFilled) {
+
             "home" -> ALlExpenses(
                 state = state
             )
+
             "stats" -> Stats()
+
             else -> AddExpense(
                 state = state,
                 onEvent = onEvent
             )
+
         }
 
 
+        // Bottom Navigation bar
         NavBar(
             modifier = Modifier.align(Alignment.BottomCenter),
             state = state,
@@ -166,11 +175,13 @@ fun MainScreen(
 }
 
 
+// Day & Date at the Top in header
 @Composable
 fun DayDate() {
 
     Column {
 
+        // Day
         Text(
             text = SimpleDateFormat("EEEE,", Locale.getDefault()).format(Date()),
             color = colorResource(id = R.color.light_text),
@@ -178,18 +189,20 @@ fun DayDate() {
             fontFamily = readexPro
         )
 
+        // Date
         Text(
             text = SimpleDateFormat("dd MMMM", Locale.getDefault()).format(Date()),
             color = colorResource(id = R.color.main_text),
             fontSize = 18.sp,
             fontFamily = readexPro
         )
-    }
 
+    }
 
 }
 
 
+// Total Balance in the Header
 @Composable
 fun TotalBalance() {
 
@@ -205,18 +218,20 @@ fun TotalBalance() {
             fontFamily = readexPro
         )
 
+        // Balance
         Text(
-            text = "\$521,985.00",
+            text = "₹5,21,985.00",
             color = colorResource(id = R.color.lime),
             fontSize = 34.sp,
             fontFamily = readexPro
         )
-    }
 
+    }
 
 }
 
 
+// Header for All Expenses
 @Composable
 fun Header() {
 
@@ -231,6 +246,7 @@ fun Header() {
 }
 
 
+// Heading for All Expenses
 @Composable
 fun Heading() {
 
@@ -246,28 +262,35 @@ fun Heading() {
 }
 
 
+// List of All Expenses
 @Composable
 fun ListOfExpenses(
     state : ExpenseState
 ) {
+
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState()),
     ) {
 
+        // Heading as above Composable
         Heading()
 
+
+        // All Expenses
         for(expense in state.expenses){
 
             Expense(
                 title = expense.title,
                 description = expense.description,
                 amount = expense.amount,
-                type = expense.type,
-                )
+                type = expense.type
+            )
 
         }
 
+
+        // Spacer for bottom navigation bar
         Spacer(
             modifier = Modifier
                 .height(
@@ -283,6 +306,7 @@ fun ListOfExpenses(
 }
 
 
+// Expense Card
 @Composable
 fun Expense(
     title: String,
@@ -291,6 +315,7 @@ fun Expense(
     type: String
 ) {
 
+    // Image and Background Color
     val image = when (type) {
         "misc" -> painterResource(id = R.drawable.misc)
         "food" -> painterResource(id = R.drawable.food)
@@ -314,10 +339,20 @@ fun Expense(
     val bgColor = bgColors[(1..5).random()]!!
 
 
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
     ) {
+
+        /*
+
+        Row with two children as
+            1) Logo & title / Desc
+            2) Amount
+
+        */
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -328,7 +363,11 @@ fun Expense(
             verticalAlignment = CenterVertically
         ) {
 
+
+            // Image Logo and Title / Desc
             Row {
+
+                // BG color for logo
                 Box(
                     modifier = Modifier
                         .aspectRatio(1f)
@@ -338,7 +377,7 @@ fun Expense(
                         .background(bgColor)
                 ) {
 
-
+                    // Logo
                     Image(
                         painter = image,
                         contentDescription = type,
@@ -352,6 +391,8 @@ fun Expense(
 
                 }
 
+
+                // Title and Description
                 Column(
                     modifier = Modifier
                         .height(90.dp),
@@ -359,6 +400,7 @@ fun Expense(
 
                 ) {
 
+                    // Title
                     Text(
                         text = title,
                         color = colorResource(id = R.color.text),
@@ -366,18 +408,21 @@ fun Expense(
                         fontFamily = readexPro
                     )
 
+                    // Description
                     Text(
                         text = if(description.isNullOrEmpty()) type else description,
                         color = colorResource(id = R.color.light_text),
                         fontSize = 12.sp,
                         fontFamily = readexPro
                     )
+
                 }
             }
 
+
             val amountToShow = if(amount < 0) "-₹${-amount}" else "₹$amount"
 
-
+            // Amount
             Text(
                 modifier = Modifier
                     .padding(14.dp),
@@ -389,6 +434,8 @@ fun Expense(
 
         }
 
+
+        // Spacer for another Expense
         Spacer(
             modifier = Modifier
                 .height(10.dp)
@@ -399,6 +446,7 @@ fun Expense(
 }
 
 
+// All Expenses to be shown in a Nav Item
 @Composable
 fun ALlExpenses(
     state : ExpenseState
@@ -418,6 +466,7 @@ fun ALlExpenses(
 }
 
 
+// Statistics Screen
 @Composable
 fun Stats() {
     Box(
@@ -428,6 +477,7 @@ fun Stats() {
 }
 
 
+// Add || Edit Expense Screen
 @Composable
 fun AddExpense(
     state : ExpenseState,
@@ -449,21 +499,29 @@ fun AddExpense(
             fontFamily = readexPro
         )
 
+
+        // Edit Expense -> Similar to Expense Card
         EditExpense(
             state = state,
             onEvent = onEvent
         )
 
+
+        // Drop Down Type Selector
         TypeSelector(
             state = state,
             onEvent = onEvent
         )
 
+
+        // Date Picker
         DatePickerUI(
             state = state,
             onEvent = onEvent
         )
 
+
+        // Save Button
         SaveButton(
             state = state,
             onEvent = onEvent
@@ -479,6 +537,7 @@ fun EditExpense(
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
+    // Image and Background Color
     val image = when (state.type) {
         "misc" -> painterResource(id = R.drawable.misc)
         "food" -> painterResource(id = R.drawable.food)
@@ -507,6 +566,8 @@ fun EditExpense(
             .fillMaxWidth()
             .padding(top = 24.dp)
     ) {
+
+        // Row with two children as logo, title / desc  and amount
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -517,7 +578,10 @@ fun EditExpense(
             verticalAlignment = CenterVertically
         ) {
 
+            // Logo and title / Desc
             Row {
+
+                // Logo background
                 Box(
                     modifier = Modifier
                         .aspectRatio(1f)
@@ -530,7 +594,7 @@ fun EditExpense(
                         }
                 ) {
 
-
+                    // Logo
                     Image(
                         painter = image,
                         contentDescription = state.type,
@@ -541,9 +605,10 @@ fun EditExpense(
 
                     )
 
-
                 }
 
+
+                // Title and Description
                 Column(
                     modifier = Modifier
                         .height(110.dp),
@@ -551,9 +616,14 @@ fun EditExpense(
 
                 ) {
 
+
+                    // Title text Field (custom)
                     BasicTextField(
                         value = state.title,
+
+                        // Cursor color
                         cursorBrush = SolidColor(Color.Blue),
+
                         onValueChange = {
 
                             onEvent(ExpenseEvent.SetTitle(it))
@@ -565,10 +635,12 @@ fun EditExpense(
                             fontFamily = readexPro,
                             fontSize = 16.sp,
                         ),
+
                         singleLine = true,
 
-
+                        // Placeholder (Hint)
                         decorationBox = { innerTextField ->
+
                             // Placeholder Text
                             if (state.title.isEmpty()) {
                                 Text(
@@ -581,14 +653,17 @@ fun EditExpense(
                                 innerTextField()
                             }
 
-                        },
+                        }
 
-                        )
+                    )
 
 
+                    // Description text Field (custom)
                     BasicTextField(
                         value = state.description ?: "",
+
                         cursorBrush = SolidColor(Color.Blue),
+
                         onValueChange = {
 
                             onEvent(ExpenseEvent.SetDescription(it))
@@ -600,10 +675,12 @@ fun EditExpense(
                             fontFamily = readexPro,
                             fontSize = 14.sp,
                         ),
+
                         singleLine = true,
 
-
+                        // Placeholder (Hint)
                         decorationBox = { innerTextField ->
+
                             // Placeholder Text
                             if (state.description.isNullOrEmpty()) {
                                 Text(
@@ -616,30 +693,38 @@ fun EditExpense(
                                 innerTextField()
                             }
 
-                        },
+                        }
 
-                        )
+                    )
 
                 }
             }
 
 
 
+            // Amount Text Field
             BasicTextField(
+
                 modifier = Modifier
                     .padding(end = 24.dp),
+
                 value = state.amountToShow,
+
                 cursorBrush = SolidColor(Color.Blue),
+
                 onValueChange = { newValue ->
 
-                    // Validation for valid float input
-                    val regex =
-                        "^-?\\d*(\\.\\d{0,2})?$".toRegex() // Allows optional '-' at the start, one decimal point, and up to 2 decimal places
+                    // Valid Float Input with two decimal places
+
+                    // Allows optional '-' at the start, one decimal point, and up to 2 decimal places
+                    val regex = "^-?\\d*(\\.\\d{0,2})?$".toRegex()
+
                     if (regex.matches(newValue) && !newValue.contains(" ") && !newValue.contains(",")) {
                         onEvent(ExpenseEvent.SetAmount(newValue))
                     }
 
                 },
+
                 textStyle = TextStyle(
                     color = colorResource(id = R.color.main_text),
                     fontFamily = readexPro,
@@ -647,7 +732,9 @@ fun EditExpense(
                     textAlign = TextAlign.End
                 ),
 
+                // Placeholder (Hint)
                 decorationBox = { innerTextField ->
+
                     // Placeholder Text
                     if (state.amountToShow.isEmpty()) {
                         Text(
@@ -663,28 +750,33 @@ fun EditExpense(
                 },
 
                 singleLine = true,
+
+                // Show numerical keyboard only
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number
                 )
+
             )
 
 
         }
 
-
     }
 }
 
 
+// Drop down Type Selector
 @Composable
 fun TypeSelector(
     state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
+    // List of Types
     val list = listOf("misc", "food", "shopping", "travel", "ent", "grocery", "everyday", "skill")
 
 
+    // Images and Background Colors
     val images = mapOf(
         "misc" to painterResource(id = R.drawable.misc),
         "food" to painterResource(id = R.drawable.food),
@@ -707,11 +799,13 @@ fun TypeSelector(
     val bgColor = bgColors[(1..5).random()]!!
 
 
+    // Giving animation and expand and shrink
     AnimatedVisibility(
         visible = state.typeBoxExpanded,
         enter = expandVertically(),
         exit = shrinkVertically()
     ) {
+
 
         Box(
             modifier = Modifier
@@ -726,9 +820,11 @@ fun TypeSelector(
                     .verticalScroll(rememberScrollState()),
             ) {
 
-
+                // Showing all types (logos only)
                 for (item in list) {
 
+
+                    // Background color
                     Box(
                         modifier = Modifier
                             .padding(top = 12.dp, start = 12.dp, end = 12.dp)
@@ -736,13 +832,16 @@ fun TypeSelector(
                             .aspectRatio(1f)
                             .clip(RoundedCornerShape(15.dp))
                             .background(bgColor)
+
                             .clickable {
+                                // Update state of type and close the selector
                                 onEvent(ExpenseEvent.SetType(item))
                                 onEvent(ExpenseEvent.SetTypeBoxExpanded(false))
                             }
+
                     ) {
 
-
+                        // Logo
                         Image(
                             painter = images[item]?: painterResource(id = R.drawable.shopping_cart),
                             contentDescription = state.type,
@@ -750,12 +849,14 @@ fun TypeSelector(
                                 .fillMaxWidth()
                                 .aspectRatio(1f)
                                 .padding(10.dp)
-
                         )
+
                     }
 
                 }
 
+
+                // Spacer for another type
                 Spacer(
                     modifier = Modifier
                         .height(12.dp)
@@ -767,26 +868,7 @@ fun TypeSelector(
 }
 
 
-
-fun formatDateToMonthDayYear(dateInLong: Long): String {
-    // Ensure the input is valid for yyyyMMdd format
-    if (dateInLong.toString().length != 8) {
-        throw IllegalArgumentException("Invalid date format. Expected yyyyMMdd, but got $dateInLong")
-    }
-
-    val day = (dateInLong % 100).toInt()
-    val month = ((dateInLong / 100) % 100).toInt()
-    val year = (dateInLong / 10000).toInt()
-
-
-    val monthNames =  arrayOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-    val monthName = monthNames[month - 1]
-
-
-    return "$monthName $day, $year"
-}
-
-
+// Date Picker
 @SuppressLint("AutoboxingStateValueProperty")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -795,10 +877,13 @@ fun DatePickerUI(
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
+
+    // Some temp States
     val datePickerState = rememberDatePickerState()
     val showDialog = remember { mutableStateOf(false) }
 
 
+    // Formatted date
     val formattedDate = formatDateToMonthDayYear(state.date)
 
 
@@ -808,6 +893,8 @@ fun DatePickerUI(
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.End
     ) {
+
+        // Box to open date picker
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(20.dp))
@@ -816,36 +903,45 @@ fun DatePickerUI(
                 .padding(horizontal = 20.dp, vertical = 12.dp)
                 .align(CenterVertically)
         ) {
+
+            // Showing the selected date
             Text(
                 text = formattedDate,
                 color = colorResource(id = R.color.text),
                 fontSize = 16.sp,
                 fontFamily = readexPro
             )
+
         }
     }
 
+
     if (showDialog.value) {
+
+        // Showing the dialog
         DatePickerDialog(
 
             onDismissRequest = {
                 showDialog.value = false
             },
 
-
             confirmButton = {
 
                 androidx.compose.material3.Button(
+
                     onClick = {
 
+                        // Close the dialog
                         showDialog.value = false
+
                         val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-                        val formattedDate =
+                        val anotherFormattedDate =
                             Instant.ofEpochMilli(datePickerState.selectedDateMillis!!)
                                 .atZone(ZoneId.systemDefault())
                                 .format(formatter)
 
-                        onEvent(ExpenseEvent.SetDate(formattedDate.toLong()))
+                        // Set the new date to State
+                        onEvent(ExpenseEvent.SetDate(anotherFormattedDate.toLong()))
 
                     }
                 ) {
@@ -854,37 +950,47 @@ fun DatePickerUI(
 
             },
 
+
             dismissButton = {
                 androidx.compose.material3.Button(
+
                     onClick = {
+                        // close the dialog
                         showDialog.value = false
                     }
+
                 ) {
                     Text("Cancel")
                 }
             }
+
         ) {
+
             DatePicker(state = datePickerState)
+
         }
     }
 }
 
 
-
-
-
+// Save / Update Button
 @Composable
 fun SaveButton(
     state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
+    // The button
     TextButton(
+
         modifier = Modifier
             .padding(top = 24.dp)
             .fillMaxWidth()
             .height(60.dp),
+
         onClick = {
+
+            // Save the Expense if title and amount are not empty
             if (!(state.title.isBlank() || state.amountToShow.isBlank())) {
 
                 onEvent(ExpenseEvent.SaveExpense)
@@ -894,6 +1000,7 @@ fun SaveButton(
             }
 
         },
+
         shape = RoundedCornerShape(20.dp),
         colors = ButtonColors(
             containerColor = colorResource(id = R.color.logo_theme),
@@ -901,9 +1008,10 @@ fun SaveButton(
             disabledContainerColor = colorResource(id = R.color.logo_theme),
             disabledContentColor = colorResource(id = R.color.lime)
         )
+
     ) {
 
-
+        // Text on the button
         Text(
             text = "Save Expense",
             color = colorResource(id = R.color.lime),
@@ -915,6 +1023,7 @@ fun SaveButton(
 }
 
 
+// Navigation Bar Buttons
 @Composable
 fun NavBarButton(
     buttonLogo: String,
@@ -922,6 +1031,8 @@ fun NavBarButton(
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
+
+    // Setting the icon (filled/ unfilled)
     val icon =
 
         if(buttonLogo == "home")
@@ -947,36 +1058,46 @@ fun NavBarButton(
         modifier = Modifier
             .width(100.dp)
             .height(60.dp),
+
         onClick = {
 
             onEvent(ExpenseEvent.ChangeNavState(buttonLogo))
 
-        },
+        }
+
     ) {
+
+        // Icon
         Icon(
-            tint = colorResource(id = R.color.main_text),
-            painter = icon,
             modifier = Modifier
                 .height(25.dp)
                 .width(25.dp),
+
+            tint = colorResource(id = R.color.main_text),
+            painter = icon,
+
             contentDescription = "icon"
         )
+
     }
 }
 
 
+// Bottom Navigation Bar
 @Composable
 fun NavBar(
     modifier: Modifier = Modifier,
     state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit
 ) {
+
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
             .background(colorResource(id = R.color.card_background)),
     ) {
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -984,23 +1105,32 @@ fun NavBar(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = CenterVertically
         ) {
+
+            // Home
             NavBarButton(
                 buttonLogo = "home",
                 filled = state.navFilled,
                 onEvent = onEvent
             )
+
+            // Statistics (Graph)
             NavBarButton(
                 buttonLogo = "stats",
                 filled = state.navFilled,
                 onEvent = onEvent
             )
+
+            // Add Expense
             NavBarButton(
                 buttonLogo = "add",
                 filled = state.navFilled,
                 onEvent = onEvent
             )
+
         }
 
+
+        // Bottom Space for System Navigation
         Box(
             modifier = Modifier
                 .height(
@@ -1015,6 +1145,35 @@ fun NavBar(
 }
 
 
+
+
+// Date Formatter
+fun formatDateToMonthDayYear(dateInLong: Long): String {
+
+    // Ensure the input is valid for yyyyMMdd format
+    if (dateInLong.toString().length != 8) {
+        throw IllegalArgumentException("Invalid date format. Expected yyyyMMdd, but got $dateInLong")
+    }
+
+    // Getting day, month and year
+    val day = (dateInLong % 100).toInt()
+    val month = ((dateInLong / 100) % 100).toInt()
+    val year = (dateInLong / 10000).toInt()
+
+
+    // Setting month name
+    val monthNames =  arrayOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    val monthName = monthNames[month - 1]
+
+
+    return "$monthName $day, $year"
+
+}
+
+
+
+
+// Preview
 @Preview(
     showSystemUi = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES
@@ -1022,6 +1181,7 @@ fun NavBar(
 @Composable
 fun CentsiblePreview() {
     CentsibleTheme {
+
         Surface(
             modifier = Modifier
                 .background(colorResource(id = R.color.background))
@@ -1043,7 +1203,9 @@ fun CentsiblePreview() {
                     navFilled = "add",
                     typeBoxExpanded= true
                 ),
+
                 onEvent = {}
+
             )
 
         }

@@ -1,3 +1,5 @@
+// This is the Data Access Object (DAO) used to access the database
+
 package com.piyushjt.centsible
 
 import androidx.room.Dao
