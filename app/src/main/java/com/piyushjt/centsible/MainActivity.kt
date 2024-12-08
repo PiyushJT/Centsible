@@ -1006,10 +1006,10 @@ fun SaveButton(
 
         shape = RoundedCornerShape(20.dp),
         colors = ButtonColors(
-            containerColor = colorResource(id = R.color.logo_theme),
-            contentColor = colorResource(id = R.color.lime),
-            disabledContainerColor = colorResource(id = R.color.logo_theme),
-            disabledContentColor = colorResource(id = R.color.lime)
+            containerColor = colorResource(id = R.color.red),
+            contentColor = colorResource(id = R.color.black),
+            disabledContainerColor = colorResource(id = R.color.red),
+            disabledContentColor = colorResource(id = R.color.black)
         )
 
     ) {
@@ -1017,7 +1017,7 @@ fun SaveButton(
         // Text on the button
         Text(
             text = "Save Expense",
-            color = colorResource(id = R.color.lime),
+            color = colorResource(id = R.color.black),
             fontSize = 20.sp,
             fontFamily = readexPro
         )
