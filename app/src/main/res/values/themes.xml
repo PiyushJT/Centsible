@@ -2,4 +2,16 @@
 <resources>
 
     <style name="Theme.Centsible" parent="android:Theme.Material.Light.NoActionBar" />
+
+
+    // Splash Screen
+    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
+
+        <item name="windowSplashScreenBackground">@color/logo_theme</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/centsible_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.Centsible</item>
+
+    </style>
+
+
 </resources>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="logo_theme">#A42023</color>
+    <color name="logo_theme">#A52023</color>
     <color name="background">#F6F6F6</color>
     <color name="card_background">#FFFFFF</color>
     <color name="text">#000000</color>

@@ -103,6 +103,9 @@ class MainActivity : ComponentActivity() {
         // Edge to Edge -> No Status Bar
         enableEdgeToEdge()
 
+        // Removing action bar if visible
+        actionBar?.hide()
+
         setContent {
             CentsibleTheme {
 
