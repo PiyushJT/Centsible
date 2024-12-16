@@ -407,7 +407,7 @@ fun Expense(
                     Text(
                         text = title,
                         color = colorResource(id = R.color.text),
-                        fontSize = 14.sp,
+                        fontSize = 12.sp,
                         fontFamily = readexPro
                     )
 
@@ -415,7 +415,7 @@ fun Expense(
                     Text(
                         text = if(description.isNullOrEmpty()) type else description,
                         color = colorResource(id = R.color.light_text),
-                        fontSize = 12.sp,
+                        fontSize = 10.sp,
                         fontFamily = readexPro
                     )
 
@@ -431,7 +431,7 @@ fun Expense(
                     .padding(14.dp),
                 text = amountToShow,
                 color = colorResource(id = R.color.main_text),
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 fontFamily = readexPro
             )
 
@@ -475,7 +475,6 @@ fun Stats() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Cyan)
     )
 }
 
@@ -487,6 +486,10 @@ fun AddExpense(
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
+
+    val isExpense = if (state.amount > 0) false else true
+
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -496,7 +499,7 @@ fun AddExpense(
 
         // Header
         Text(
-            text = "Add an Expense",
+            text = if (isExpense) "Add an Expense" else "Add an Earning",
             color = colorResource(id = R.color.main_text),
             fontSize = 18.sp,
             fontFamily = readexPro
@@ -636,7 +639,7 @@ fun EditExpense(
                         textStyle = TextStyle(
                             color = colorResource(id = R.color.text),
                             fontFamily = readexPro,
-                            fontSize = 16.sp,
+                            fontSize = 12.sp,
                         ),
 
                         singleLine = true,
@@ -649,7 +652,7 @@ fun EditExpense(
                                 Text(
                                     text = "Enter Title",
                                     fontFamily = readexPro,
-                                    fontSize = 16.sp,
+                                    fontSize = 12.sp,
                                     color = colorResource(id = R.color.hint_text),
                                 )
                             } else {
@@ -676,7 +679,7 @@ fun EditExpense(
                         textStyle = TextStyle(
                             color = colorResource(id = R.color.light_text),
                             fontFamily = readexPro,
-                            fontSize = 14.sp,
+                            fontSize = 10.sp,
                         ),
 
                         singleLine = true,
@@ -689,7 +692,7 @@ fun EditExpense(
                                 Text(
                                     text = "Description (optional)",
                                     fontFamily = readexPro,
-                                    fontSize = 14.sp,
+                                    fontSize = 10.sp,
                                     color = colorResource(id = R.color.hint_light_text),
                                 )
                             } else {
@@ -731,7 +734,7 @@ fun EditExpense(
                 textStyle = TextStyle(
                     color = colorResource(id = R.color.main_text),
                     fontFamily = readexPro,
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     textAlign = TextAlign.End
                 ),
 
@@ -743,7 +746,7 @@ fun EditExpense(
                         Text(
                             text = "Amount",
                             fontFamily = readexPro,
-                            fontSize = 16.sp,
+                            fontSize = 14.sp,
                             color = colorResource(id = R.color.hint_main_text),
                         )
                     } else {
@@ -799,8 +802,6 @@ fun TypeSelector(
         5 to colorResource(id = R.color.cream_bg)
     )
 
-    val bgColor = bgColors[(1..5).random()]!!
-
 
     // Giving animation and expand and shrink
     AnimatedVisibility(
@@ -828,6 +829,8 @@ fun TypeSelector(
 
 
                     // Background color
+                    val bgColor = bgColors[(1..5).random()]!!
+
                     Box(
                         modifier = Modifier
                             .padding(top = 12.dp, start = 12.dp, end = 12.dp)
@@ -983,6 +986,8 @@ fun SaveButton(
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
+    val isExpense = if (state.amount > 0) false else true
+
     // The button
     TextButton(
 
@@ -1006,7 +1011,8 @@ fun SaveButton(
 
         shape = RoundedCornerShape(20.dp),
         colors = ButtonColors(
-            containerColor = colorResource(id = R.color.red),
+            containerColor = if (isExpense) colorResource(id = R.color.red)
+                            else colorResource(id = R.color.lime),
             contentColor = colorResource(id = R.color.black),
             disabledContainerColor = colorResource(id = R.color.red),
             disabledContentColor = colorResource(id = R.color.black)
@@ -1016,7 +1022,7 @@ fun SaveButton(
 
         // Text on the button
         Text(
-            text = "Save Expense",
+            text = if (isExpense) "Save Expense" else "Save Earning",
             color = colorResource(id = R.color.black),
             fontSize = 20.sp,
             fontFamily = readexPro
@@ -1200,8 +1206,8 @@ fun CentsiblePreview() {
                     description = "des",
                     date = 20241206L,
                     type = "good",
-                    amount = -100.0f,
-                    amountToShow = "-100",
+                    amount = 100.0f,
+                    amountToShow = "100",
                     sortType = SortType.DATE,
                     navFilled = "add",
                     typeBoxExpanded= true
