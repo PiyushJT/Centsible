@@ -16,7 +16,7 @@ data class ExpenseState(
     val type: String = "ent",
     val amount: Float = -100.0f,
     val date: Long = getTodayDateInYYYYMMDDFormat(),
-    val id : Int = -1,
+    val id : Int = 7,
 
     val typeBoxExpanded: Boolean = false,
     val navFilled: String = "home",

@@ -246,6 +246,30 @@ class ExpenseViewModel(
             }
 
 
+            // Clearing the state to default
+            is ExpenseEvent.ClearState -> {
+                _state.update {
+                    it.copy(
+                        title = "",
+                        description = "",
+                        type = "ent",
+                        amount = -100.0f,
+                        amountToShow = "-100",
+                        date = getTodayDateInYYYYMMDDFormat(),
+                        id = -1,
+                        typeBoxExpanded = false,
+                    )
+                }
+                Log.d("Cleared", "State changed to default")
+                Log.d("Title", state.value.title)
+                Log.d("Description", state.value.description?: "")
+                Log.d("Type", state.value.type)
+                Log.d("Amount", state.value.amount.toString())
+                Log.d("Amount To Show", state.value.amountToShow)
+                Log.d("Date", state.value.date.toString())
+                Log.d("ID", state.value.id.toString())
+            }
+
 
         }
     }

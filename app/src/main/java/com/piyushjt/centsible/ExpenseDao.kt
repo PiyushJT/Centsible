@@ -23,4 +23,5 @@ interface ExpenseDao {
 
     @Query("SELECT * FROM expense ORDER BY date DESC, id DESC")
     fun getAllExpense() : Flow<List<Expense>>
+
 }

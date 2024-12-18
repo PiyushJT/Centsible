@@ -38,6 +38,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -66,8 +67,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import androidx.room.Room
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
+import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -113,24 +120,68 @@ class MainActivity : ComponentActivity() {
                 // State
                 val state by viewModel.state.collectAsState()
 
+                val navController = rememberNavController()
 
-                Surface(
-                    modifier = Modifier
-                        .background(colorResource(id = R.color.background))
-                        .fillMaxSize()
-                        .padding(top = 42.dp)
+                NavHost(
+                    navController = navController,
+                    startDestination = MainScreen
                 ) {
 
-                    MainScreen(
-                        state = state,
-                        onEvent = viewModel::onEvent
-                    )
+                    composable<MainScreen> {
 
+
+                        Surface(
+                            modifier = Modifier
+                                .background(colorResource(id = R.color.background))
+                                .fillMaxSize()
+                                .padding(top = 42.dp)
+                        ) {
+
+                            MainScreen(
+                                state = state,
+                                onEvent = viewModel::onEvent,
+                                id = -1,
+                                navController = navController
+                            )
+
+                        }
+
+                    }
+                    composable<EditExpense> {
+                        val args = it.toRoute<EditExpense>()
+
+                        Surface(
+                            modifier = Modifier
+                                .background(colorResource(id = R.color.background))
+                                .fillMaxSize()
+                                .padding(top = 42.dp)
+                        ) {
+
+                            MainScreen(
+                                state = state,
+                                onEvent = viewModel::onEvent,
+                                id = args.id,
+                                navController = navController
+                            )
+
+                        }
+
+                    }
                 }
             }
         }
     }
 }
+
+
+
+@Serializable
+object MainScreen
+
+@Serializable
+data class EditExpense(
+    val id: Int
+)
 
 
 // Custom font
@@ -143,36 +194,70 @@ val readexPro = FontFamily(
 @Composable
 fun MainScreen(
     state: ExpenseState,
-    onEvent: (ExpenseEvent) -> Unit
+    onEvent: (ExpenseEvent) -> Unit,
+    id: Int,
+    navController: NavController? = null
 ) {
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
 
-        // Different screens for different navigation items
-        when (state.navFilled) {
+        if(id == -1) {
 
-            "home" -> ALlExpenses(
-                state = state
-            )
+            // Different screens for different navigation items
+            when (state.navFilled) {
 
-            "stats" -> Stats()
+                "home" -> ALlExpenses(
+                    state = state,
+                    onEvent = onEvent,
+                    navController = navController
+                )
 
-            else -> AddExpense(
+                "stats" -> Stats()
+
+                else -> AddExpense(
+                    state = state,
+                    onEvent = onEvent,
+                    add = true,
+                    id = id,
+                    navController = navController
+                )
+
+            }
+
+
+            // Bottom Navigation bar
+            NavBar(
+                modifier = Modifier.align(Alignment.BottomCenter),
                 state = state,
-                onEvent = onEvent
+                onEvent = onEvent,
+                enabled = true
             )
+
 
         }
 
+        else {
 
-        // Bottom Navigation bar
-        NavBar(
-            modifier = Modifier.align(Alignment.BottomCenter),
-            state = state,
-            onEvent = onEvent
-        )
+            AddExpense(
+                state = state,
+                onEvent = onEvent,
+                add = false,
+                id = id,
+                navController = navController
+            )
+
+
+            // Bottom Navigation bar (not working)
+            NavBar(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                state = state,
+                onEvent = onEvent,
+                enabled = false
+            )
+
+        }
 
     }
 }
@@ -268,7 +353,8 @@ fun Heading() {
 // List of All Expenses
 @Composable
 fun ListOfExpenses(
-    state : ExpenseState
+    state : ExpenseState,
+    navController: NavController? = null
 ) {
 
     Column(
@@ -287,7 +373,10 @@ fun ListOfExpenses(
                 title = expense.title,
                 description = expense.description,
                 amount = expense.amount,
-                type = expense.type
+                type = expense.type,
+                date = expense.date,
+                id = expense.id,
+                navController = navController
             )
 
         }
@@ -315,7 +404,10 @@ fun Expense(
     title: String,
     description: String?,
     amount: Float,
-    type: String
+    type: String,
+    date: Long,
+    id: Int,
+    navController: NavController? = null
 ) {
 
     // Image and Background Color
@@ -361,7 +453,14 @@ fun Expense(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
                 .background(colorResource(id = R.color.card_background))
-                .height(80.dp),
+                .height(80.dp)
+                .clickable {
+
+                    navController?.navigate(EditExpense(
+                        id = id
+                    ))
+
+                },
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = CenterVertically
         ) {
@@ -452,8 +551,12 @@ fun Expense(
 // All Expenses to be shown in a Nav Item
 @Composable
 fun ALlExpenses(
-    state : ExpenseState
+    state : ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit,
+    navController: NavController? = null
 ) {
+
+    onEvent(ExpenseEvent.SetID(-1))
 
     Column(
         modifier = Modifier
@@ -463,7 +566,8 @@ fun ALlExpenses(
         Header()
 
         ListOfExpenses(
-            state = state
+            state = state,
+            navController = navController
         )
     }
 }
@@ -478,12 +582,80 @@ fun Stats() {
     )
 }
 
+@Composable
+fun TopButton(
+    isDeleteBtn: Boolean,
+    add: Boolean,
+    navController: NavController? = null
+) {
+
+    IconButton(
+        modifier = Modifier
+            .width(60.dp)
+            .height(60.dp),
+
+        onClick = {
+
+            if(isDeleteBtn){
+
+            } else {
+
+                navController?.popBackStack()
+
+            }
+
+        },
+        colors = IconButtonColors(
+
+            contentColor =
+            if(isDeleteBtn)
+                colorResource(id = R.color.red)
+            else
+                colorResource(id = R.color.main_text),
+
+
+            disabledContentColor =
+            if(isDeleteBtn)
+                colorResource(id = R.color.red50)
+            else
+                colorResource(id = R.color.card_background),
+
+            containerColor = colorResource(id = R.color.card_background),
+            disabledContainerColor = colorResource(id = R.color.card_background)
+
+        ),
+        enabled = !add
+
+    ) {
+
+        // Icon
+        Icon(
+            modifier = Modifier
+                .height(30.dp)
+                .width(30.dp),
+
+            painter =
+            if (isDeleteBtn)
+                painterResource(id = R.drawable.delete)
+            else
+                painterResource(id = R.drawable.back),
+
+            contentDescription = ""
+        )
+
+    }
+
+}
+
 
 // Add || Edit Expense Screen
 @Composable
 fun AddExpense(
     state : ExpenseState,
-    onEvent: (ExpenseEvent) -> Unit
+    onEvent: (ExpenseEvent) -> Unit,
+    add: Boolean,
+    id: Int,
+    navController: NavController? = null
 ) {
 
 
@@ -498,12 +670,43 @@ fun AddExpense(
     ) {
 
         // Header
-        Text(
-            text = if (isExpense) "Add an Expense" else "Add an Earning",
-            color = colorResource(id = R.color.main_text),
-            fontSize = 18.sp,
-            fontFamily = readexPro
-        )
+        Row (
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = CenterVertically
+        ) {
+
+            if(!add) {
+                TopButton(
+                    isDeleteBtn = false,
+                    add = add,
+                    navController = navController
+                )
+            }
+            else {
+                Box(
+                    modifier = Modifier
+                        .height(60.dp)
+                        .width(60.dp)
+                        .background(colorResource(id = R.color.trans))
+                )
+            }
+
+            Text(
+                text = if (isExpense) "Add an Expense" else "Add an Earning",
+                color = colorResource(id = R.color.main_text),
+                fontSize = 18.sp,
+                fontFamily = readexPro
+            )
+
+            TopButton(
+                isDeleteBtn = true,
+                add = add,
+                navController = navController
+            )
+
+        }
 
 
         // Edit Expense -> Similar to Expense Card
@@ -1037,11 +1240,12 @@ fun SaveButton(
 fun NavBarButton(
     buttonLogo: String,
     filled: String,
-    onEvent: (ExpenseEvent) -> Unit
+    onEvent: (ExpenseEvent) -> Unit,
+    enabled: Boolean
 ) {
 
 
-    // Setting the icon (filled/ unfilled)
+    // Setting the icon (filled/unfilled)
     val icon =
 
         if(buttonLogo == "home")
@@ -1070,9 +1274,11 @@ fun NavBarButton(
 
         onClick = {
 
-            onEvent(ExpenseEvent.ChangeNavState(buttonLogo))
+            if(enabled)
+                onEvent(ExpenseEvent.ChangeNavState(buttonLogo))
 
-        }
+        },
+        enabled = enabled
 
     ) {
 
@@ -1085,7 +1291,7 @@ fun NavBarButton(
             tint = colorResource(id = R.color.main_text),
             painter = icon,
 
-            contentDescription = "icon"
+            contentDescription = buttonLogo
         )
 
     }
@@ -1097,7 +1303,8 @@ fun NavBarButton(
 fun NavBar(
     modifier: Modifier = Modifier,
     state: ExpenseState,
-    onEvent: (ExpenseEvent) -> Unit
+    onEvent: (ExpenseEvent) -> Unit,
+    enabled: Boolean
 ) {
 
     Column(
@@ -1119,21 +1326,24 @@ fun NavBar(
             NavBarButton(
                 buttonLogo = "home",
                 filled = state.navFilled,
-                onEvent = onEvent
+                onEvent = onEvent,
+                enabled = enabled
             )
 
             // Statistics (Graph)
             NavBarButton(
                 buttonLogo = "stats",
                 filled = state.navFilled,
-                onEvent = onEvent
+                onEvent = onEvent,
+                enabled = enabled
             )
 
             // Add Expense
             NavBarButton(
                 buttonLogo = "add",
                 filled = state.navFilled,
-                onEvent = onEvent
+                onEvent = onEvent,
+                enabled = enabled
             )
 
         }
@@ -1209,11 +1419,12 @@ fun CentsiblePreview() {
                     amount = 100.0f,
                     amountToShow = "100",
                     sortType = SortType.DATE,
-                    navFilled = "add",
+                    navFilled = "home",
                     typeBoxExpanded= true
                 ),
 
-                onEvent = {}
+                onEvent = {},
+                id = 34
 
             )
 
