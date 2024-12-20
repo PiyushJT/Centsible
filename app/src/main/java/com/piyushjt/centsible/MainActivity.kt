@@ -1,8 +1,7 @@
 package com.piyushjt.centsible
 
-import android.annotation.SuppressLint
-import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -32,17 +31,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,8 +68,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import androidx.room.Room
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
+import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -113,24 +121,68 @@ class MainActivity : ComponentActivity() {
                 // State
                 val state by viewModel.state.collectAsState()
 
+                val navController = rememberNavController()
 
-                Surface(
-                    modifier = Modifier
-                        .background(colorResource(id = R.color.background))
-                        .fillMaxSize()
-                        .padding(top = 42.dp)
+                NavHost(
+                    navController = navController,
+                    startDestination = MainScreen
                 ) {
 
-                    MainScreen(
-                        state = state,
-                        onEvent = viewModel::onEvent
-                    )
+                    composable<MainScreen> {
 
+                        Surface(
+                            modifier = Modifier
+                                .background(colorResource(id = R.color.background))
+                                .fillMaxSize()
+                                .padding(top = 42.dp)
+                        ) {
+
+                            MainScreen(
+                                state = state,
+                                onEvent = viewModel::onEvent,
+                                navController = navController
+                            )
+
+                        }
+
+                    }
+                    composable<EditExpenseScreen> {
+                        val args = it.toRoute<EditExpenseScreen>()
+
+                        Surface(
+                            modifier = Modifier
+                                .background(colorResource(id = R.color.background))
+                                .fillMaxSize()
+                                .padding(top = 42.dp)
+                        ) {
+
+                            Log.d("passed id", args.id.toString())
+
+                            EditExpenseScreen(
+                                state = state,
+                                onEvent = viewModel::onEvent,
+                                navController = navController,
+                                id = args.id
+                            )
+
+                        }
+
+                    }
                 }
             }
         }
     }
 }
+
+
+
+@Serializable
+object MainScreen
+
+@Serializable
+data class EditExpenseScreen(
+    val id: Int
+)
 
 
 // Custom font
@@ -143,25 +195,27 @@ val readexPro = FontFamily(
 @Composable
 fun MainScreen(
     state: ExpenseState,
-    onEvent: (ExpenseEvent) -> Unit
+    onEvent: (ExpenseEvent) -> Unit,
+    navController: NavController? = null
 ) {
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
 
+
         // Different screens for different navigation items
         when (state.navFilled) {
 
             "home" -> ALlExpenses(
-                state = state
+                state = state,
             )
 
             "stats" -> Stats()
 
             else -> AddExpense(
                 state = state,
-                onEvent = onEvent
+                onEvent = onEvent,
             )
 
         }
@@ -171,9 +225,41 @@ fun MainScreen(
         NavBar(
             modifier = Modifier.align(Alignment.BottomCenter),
             state = state,
-            onEvent = onEvent
+            onEvent = onEvent,
+            enabled = true
         )
 
+        Button(
+            modifier = Modifier,
+            onClick = {
+                navController?.navigate(EditExpenseScreen(id = 190))
+            }
+        ) {
+            Text(
+                text = "Edit"
+            )
+        }
+
+    }
+}
+
+
+@Composable
+fun EditExpenseScreen(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit,
+    navController: NavController? = null,
+    id: Int
+) {
+    Button(
+        modifier = Modifier,
+        onClick = {
+            navController?.popBackStack()
+        }
+    ) {
+        Text(
+            text = "$id"
+        )
     }
 }
 
@@ -479,7 +565,7 @@ fun Stats() {
 }
 
 
-// Add || Edit Expense Screen
+// Add Expense Screen
 @Composable
 fun AddExpense(
     state : ExpenseState,
@@ -534,6 +620,74 @@ fun AddExpense(
         )
 
     }
+}
+
+
+@Composable
+fun TopButton(
+    onEvent: (ExpenseEvent) -> Unit,
+    isDeleteBtn: Boolean,
+    add: Boolean,
+    navController: NavController? = null
+) {
+
+    IconButton(
+        modifier = Modifier
+            .width(50.dp)
+            .height(50.dp),
+
+        onClick = {
+
+            if(isDeleteBtn){
+
+            } else {
+                onEvent(ExpenseEvent.ClearState)
+
+                navController?.popBackStack()
+
+            }
+
+        },
+        colors = IconButtonColors(
+
+            contentColor =
+            if(isDeleteBtn)
+                colorResource(id = R.color.red)
+            else
+                colorResource(id = R.color.main_text),
+
+
+            disabledContentColor =
+            if(isDeleteBtn)
+                colorResource(id = R.color.red50)
+            else
+                colorResource(id = R.color.card_background),
+
+            containerColor = colorResource(id = R.color.card_background),
+            disabledContainerColor = colorResource(id = R.color.card_background)
+
+        ),
+        enabled = !add
+
+    ) {
+
+        // Icon
+        Icon(
+            modifier = Modifier
+                .height(30.dp)
+                .width(30.dp),
+
+            painter =
+            if (isDeleteBtn)
+                painterResource(id = R.drawable.delete)
+            else
+                painterResource(id = R.drawable.back),
+
+            contentDescription = ""
+        )
+
+    }
+
 }
 
 
@@ -875,7 +1029,6 @@ fun TypeSelector(
 
 
 // Date Picker
-@SuppressLint("AutoboxingStateValueProperty")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerUI(
@@ -890,7 +1043,7 @@ fun DatePickerUI(
 
 
     // Formatted date
-    val formattedDate = formatDateToMonthDayYear(state.date)
+    val formattedDate = Utils.formatToMonthDayYear(state.date)
 
 
     Row(
@@ -1041,7 +1194,7 @@ fun NavBarButton(
 ) {
 
 
-    // Setting the icon (filled/ unfilled)
+    // Setting the icon (filled/unfilled)
     val icon =
 
         if(buttonLogo == "home")
@@ -1085,7 +1238,7 @@ fun NavBarButton(
             tint = colorResource(id = R.color.main_text),
             painter = icon,
 
-            contentDescription = "icon"
+            contentDescription = buttonLogo
         )
 
     }
@@ -1097,7 +1250,8 @@ fun NavBarButton(
 fun NavBar(
     modifier: Modifier = Modifier,
     state: ExpenseState,
-    onEvent: (ExpenseEvent) -> Unit
+    onEvent: (ExpenseEvent) -> Unit,
+    enabled: Boolean
 ) {
 
     Column(
@@ -1154,39 +1308,8 @@ fun NavBar(
 }
 
 
-
-
-// Date Formatter
-fun formatDateToMonthDayYear(dateInLong: Long): String {
-
-    // Ensure the input is valid for yyyyMMdd format
-    if (dateInLong.toString().length != 8) {
-        throw IllegalArgumentException("Invalid date format. Expected yyyyMMdd, but got $dateInLong")
-    }
-
-    // Getting day, month and year
-    val day = (dateInLong % 100).toInt()
-    val month = ((dateInLong / 100) % 100).toInt()
-    val year = (dateInLong / 10000).toInt()
-
-
-    // Setting month name
-    val monthNames =  arrayOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-    val monthName = monthNames[month - 1]
-
-
-    return "$monthName $day, $year"
-
-}
-
-
-
-
 // Preview
-@Preview(
-    showSystemUi = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview
 @Composable
 fun CentsiblePreview() {
     CentsibleTheme {
@@ -1209,11 +1332,11 @@ fun CentsiblePreview() {
                     amount = 100.0f,
                     amountToShow = "100",
                     sortType = SortType.DATE,
-                    navFilled = "add",
+                    navFilled = "home",
                     typeBoxExpanded= true
                 ),
 
-                onEvent = {}
+                onEvent = {},
 
             )
 
