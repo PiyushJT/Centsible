@@ -13,13 +13,13 @@ import kotlinx.coroutines.flow.Flow
 interface ExpenseDao {
 
     @Upsert
-    suspend fun upsertExpense(todo: Expense)
+    suspend fun upsertExpense(expense: Expense)
 
     @Update
-    suspend fun updateExpense(todo: Expense)
+    suspend fun updateExpense(expense: Expense)
 
     @Delete
-    suspend fun deleteExpense(todo: Expense)
+    suspend fun deleteExpense(expense: Expense)
 
     @Query("SELECT * FROM expense ORDER BY date DESC, id DESC")
     fun getAllExpense() : Flow<List<Expense>>

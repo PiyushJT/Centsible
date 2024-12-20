@@ -128,6 +128,7 @@ class MainActivity : ComponentActivity() {
                     startDestination = MainScreen
                 ) {
 
+                    // Main screen (set content)
                     composable<MainScreen> {
 
                         Surface(
@@ -146,6 +147,8 @@ class MainActivity : ComponentActivity() {
                         }
 
                     }
+
+                    // Edit Expense Screen
                     composable<EditExpenseScreen> {
                         val args = it.toRoute<EditExpenseScreen>()
 
@@ -155,8 +158,6 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxSize()
                                 .padding(top = 42.dp)
                         ) {
-
-                            Log.d("passed id", args.id.toString())
 
                             EditExpenseScreen(
                                 state = state,
@@ -196,7 +197,7 @@ val readexPro = FontFamily(
 fun MainScreen(
     state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit,
-    navController: NavController? = null
+    navController: NavController
 ) {
 
     Box(
@@ -209,6 +210,7 @@ fun MainScreen(
 
             "home" -> ALlExpenses(
                 state = state,
+                navController = navController
             )
 
             "stats" -> Stats()
@@ -229,21 +231,11 @@ fun MainScreen(
             enabled = true
         )
 
-        Button(
-            modifier = Modifier,
-            onClick = {
-                navController?.navigate(EditExpenseScreen(id = 190))
-            }
-        ) {
-            Text(
-                text = "Edit"
-            )
-        }
-
     }
 }
 
 
+// Edit Expense Screen
 @Composable
 fun EditExpenseScreen(
     state: ExpenseState,
@@ -251,17 +243,89 @@ fun EditExpenseScreen(
     navController: NavController? = null,
     id: Int
 ) {
-    Button(
-        modifier = Modifier,
-        onClick = {
-            navController?.popBackStack()
+
+    LaunchedEffect(key1 = id) {
+        state.expenses.find { it.id == id }?.let { expense ->
+            onEvent(ExpenseEvent.SetTitle(expense.title))
+            onEvent(ExpenseEvent.SetDescription(expense.description))
+            onEvent(ExpenseEvent.SetType(expense.type))
+            onEvent(ExpenseEvent.SetAmount(expense.amount.toString()))
+            onEvent(ExpenseEvent.SetDate(expense.date))
+            onEvent(ExpenseEvent.SetID(id))
         }
+    }
+
+
+    val isExpense = if (state.amount > 0) false else true
+
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "$id"
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = CenterVertically
+        ) {
+
+            BackButton(
+                onEvent = onEvent,
+                navController = navController
+            )
+
+            // Header
+            Text(
+                text = if (isExpense) "Edit Expense" else "Edit Earning",
+                color = colorResource(id = R.color.main_text),
+                fontSize = 18.sp,
+                fontFamily = readexPro
+            )
+
+            DeleteButton(
+                id = id,
+                state = state,
+                onEvent = onEvent,
+                navController = navController
+            )
+
+        }
+
+        // Edit Expense -> Similar to Expense Card
+        EditExpense(
+            state = state,
+            onEvent = onEvent
         )
+
+
+        // Drop Down Type Selector
+        TypeSelector(
+            state = state,
+            onEvent = onEvent
+        )
+
+
+        // Date Picker
+        DatePickerUI(
+            state = state,
+            onEvent = onEvent
+        )
+
+
+        // Save Button
+        SaveButton(
+            state = state,
+            onEvent = onEvent
+        )
+
     }
 }
+
 
 
 // Day & Date at the Top in header
@@ -354,7 +418,8 @@ fun Heading() {
 // List of All Expenses
 @Composable
 fun ListOfExpenses(
-    state : ExpenseState
+    state : ExpenseState,
+    navController: NavController
 ) {
 
     Column(
@@ -370,10 +435,12 @@ fun ListOfExpenses(
         for(expense in state.expenses){
 
             Expense(
+                id = expense.id,
                 title = expense.title,
                 description = expense.description,
                 amount = expense.amount,
-                type = expense.type
+                type = expense.type,
+                navController = navController
             )
 
         }
@@ -398,24 +465,13 @@ fun ListOfExpenses(
 // Expense Card
 @Composable
 fun Expense(
+    id: Int,
     title: String,
     description: String?,
     amount: Float,
-    type: String
+    type: String,
+    navController: NavController
 ) {
-
-    // Image and Background Color
-    val image = when (type) {
-        "misc" -> painterResource(id = R.drawable.misc)
-        "food" -> painterResource(id = R.drawable.food)
-        "shopping" -> painterResource(id = R.drawable.shopping_cart)
-        "travel" -> painterResource(id = R.drawable.travel)
-        "ent" -> painterResource(id = R.drawable.ent_netflix)
-        "grocery" -> painterResource(id = R.drawable.grocery)
-        "everyday" -> painterResource(id = R.drawable.everyday)
-        "skill" -> painterResource(id = R.drawable.skill)
-        else -> painterResource(id = R.drawable.shopping_cart)
-    }
 
     val bgColors = mapOf(
         1 to colorResource(id = R.color.green_bg),
@@ -447,7 +503,12 @@ fun Expense(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
                 .background(colorResource(id = R.color.card_background))
-                .height(80.dp),
+                .height(80.dp)
+                .clickable {
+
+                    navController.navigate(EditExpenseScreen(id))
+
+                },
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = CenterVertically
         ) {
@@ -468,7 +529,7 @@ fun Expense(
 
                     // Logo
                     Image(
-                        painter = image,
+                        painter = Utils.image(type),
                         contentDescription = type,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -535,10 +596,14 @@ fun Expense(
 }
 
 
+
+// Navigation Items
+
 // All Expenses to be shown in a Nav Item
 @Composable
 fun ALlExpenses(
-    state : ExpenseState
+    state : ExpenseState,
+    navController: NavController
 ) {
 
     Column(
@@ -549,7 +614,8 @@ fun ALlExpenses(
         Header()
 
         ListOfExpenses(
-            state = state
+            state = state,
+            navController = navController
         )
     }
 }
@@ -623,11 +689,13 @@ fun AddExpense(
 }
 
 
+
+
+
+// Back button
 @Composable
-fun TopButton(
+fun BackButton(
     onEvent: (ExpenseEvent) -> Unit,
-    isDeleteBtn: Boolean,
-    add: Boolean,
     navController: NavController? = null
 ) {
 
@@ -638,36 +706,18 @@ fun TopButton(
 
         onClick = {
 
-            if(isDeleteBtn){
+            onEvent(ExpenseEvent.ClearState)
 
-            } else {
-                onEvent(ExpenseEvent.ClearState)
-
-                navController?.popBackStack()
-
-            }
+            navController?.popBackStack()
 
         },
+
         colors = IconButtonColors(
-
-            contentColor =
-            if(isDeleteBtn)
-                colorResource(id = R.color.red)
-            else
-                colorResource(id = R.color.main_text),
-
-
-            disabledContentColor =
-            if(isDeleteBtn)
-                colorResource(id = R.color.red50)
-            else
-                colorResource(id = R.color.card_background),
-
+            contentColor = colorResource(id = R.color.main_text),
+            disabledContentColor = colorResource(id = R.color.card_background),
             containerColor = colorResource(id = R.color.card_background),
             disabledContainerColor = colorResource(id = R.color.card_background)
-
-        ),
-        enabled = !add
+        )
 
     ) {
 
@@ -677,13 +727,9 @@ fun TopButton(
                 .height(30.dp)
                 .width(30.dp),
 
-            painter =
-            if (isDeleteBtn)
-                painterResource(id = R.drawable.delete)
-            else
-                painterResource(id = R.drawable.back),
+            painter =  painterResource(id = R.drawable.back),
 
-            contentDescription = ""
+            contentDescription = "Back"
         )
 
     }
@@ -691,24 +737,60 @@ fun TopButton(
 }
 
 
+// Delete button
+@Composable
+fun DeleteButton(
+    id: Int,
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit,
+    navController: NavController? = null
+) {
+
+    IconButton(
+        modifier = Modifier
+            .width(50.dp)
+            .height(50.dp),
+
+        onClick = {
+
+            onEvent(ExpenseEvent.DeleteExpense(expense = state.expenses.find { it.id == id }!!))
+            onEvent(ExpenseEvent.ClearState)
+
+            navController?.popBackStack()
+
+
+        },
+        colors = IconButtonColors(
+            contentColor = colorResource(id = R.color.red),
+            disabledContentColor = colorResource(id = R.color.red50),
+            containerColor = colorResource(id = R.color.card_background),
+            disabledContainerColor = colorResource(id = R.color.card_background)
+        ),
+
+    ) {
+
+        // Icon
+        Icon(
+            modifier = Modifier
+                .height(30.dp)
+                .width(30.dp),
+
+            painter =  painterResource(id = R.drawable.delete),
+
+            contentDescription = "Delete Expense"
+        )
+
+    }
+
+}
+
+
+// Edit Expense fields (Inputs)
 @Composable
 fun EditExpense(
     state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit
 ) {
-
-    // Image and Background Color
-    val image = when (state.type) {
-        "misc" -> painterResource(id = R.drawable.misc)
-        "food" -> painterResource(id = R.drawable.food)
-        "shopping" -> painterResource(id = R.drawable.shopping_cart)
-        "travel" -> painterResource(id = R.drawable.travel)
-        "ent" -> painterResource(id = R.drawable.ent_netflix)
-        "grocery" -> painterResource(id = R.drawable.grocery)
-        "everyday" -> painterResource(id = R.drawable.everyday)
-        "skill" -> painterResource(id = R.drawable.skill)
-        else -> painterResource(id = R.drawable.shopping_cart)
-    }
 
     val bgColors = mapOf(
         1 to colorResource(id = R.color.green_bg),
@@ -756,7 +838,7 @@ fun EditExpense(
 
                     // Logo
                     Image(
-                        painter = image,
+                        painter = Utils.image(state.type),
                         contentDescription = state.type,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -935,19 +1017,6 @@ fun TypeSelector(
     // List of Types
     val list = listOf("misc", "food", "shopping", "travel", "ent", "grocery", "everyday", "skill")
 
-
-    // Images and Background Colors
-    val images = mapOf(
-        "misc" to painterResource(id = R.drawable.misc),
-        "food" to painterResource(id = R.drawable.food),
-        "shopping" to painterResource(id = R.drawable.shopping_cart),
-        "travel" to painterResource(id = R.drawable.travel),
-        "ent" to painterResource(id = R.drawable.ent_netflix),
-        "grocery" to painterResource(id = R.drawable.grocery),
-        "everyday" to painterResource(id = R.drawable.everyday),
-        "skill" to painterResource(id = R.drawable.skill)
-    )
-
     val bgColors = mapOf(
         1 to colorResource(id = R.color.green_bg),
         2 to colorResource(id = R.color.red_bg),
@@ -1003,7 +1072,7 @@ fun TypeSelector(
 
                         // Logo
                         Image(
-                            painter = images[item]?: painterResource(id = R.drawable.shopping_cart),
+                            painter = Utils.image(item),
                             contentDescription = state.type,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1308,38 +1377,85 @@ fun NavBar(
 }
 
 
+
 // Preview
 @Preview
 @Composable
 fun CentsiblePreview() {
     CentsibleTheme {
 
-        Surface(
-            modifier = Modifier
-                .background(colorResource(id = R.color.background))
-                .fillMaxSize()
-                .padding(top = 42.dp)
+        val navController = rememberNavController()
+
+        NavHost(
+            navController = navController,
+            startDestination = EditExpenseScreen(id = 1)
         ) {
 
-            MainScreen(
-                state = ExpenseState(
-                    expenses = emptyList(),
-                    id = -1,
-                    title = "title",
-                    description = "des",
-                    date = 20241206L,
-                    type = "good",
-                    amount = 100.0f,
-                    amountToShow = "100",
-                    sortType = SortType.DATE,
-                    navFilled = "home",
-                    typeBoxExpanded= true
-                ),
+            // Main screen (set content)
+            composable<MainScreen> {
 
-                onEvent = {},
+                Surface(
+                    modifier = Modifier
+                        .background(colorResource(id = R.color.background))
+                        .fillMaxSize()
+                        .padding(top = 42.dp)
+                ) {
 
-            )
+                    MainScreen(
+                        state = ExpenseState(
+                            expenses = emptyList(),
+                            id = -1,
+                            title = "title",
+                            description = "des",
+                            date = 20241206L,
+                            type = "good",
+                            amount = 100.0f,
+                            amountToShow = "100",
+                            sortType = SortType.DATE,
+                            navFilled = "home",
+                            typeBoxExpanded = true
+                        ),
+                        onEvent = {},
+                        navController = navController
+                    )
 
+                }
+
+            }
+
+            // Edit Expense Screen
+            composable<EditExpenseScreen> {
+                val args = it.toRoute<EditExpenseScreen>()
+
+                Surface(
+                    modifier = Modifier
+                        .background(colorResource(id = R.color.background))
+                        .fillMaxSize()
+                        .padding(top = 42.dp)
+                ) {
+
+                    EditExpenseScreen(
+                        state = ExpenseState(
+                            expenses = emptyList(),
+                            id = -1,
+                            title = "title",
+                            description = "des",
+                            date = 20241206L,
+                            type = "good",
+                            amount = 100.0f,
+                            amountToShow = "100",
+                            sortType = SortType.DATE,
+                            navFilled = "home",
+                            typeBoxExpanded = true
+                        ),
+                        onEvent = {},
+                        navController = navController,
+                        id = args.id
+                    )
+
+                }
+
+            }
         }
     }
 }

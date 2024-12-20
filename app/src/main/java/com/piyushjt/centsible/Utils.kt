@@ -1,5 +1,9 @@
 package com.piyushjt.centsible
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -35,6 +39,23 @@ object Utils {
 
 
         return "$monthName $day, $year"
+
+    }
+    // Image and Background Color
+    @Composable
+    fun image(type: String) : Painter{
+
+        return when (type) {
+            "misc" -> painterResource(id = R.drawable.misc)
+            "food" -> painterResource(id = R.drawable.food)
+            "shopping" -> painterResource(id = R.drawable.shopping_cart)
+            "travel" -> painterResource(id = R.drawable.travel)
+            "ent" -> painterResource(id = R.drawable.ent_netflix)
+            "grocery" -> painterResource(id = R.drawable.grocery)
+            "everyday" -> painterResource(id = R.drawable.everyday)
+            "skill" -> painterResource(id = R.drawable.skill)
+            else -> painterResource(id = R.drawable.shopping_cart)
+        }
 
     }
 
