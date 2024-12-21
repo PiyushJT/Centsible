@@ -1,5 +1,6 @@
 package com.piyushjt.centsible
 
+import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -11,6 +12,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +33,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.DatePicker
@@ -50,6 +54,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,6 +71,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -753,11 +759,7 @@ fun DeleteButton(
 
         onClick = {
 
-            onEvent(ExpenseEvent.DeleteExpense(expense = state.expenses.find { it.id == id }!!))
-            onEvent(ExpenseEvent.ClearState)
-
-            navController?.popBackStack()
-
+            onEvent(ExpenseEvent.SetIsDialogVisible(true))
 
         },
         colors = IconButtonColors(
@@ -782,6 +784,119 @@ fun DeleteButton(
 
     }
 
+    DeleteDialog(
+        state = state,
+        onEvent = onEvent,
+        onDelete = {
+
+            onEvent(ExpenseEvent.DeleteExpense(expense = state.expenses.find { it.id == id }!!))
+            onEvent(ExpenseEvent.ClearState)
+
+            navController?.popBackStack()
+
+            onEvent(ExpenseEvent.SetIsDialogVisible(false))
+
+        }
+    )
+
+}
+
+
+// Confirmation Dialog
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DeleteDialog(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit,
+    onDelete: () -> Unit
+) {
+    if(state.isDialogVisible) {
+        BasicAlertDialog(
+            onDismissRequest = {
+                onEvent(ExpenseEvent.SetIsDialogVisible(false))
+            },
+            content = {
+                Box(
+                    modifier = Modifier
+                        .height(160.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(colorResource(id = R.color.card_background))
+                ) {
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        horizontalAlignment = CenterHorizontally,
+                        verticalArrangement = Arrangement.SpaceAround
+                    ) {
+
+                        Text(
+                            text = "Confirm Delete?",
+                            color = colorResource(id = R.color.text),
+                            fontSize = 26.sp,
+                            fontFamily = readexPro
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+
+                            TextButton(
+                                modifier = Modifier
+                                    .padding(horizontal = 10.dp)
+                                    .clip(RoundedCornerShape(15.dp))
+                                    .background(colorResource(id = R.color.trans))
+                                    .border(
+                                        1.dp,
+                                        colorResource(id = R.color.text),
+                                        RoundedCornerShape(15.dp)
+                                    )
+                                    .padding(horizontal = 5.dp),
+                                onClick = {
+                                    onEvent(ExpenseEvent.SetIsDialogVisible(false))
+                                }
+
+                            ) {
+                                Text(
+                                    text = "Cancel",
+                                    color = colorResource(id = R.color.text),
+                                    fontSize = 20.sp,
+                                    fontFamily = readexPro
+                                )
+                            }
+
+
+
+                            TextButton(
+                                modifier = Modifier
+                                    .padding(horizontal = 10.dp)
+                                    .clip(RoundedCornerShape(15.dp))
+                                    .background(colorResource(id = R.color.red))
+                                    .padding(horizontal = 5.dp),
+                                onClick = onDelete
+
+                            ) {
+                                Text(
+                                    text = "Delete",
+                                    color = colorResource(id = R.color.black),
+                                    fontSize = 20.sp,
+                                    fontFamily = readexPro
+                                )
+                            }
+
+
+                        }
+
+                    }
+
+                }
+            }
+        )
+    }
 }
 
 
@@ -1446,6 +1561,7 @@ fun CentsiblePreview() {
                             amountToShow = "100",
                             sortType = SortType.DATE,
                             navFilled = "home",
+                            isDialogVisible = true,
                             typeBoxExpanded = true
                         ),
                         onEvent = {},
@@ -1458,4 +1574,30 @@ fun CentsiblePreview() {
             }
         }
     }
+}
+
+
+@Preview
+@Composable
+private fun DialogBox() {
+
+    DeleteDialog(
+        state = ExpenseState(
+            expenses = emptyList(),
+            id = -1,
+            title = "title",
+            description = "des",
+            date = 20241206L,
+            type = "good",
+            amount = 100.0f,
+            amountToShow = "100",
+            sortType = SortType.DATE,
+            navFilled = "home",
+            isDialogVisible = true,
+            typeBoxExpanded = true
+        ),
+        onEvent = {},
+        onDelete = {}
+    )
+
 }

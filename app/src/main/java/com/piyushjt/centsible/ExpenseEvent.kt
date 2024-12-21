@@ -15,6 +15,7 @@ sealed interface ExpenseEvent {
 
 
     data class SetTypeBoxExpanded(val expanded: Boolean): ExpenseEvent
+    data class SetIsDialogVisible(val visible: Boolean): ExpenseEvent
     data class ChangeNavState(val navFilled: String): ExpenseEvent
     object ClearState: ExpenseEvent
 

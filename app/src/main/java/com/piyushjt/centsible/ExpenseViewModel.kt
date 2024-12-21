@@ -230,7 +230,19 @@ class ExpenseViewModel(
                     )
                 }
 
-                Log.d("Type Box Expanded", event.expanded.toString())
+                Log.d("Type Box Expanded", state.value.typeBoxExpanded.toString())
+            }
+
+
+            // Setting dialog visibility
+            is ExpenseEvent.SetIsDialogVisible -> {
+                _state.update {
+                    it.copy(
+                        isDialogVisible = event.visible
+                    )
+                }
+
+                Log.d("Type Box Expanded", state.value.isDialogVisible.toString())
             }
 
 
@@ -242,7 +254,7 @@ class ExpenseViewModel(
                     )
                 }
 
-                Log.d("Nav", event.navFilled)
+                Log.d("Nav", state.value.navFilled)
             }
 
 

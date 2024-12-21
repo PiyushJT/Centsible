@@ -14,6 +14,7 @@ data class ExpenseState(
     val id : Int = -1,
 
     val typeBoxExpanded: Boolean = false,
+    val isDialogVisible: Boolean = false,
     val navFilled: String = "home",
 
     val amountToShow: String = "-100",
