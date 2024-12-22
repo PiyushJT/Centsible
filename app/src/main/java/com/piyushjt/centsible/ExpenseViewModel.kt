@@ -5,6 +5,7 @@ package com.piyushjt.centsible
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,37 +14,25 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ExpenseViewModel(
     // dao
     private val dao: ExpenseDao
 
 ) : ViewModel() {
 
-    // Sort Type
-    private val _sortType = MutableStateFlow(SortType.DATE)
-
-    private val _expenses = _sortType
-        .flatMapLatest { sortType ->
-            when (sortType) {
-                SortType.DATE -> dao.getAllExpense()
-            }
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    private val _expenses = dao.getAllExpense()
 
 
     // State
     private val _state = MutableStateFlow(ExpenseState())
 
-    val state = combine(_state, _sortType, _expenses) { state, sortType, expenses ->
+    val state = combine(_state, _expenses) { state, expenses ->
         state.copy(
             expenses = expenses,
-            sortType = sortType,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ExpenseState())
-
-
 
     // Main Events
     fun onEvent(event: ExpenseEvent) {

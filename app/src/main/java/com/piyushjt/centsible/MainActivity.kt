@@ -1,5 +1,6 @@
 package com.piyushjt.centsible
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
@@ -8,12 +9,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,10 +26,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -53,13 +60,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -81,6 +92,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.room.Room
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -219,7 +234,10 @@ fun MainScreen(
                 navController = navController
             )
 
-            "stats" -> Stats()
+            "stats" -> Stats(
+                state = state,
+                onEvent = onEvent
+            )
 
             else -> AddExpense(
                 state = state,
@@ -269,7 +287,7 @@ fun EditExpenseScreen(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = CenterHorizontally
     ) {
 
         Row(
@@ -405,14 +423,16 @@ fun Header() {
 }
 
 
-// Heading for All Expenses
+// Heading for Expenses
 @Composable
-fun Heading() {
+fun Heading(
+    text: String
+) {
 
     Text(
         modifier = Modifier
             .padding(top = 12.dp, bottom = 18.dp),
-        text = "Recent Transactions",
+        text = text,
         color = colorResource(id = R.color.heading_text),
         fontSize = 18.sp,
         fontFamily = readexPro
@@ -434,7 +454,7 @@ fun ListOfExpenses(
     ) {
 
         // Heading as above Composable
-        Heading()
+        Heading(text = "Recent Transactions")
 
 
         // All Expenses
@@ -468,6 +488,66 @@ fun ListOfExpenses(
 }
 
 
+// List of All Expenses
+@Composable
+fun ListOfWeeklyExpenses(
+    state : ExpenseState,
+    navController: NavController,
+) {
+
+    Column {
+
+        // Heading as above Composable
+        Heading(text = "Categories")
+
+        val list = listOf("misc", "food", "shopping", "travel", "ent", "grocery", "everyday", "skill")
+
+        for(type in list){
+
+            val typeExpense = mutableListOf<Expense>()
+            var totalAmount = 0.0f
+
+            for(expense in state.weeklyExpenses) {
+
+                if (expense.type == type && expense.amount < 0.0f) {
+
+                    typeExpense.add(expense)
+                    totalAmount += expense.amount
+
+                }
+
+            }
+
+
+            if(totalAmount != 0.0f) {
+                Expense(
+                    id = -2,
+                    title = type,
+                    description = "${typeExpense.size} expenses",
+                    amount = totalAmount,
+                    type = type
+                )
+
+            }
+        }
+
+
+        // Spacer for bottom navigation bar
+        Spacer(
+            modifier = Modifier
+                .height(
+                    WindowInsets.navigationBars
+                        .asPaddingValues()
+                        .calculateBottomPadding()
+                            + 110.dp
+                )
+        )
+
+    }
+
+}
+
+
 // Expense Card
 @Composable
 fun Expense(
@@ -476,7 +556,7 @@ fun Expense(
     description: String?,
     amount: Float,
     type: String,
-    navController: NavController
+    navController: NavController? = null
 ) {
 
     val bgColors = mapOf(
@@ -512,7 +592,7 @@ fun Expense(
                 .height(80.dp)
                 .clickable {
 
-                    navController.navigate(EditExpenseScreen(id))
+                    navController?.navigate(EditExpenseScreen(id))
 
                 },
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -629,11 +709,38 @@ fun ALlExpenses(
 
 // Statistics Screen
 @Composable
-fun Stats() {
-    Box(
+fun Stats(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
+) {
+
+    Column(
         modifier = Modifier
-            .fillMaxSize()
-    )
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState()),
+    ) {
+        // Header
+        Text(
+            text = "Statistics",
+            color = colorResource(id = R.color.main_text),
+            fontSize = 18.sp,
+            fontFamily = readexPro
+        )
+
+        ExpensesAverage()
+
+        StatsCard(values = arrayOf(50, 45, 0, 150, 600, 506, 970))
+
+        AnimatedSelector()
+
+        ListOfWeeklyExpenses(
+            state = state,
+            navController = rememberNavController()
+        )
+
+    }
+
 }
 
 
@@ -652,7 +759,7 @@ fun AddExpense(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = CenterHorizontally
     ) {
 
         // Header
@@ -694,6 +801,233 @@ fun AddExpense(
     }
 }
 
+
+@Composable
+fun ExpensesAverage() {
+
+    Row (
+        modifier = Modifier
+            .padding(top = 34.dp)
+            .fillMaxWidth()
+            .background(colorResource(id = R.color.trans)),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Bottom
+    ) {
+
+        Column {
+            Text(
+                text = "Expenses Average",
+                color = colorResource(id = R.color.light_text),
+                fontSize = 14.sp,
+                fontFamily = readexPro
+            )
+
+            Text(
+                text = "₹33,285.00",
+                color = colorResource(id = R.color.main_text),
+                fontSize = 30.sp,
+                fontFamily = readexPro
+            )
+
+        }
+
+        Icon(
+            modifier = Modifier
+                .padding(start = 10.dp, bottom = 6.dp)
+                .height(18.dp)
+                .width(18.dp),
+
+            tint = colorResource(id = R.color.main_text),
+            painter = painterResource(id = R.drawable.decreased),
+
+            contentDescription = "Decreased"
+        )
+
+        Text(
+            modifier = Modifier
+                .padding(start = 5.dp, bottom = 3.dp),
+            text = "20%",
+            color = colorResource(id = R.color.main_text),
+            fontSize = 20.sp,
+            fontFamily = readexPro
+        )
+
+    }
+
+}
+
+
+@Composable
+fun StatsCard(
+    values: Array<Int>
+) {
+
+    val days = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    var ind = 0;
+
+    val highestVal = values.max()
+
+    var heightDp by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
+
+
+    Box(
+        modifier = Modifier
+            .padding(top = 24.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(colorResource(id = R.color.card_background))
+            .aspectRatio(1.374f)
+            .onGloballyPositioned { coordinates ->
+                heightDp = with(density) { coordinates.size.height.toDp() }
+            }
+
+    ) {
+
+        Box(
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxSize()
+        ) {
+
+            Row(
+                modifier = Modifier
+                    .fillMaxSize(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+
+                for (height in values) {
+
+                    val fraction = height/ highestVal.toFloat()
+
+                    Column(
+                        verticalArrangement = Arrangement.Bottom,
+                        horizontalAlignment = CenterHorizontally
+                    ) {
+
+                        Box(
+                            modifier = Modifier
+                                .defaultMinSize(minHeight = 10.dp)
+                                .width(18.dp)
+                                .height((heightDp - 80.dp) * fraction)
+                                .clip(RoundedCornerShape(26.dp))
+                                .background(colorResource(id = R.color.main_text))
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .padding(top = 4.dp),
+                            text = days[ind],
+                            color = colorResource(id = R.color.light_text),
+                            fontSize = 10.sp,
+                            fontFamily = readexPro
+                        )
+                        ind++
+                    }
+                }
+            }
+
+        }
+
+    }
+
+}
+
+
+
+@SuppressLint("UseOfNonLambdaOffsetOverload")
+@Composable
+fun AnimatedSelector() {
+
+    var widthDP by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
+
+    var selected by remember { mutableStateOf("Weekly") }
+
+
+    Log.d("Width", widthDP.toString())
+
+    Box(
+        modifier = Modifier
+            .padding(top = 16.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(colorResource(id = R.color.card_background))
+            .aspectRatio(8.175f)
+            .onGloballyPositioned { coordinates ->
+                widthDP = with(density) { coordinates.size.width.toDp() }
+            }
+
+    ) {
+
+
+        // Animation for the selector position
+        val selectorPosition by animateDpAsState(
+            targetValue = if (selected == "Weekly") 0.dp else (widthDP / 2),
+            animationSpec = tween(durationMillis = 150)
+        )
+
+
+        // Selector background
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(0.5f)
+                .offset(x = selectorPosition)
+                .clip(RoundedCornerShape(20.dp))
+                .border(
+                    5.dp,
+                    colorResource(id = R.color.card_background),
+                    RoundedCornerShape(20.dp)
+                )
+                .background(colorResource(id = R.color.main_text))
+        )
+
+        // Options
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Weekly Button
+            Text(
+                text = "Weekly",
+                color = if (selected == "Weekly") colorResource(id = R.color.card_background) else colorResource(id = R.color.light_text),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(
+                        indication = null, // Remove ripple effect
+                        interactionSource = remember { MutableInteractionSource() } // Suppress interaction feedback
+                    ) {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            delay(150)
+                            selected = "Weekly"
+                        }
+                    },
+                textAlign = TextAlign.Center
+            )
+
+            // Monthly Button
+            Text(
+                text = "Monthly",
+                color = if (selected == "Monthly") colorResource(id = R.color.card_background) else colorResource(id = R.color.light_text),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(
+                        indication = null, // Remove ripple effect
+                        interactionSource = remember { MutableInteractionSource() } // Suppress interaction feedback
+                    ) {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            delay(150)
+                            selected = "Monthly"
+                        }
+                    },
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
 
 
 
@@ -1270,7 +1604,7 @@ fun DatePickerUI(
 
             confirmButton = {
 
-                androidx.compose.material3.Button(
+                Button(
 
                     onClick = {
 
@@ -1295,7 +1629,7 @@ fun DatePickerUI(
 
 
             dismissButton = {
-                androidx.compose.material3.Button(
+                Button(
 
                     onClick = {
                         // close the dialog
@@ -1526,9 +1860,8 @@ fun CentsiblePreview() {
                             type = "good",
                             amount = 100.0f,
                             amountToShow = "100",
-                            sortType = SortType.DATE,
                             navFilled = "home",
-                            typeBoxExpanded = true
+                            typeBoxExpanded = true,
                         ),
                         onEvent = {},
                         navController = navController
@@ -1549,24 +1882,22 @@ fun CentsiblePreview() {
                         .padding(top = 42.dp)
                 ) {
 
-                    EditExpenseScreen(
+                    MainScreen(
                         state = ExpenseState(
                             expenses = emptyList(),
                             id = -1,
                             title = "title",
-                            description = "des",
+                            description = null,
                             date = 20241206L,
-                            type = "good",
+                            type = "ent",
                             amount = 100.0f,
                             amountToShow = "100",
-                            sortType = SortType.DATE,
-                            navFilled = "home",
-                            isDialogVisible = true,
-                            typeBoxExpanded = true
+                            navFilled = "stats",
+                            isDialogVisible = false,
+                            typeBoxExpanded = false,
                         ),
                         onEvent = {},
-                        navController = navController,
-                        id = args.id
+                        navController = navController
                     )
 
                 }
@@ -1574,30 +1905,4 @@ fun CentsiblePreview() {
             }
         }
     }
-}
-
-
-@Preview
-@Composable
-private fun DialogBox() {
-
-    DeleteDialog(
-        state = ExpenseState(
-            expenses = emptyList(),
-            id = -1,
-            title = "title",
-            description = "des",
-            date = 20241206L,
-            type = "good",
-            amount = 100.0f,
-            amountToShow = "100",
-            sortType = SortType.DATE,
-            navFilled = "home",
-            isDialogVisible = true,
-            typeBoxExpanded = true
-        ),
-        onEvent = {},
-        onDelete = {}
-    )
-
 }

@@ -5,6 +5,7 @@ package com.piyushjt.centsible
 data class ExpenseState(
 
     val expenses: List<Expense> = emptyList(),
+    val weeklyExpenses: List<Expense> = emptyList(),
 
     val title: String = "",
     val description: String? = null,
@@ -15,9 +16,8 @@ data class ExpenseState(
 
     val typeBoxExpanded: Boolean = false,
     val isDialogVisible: Boolean = false,
-    val navFilled: String = "home",
+    val navFilled: String = "stats",
 
     val amountToShow: String = "-100",
-    val sortType: SortType = SortType.DATE
 
 )
