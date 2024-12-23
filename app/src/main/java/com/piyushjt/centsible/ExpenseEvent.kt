@@ -10,6 +10,9 @@ sealed interface ExpenseEvent {
     data class SetID(val id: Int) : ExpenseEvent
 
 
+    data class SetConstrainedExpenses(val startDate: Long, val endDate: Long) : ExpenseEvent
+
+
     object SaveExpense : ExpenseEvent
     data class DeleteExpense(val expense: Expense): ExpenseEvent
 

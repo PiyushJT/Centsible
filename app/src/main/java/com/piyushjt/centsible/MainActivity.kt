@@ -1,7 +1,6 @@
 package com.piyushjt.centsible
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -40,7 +39,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -62,7 +60,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -82,7 +79,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -101,6 +97,7 @@ import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -492,8 +489,10 @@ fun ListOfExpenses(
 @Composable
 fun ListOfWeeklyExpenses(
     state : ExpenseState,
-    navController: NavController,
+    onEvent: (ExpenseEvent) -> Unit
 ) {
+
+    onEvent(ExpenseEvent.SetConstrainedExpenses(startDate = 20240101, endDate = 20241231))
 
     Column {
 
@@ -507,7 +506,7 @@ fun ListOfWeeklyExpenses(
             val typeExpense = mutableListOf<Expense>()
             var totalAmount = 0.0f
 
-            for(expense in state.weeklyExpenses) {
+            for(expense in state.constrainedExpenses) {
 
                 if (expense.type == type && expense.amount < 0.0f) {
 
@@ -736,7 +735,7 @@ fun Stats(
 
         ListOfWeeklyExpenses(
             state = state,
-            navController = rememberNavController()
+            onEvent = onEvent
         )
 
     }

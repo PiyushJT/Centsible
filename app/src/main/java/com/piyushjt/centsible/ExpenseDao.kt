@@ -25,6 +25,6 @@ interface ExpenseDao {
     fun getAllExpense() : Flow<List<Expense>>
 
     @Query("SELECT * FROM expense WHERE date >= :startDate AND date <= :endDate ORDER BY id DESC")
-    fun getWeeklyExpense(startDate: Long, endDate: Long) : Flow<List<Expense>>
+    fun getConstrainedExpenses(startDate: Long, endDate: Long) : Flow<List<Expense>>
 
 }

@@ -6,11 +6,11 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -30,7 +30,7 @@ class ExpenseViewModel(
 
     val state = combine(_state, _expenses) { state, expenses ->
         state.copy(
-            expenses = expenses,
+            expenses = expenses
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ExpenseState())
 
@@ -117,6 +117,31 @@ class ExpenseViewModel(
 
                 Log.d("ID", state.value.id.toString())
             }
+
+
+
+
+
+            // Set Constrained Expenses
+            is ExpenseEvent.SetConstrainedExpenses -> {
+                viewModelScope.launch {
+                    val constrainedExpenses = withContext(Dispatchers.IO) {
+                        dao.getConstrainedExpenses(
+                            startDate = event.startDate,
+                            endDate = event.endDate
+                        ).firstOrNull() ?: emptyList()
+                    }
+
+                    _state.update {
+                        it.copy(
+                            constrainedExpenses = constrainedExpenses
+                        )
+                    }
+
+                    Log.d("Constrained Expense", constrainedExpenses.toString())
+                }
+            }
+
 
 
 
