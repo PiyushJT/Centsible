@@ -11,6 +11,8 @@ sealed interface ExpenseEvent {
 
 
     data class SetConstrainedExpenses(val startDate: Long, val endDate: Long) : ExpenseEvent
+    data class SetStatsDuration(val duration: String) : ExpenseEvent
+    data class SetStatsDate(val date: Long) : ExpenseEvent
 
 
     object SaveExpense : ExpenseEvent

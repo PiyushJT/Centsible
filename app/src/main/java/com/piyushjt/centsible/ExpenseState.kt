@@ -11,7 +11,7 @@ data class ExpenseState(
     val description: String? = null,
     val type: String = "ent",
     val amount: Float = -100.0f,
-    val date: Long = Utils.getCurrentDate(),
+    val date: Long = Util.getCurrentDate(),
     val id: Int = -1,
 
     val typeBoxExpanded: Boolean = false,
@@ -19,5 +19,8 @@ data class ExpenseState(
     val navFilled: String = "stats",
 
     val amountToShow: String = "-100",
+
+    val statsDate: Long = Util.getCurrentDate(),
+    val statsDuration: String = "Weekly"
 
 )

@@ -2,7 +2,6 @@ package com.piyushjt.centsible
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -97,7 +96,6 @@ import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -492,7 +490,18 @@ fun ListOfWeeklyExpenses(
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
-    onEvent(ExpenseEvent.SetConstrainedExpenses(startDate = 20240101, endDate = 20241231))
+    if(state.statsDuration == "Weekly") {
+
+        val (startDate, endDate) = Util.getWeekDates(state.statsDate)
+        onEvent(ExpenseEvent.SetConstrainedExpenses(startDate = startDate, endDate = endDate))
+
+    }
+    else {
+
+        val (startDate, endDate) = Util.getMonthDates(state.statsDate)
+        onEvent(ExpenseEvent.SetConstrainedExpenses(startDate = startDate, endDate = endDate))
+
+    }
 
     Column {
 
@@ -614,7 +623,7 @@ fun Expense(
 
                     // Logo
                     Image(
-                        painter = Utils.image(type),
+                        painter = Util.image(type),
                         contentDescription = type,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -731,7 +740,10 @@ fun Stats(
 
         StatsCard(values = arrayOf(50, 45, 0, 150, 600, 506, 970))
 
-        AnimatedSelector()
+        AnimatedSelector(
+            state = state,
+            onEvent = onEvent
+        )
 
         ListOfWeeklyExpenses(
             state = state,
@@ -937,15 +949,14 @@ fun StatsCard(
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
-fun AnimatedSelector() {
+fun AnimatedSelector(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
+) {
 
     var widthDP by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
 
-    var selected by remember { mutableStateOf("Weekly") }
-
-
-    Log.d("Width", widthDP.toString())
 
     Box(
         modifier = Modifier
@@ -963,7 +974,7 @@ fun AnimatedSelector() {
 
         // Animation for the selector position
         val selectorPosition by animateDpAsState(
-            targetValue = if (selected == "Weekly") 0.dp else (widthDP / 2),
+            targetValue = if (state.statsDuration == "Weekly") 0.dp else (widthDP / 2),
             animationSpec = tween(durationMillis = 150)
         )
 
@@ -992,7 +1003,7 @@ fun AnimatedSelector() {
             // Weekly Button
             Text(
                 text = "Weekly",
-                color = if (selected == "Weekly") colorResource(id = R.color.card_background) else colorResource(id = R.color.light_text),
+                color = if (state.statsDuration == "Weekly") colorResource(id = R.color.card_background) else colorResource(id = R.color.light_text),
                 modifier = Modifier
                     .weight(1f)
                     .clickable(
@@ -1001,7 +1012,7 @@ fun AnimatedSelector() {
                     ) {
                         CoroutineScope(Dispatchers.Main).launch {
                             delay(150)
-                            selected = "Weekly"
+                            onEvent(ExpenseEvent.SetStatsDuration("Weekly"))
                         }
                     },
                 textAlign = TextAlign.Center
@@ -1010,7 +1021,7 @@ fun AnimatedSelector() {
             // Monthly Button
             Text(
                 text = "Monthly",
-                color = if (selected == "Monthly") colorResource(id = R.color.card_background) else colorResource(id = R.color.light_text),
+                color = if (state.statsDuration == "Monthly") colorResource(id = R.color.card_background) else colorResource(id = R.color.light_text),
                 modifier = Modifier
                     .weight(1f)
                     .clickable(
@@ -1019,7 +1030,7 @@ fun AnimatedSelector() {
                     ) {
                         CoroutineScope(Dispatchers.Main).launch {
                             delay(150)
-                            selected = "Monthly"
+                            onEvent(ExpenseEvent.SetStatsDuration("Monthly"))
                         }
                     },
                 textAlign = TextAlign.Center
@@ -1286,7 +1297,7 @@ fun EditExpense(
 
                     // Logo
                     Image(
-                        painter = Utils.image(state.type),
+                        painter = Util.image(state.type),
                         contentDescription = state.type,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1520,7 +1531,7 @@ fun TypeSelector(
 
                         // Logo
                         Image(
-                            painter = Utils.image(item),
+                            painter = Util.image(item),
                             contentDescription = state.type,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1560,7 +1571,7 @@ fun DatePickerUI(
 
 
     // Formatted date
-    val formattedDate = Utils.formatToMonthDayYear(state.date)
+    val formattedDate = Util.formatToMonthDayYear(state.date)
 
 
     Row(

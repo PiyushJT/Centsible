@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -122,7 +121,7 @@ class ExpenseViewModel(
 
 
 
-            // Set Constrained Expenses
+            // Setting Constrained Expenses
             is ExpenseEvent.SetConstrainedExpenses -> {
                 viewModelScope.launch {
                     val constrainedExpenses = withContext(Dispatchers.IO) {
@@ -138,8 +137,32 @@ class ExpenseViewModel(
                         )
                     }
 
-                    Log.d("Constrained Expense", constrainedExpenses.toString())
+                    Log.d("Constrained Expense", "Constraints Set from ${event.startDate} to ${event.endDate}")
                 }
+            }
+
+
+            // Setting Stats Duration
+            is ExpenseEvent.SetStatsDuration -> {
+                _state.update {
+                    it.copy(
+                        statsDuration = event.duration
+                    )
+                }
+
+                Log.d("Stats Duration", state.value.statsDuration)
+            }
+
+
+            // Setting Stats Date
+            is ExpenseEvent.SetStatsDate -> {
+                _state.update {
+                    it.copy(
+                        statsDate = event.date
+                    )
+                }
+
+                Log.d("Stats Date", state.value.statsDate.toString())
             }
 
 
@@ -208,7 +231,7 @@ class ExpenseViewModel(
                         type = "ent",
                         amount = -100.0f,
                         amountToShow = "-100",
-                        date = Utils.getCurrentDate(),
+                        date = Util.getCurrentDate(),
                         id = -1,
                     )
                 }
@@ -281,7 +304,7 @@ class ExpenseViewModel(
                         type = "ent",
                         amount = -100.0f,
                         amountToShow = "-100",
-                        date = Utils.getCurrentDate(),
+                        date = Util.getCurrentDate(),
                         id = -1,
                         typeBoxExpanded = false,
                     )
