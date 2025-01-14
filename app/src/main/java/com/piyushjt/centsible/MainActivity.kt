@@ -2,6 +2,7 @@ package com.piyushjt.centsible
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -32,6 +33,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -53,8 +55,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -98,6 +103,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
+import kotlin.math.exp
 
 class MainActivity : ComponentActivity() {
 
@@ -131,12 +137,29 @@ class MainActivity : ComponentActivity() {
         actionBar?.hide()
 
         setContent {
+
+            var expenses = remember { mutableStateOf(emptyList<Expense>()) }
+            var title = remember { mutableStateOf("Title") }
+            var description = remember { mutableStateOf("Desc") }
+            var type = remember { mutableStateOf("ent") }
+            var amount = remember { mutableFloatStateOf(-100.0f) }
+            var date = remember { mutableStateOf(20241231L) }
+            var id = remember { mutableStateOf(-1) }
+
+            var navFilled = remember { mutableStateOf("add") }
+
+            var typeBoxExpanded = remember { mutableStateOf(false) }
+
+            var amountToShow = remember { mutableStateOf("-100") }
+
+            var statsDate = remember { mutableLongStateOf(Util.getCurrentDate()) }
+            var statsDuration = remember { mutableStateOf("Weekly") }
+            var map = remember { mutableStateOf(mutableMapOf<Long, Float>()) }
+            var startDate = remember { mutableLongStateOf(20241223) }
+            var endDate = remember { mutableLongStateOf(20241229) }
+
             CentsibleTheme {
-
-
-                // State
-                val state by viewModel.state.collectAsState()
-
+                
                 val navController = rememberNavController()
 
                 NavHost(
@@ -155,7 +178,19 @@ class MainActivity : ComponentActivity() {
                         ) {
 
                             MainScreen(
-                                state = state,
+                                expenses = expenses,
+                                title = title,
+                                description = description,
+                                type = type,
+                                amount = amount,
+                                amountToShow = amountToShow,
+                                date = date,
+                                id = id,
+                                startDate = startDate,
+                                endDate = endDate,
+                                typeBoxExpanded = typeBoxExpanded,
+                                statsDuration = statsDuration,
+                                navFilled = navFilled,
                                 onEvent = viewModel::onEvent,
                                 navController = navController
                             )
@@ -176,9 +211,6 @@ class MainActivity : ComponentActivity() {
                         ) {
 
                             EditExpenseScreen(
-                                state = state,
-                                onEvent = viewModel::onEvent,
-                                navController = navController,
                                 id = args.id
                             )
 
@@ -211,7 +243,22 @@ val readexPro = FontFamily(
 
 @Composable
 fun MainScreen(
-    state: ExpenseState,
+    expenses: MutableState<List<Expense>>,
+    title: MutableState<String>,
+    description: MutableState<String>,
+    type: MutableState<String>,
+    amount: MutableState<Float>,
+    amountToShow: MutableState<String>,
+    date: MutableState<Long>,
+    id: MutableState<Int>,
+    navFilled: MutableState<String>,
+
+    typeBoxExpanded: MutableState<Boolean>,
+
+    startDate: MutableState<Long>,
+    endDate: MutableState<Long>,
+    statsDuration: MutableState<String>,
+
     onEvent: (ExpenseEvent) -> Unit,
     navController: NavController
 ) {
@@ -222,21 +269,31 @@ fun MainScreen(
 
 
         // Different screens for different navigation items
-        when (state.navFilled) {
+        when (navFilled.value) {
 
             "home" -> ALlExpenses(
-                state = state,
+                expenses = expenses,
                 navController = navController
             )
 
             "stats" -> Stats(
-                state = state,
+                startDate = startDate,
+                endDate = endDate,
+                expenses = expenses,
+                statsDuration = statsDuration,
                 onEvent = onEvent
             )
 
             else -> AddExpense(
-                state = state,
-                onEvent = onEvent,
+                title = title,
+                description = description,
+                type = type,
+                date = date,
+                typeBoxExpanded = typeBoxExpanded,
+                amount = amount,
+                amountToShow = amountToShow,
+                navFilled = navFilled,
+                onEvent = onEvent
             )
 
         }
@@ -244,8 +301,8 @@ fun MainScreen(
 
         // Bottom Navigation bar
         NavBar(
+            navFilled = navFilled,
             modifier = Modifier.align(Alignment.BottomCenter),
-            state = state,
             onEvent = onEvent,
             enabled = true
         )
@@ -257,25 +314,41 @@ fun MainScreen(
 // Edit Expense Screen
 @Composable
 fun EditExpenseScreen(
-    state: ExpenseState,
+    title: MutableState<String>,
+    description: MutableState<String>,
+    type: MutableState<String>,
+    amount: MutableState<Float>,
+    amountToShow: MutableState<String>,
+    date: MutableState<Long>,
+    id: MutableState<Int>,
+    expenses: MutableState<List<Expense>>,
+
+    isDialogVisible: MutableState<Boolean>,
+    navFilled: MutableState<String>,
+
+    typeBoxExpanded: MutableState<Boolean>,
+
     onEvent: (ExpenseEvent) -> Unit,
     navController: NavController? = null,
-    id: Int
+    idToEdit: Int
 ) {
 
-    LaunchedEffect(key1 = id) {
-        state.expenses.find { it.id == id }?.let { expense ->
-            onEvent(ExpenseEvent.SetTitle(expense.title))
-            onEvent(ExpenseEvent.SetDescription(expense.description))
-            onEvent(ExpenseEvent.SetType(expense.type))
-            onEvent(ExpenseEvent.SetAmount(expense.amount.toString()))
-            onEvent(ExpenseEvent.SetDate(expense.date))
-            onEvent(ExpenseEvent.SetID(id))
+    LaunchedEffect(key1 = idToEdit) {
+        expenses.value.find { it.id == idToEdit }?.let { expense ->
+
+            title.value = expense.title
+            description.value = expense.description ?: ""
+            type.value = expense.type
+            amount.value = expense.amount
+            amountToShow.value = expense.amount.toString()
+            date.value = expense.date
+            id.value = idToEdit
+
         }
     }
 
 
-    val isExpense = if (state.amount > 0) false else true
+    val isExpense = if (amount.value > 0) false else true
 
 
     Column(
@@ -307,8 +380,9 @@ fun EditExpenseScreen(
             )
 
             DeleteButton(
-                id = id,
-                state = state,
+                expenses = expenses,
+                id = idToEdit,
+                isDialogVisible = isDialogVisible,
                 onEvent = onEvent,
                 navController = navController
             )
@@ -317,28 +391,39 @@ fun EditExpenseScreen(
 
         // Edit Expense -> Similar to Expense Card
         EditExpense(
-            state = state,
+            title = title,
+            description = description,
+            amount = amount,
+            amountToShow = amountToShow,
+            type = type,
+            typeBoxExpanded = typeBoxExpanded,
             onEvent = onEvent
         )
 
 
         // Drop Down Type Selector
         TypeSelector(
-            state = state,
+            type = type,
+            typeBoxExpanded = typeBoxExpanded,
             onEvent = onEvent
         )
 
 
         // Date Picker
         DatePickerUI(
-            state = state,
+            date = date,
             onEvent = onEvent
         )
 
 
         // Save Button
         SaveButton(
-            state = state,
+            title = title,
+            description = description,
+            type = type,
+            date = date,
+            amount = amount,
+            navFilled = navFilled,
             onEvent = onEvent
         )
 
@@ -439,7 +524,7 @@ fun Heading(
 // List of All Expenses
 @Composable
 fun ListOfExpenses(
-    state : ExpenseState,
+    expenses: MutableState<List<Expense>>,
     navController: NavController
 ) {
 
@@ -453,7 +538,7 @@ fun ListOfExpenses(
 
 
         // All Expenses
-        for(expense in state.expenses){
+        for(expense in expenses.value){
 
             Expense(
                 id = expense.id,
@@ -485,23 +570,12 @@ fun ListOfExpenses(
 
 // List of All Expenses
 @Composable
-fun ListOfWeeklyExpenses(
-    state : ExpenseState,
+fun ListOfConstrainedExpenses(
+    startDate: MutableState<Long>,
+    endDate: MutableState<Long>,
+    expenses: MutableState<List<Expense>>,
     onEvent: (ExpenseEvent) -> Unit
 ) {
-
-    if(state.statsDuration == "Weekly") {
-
-        val (startDate, endDate) = Util.getWeekDates(state.statsDate)
-        onEvent(ExpenseEvent.SetConstrainedExpenses(startDate = startDate, endDate = endDate))
-
-    }
-    else {
-
-        val (startDate, endDate) = Util.getMonthDates(state.statsDate)
-        onEvent(ExpenseEvent.SetConstrainedExpenses(startDate = startDate, endDate = endDate))
-
-    }
 
     Column {
 
@@ -515,9 +589,9 @@ fun ListOfWeeklyExpenses(
             val typeExpense = mutableListOf<Expense>()
             var totalAmount = 0.0f
 
-            for(expense in state.constrainedExpenses) {
+            for(expense in expenses.value) {
 
-                if (expense.type == type && expense.amount < 0.0f) {
+                if (expense.date in startDate.value .. endDate.value && expense.type == type && expense.amount < 0.0f) {
 
                     typeExpense.add(expense)
                     totalAmount += expense.amount
@@ -696,7 +770,7 @@ fun Expense(
 // All Expenses to be shown in a Nav Item
 @Composable
 fun ALlExpenses(
-    state : ExpenseState,
+    expenses: MutableState<List<Expense>>,
     navController: NavController
 ) {
 
@@ -708,7 +782,7 @@ fun ALlExpenses(
         Header()
 
         ListOfExpenses(
-            state = state,
+            expenses = expenses,
             navController = navController
         )
     }
@@ -718,9 +792,30 @@ fun ALlExpenses(
 // Statistics Screen
 @Composable
 fun Stats(
-    state: ExpenseState,
+    startDate: MutableState<Long>,
+    endDate: MutableState<Long>,
+    expenses: MutableState<List<Expense>>,
+    statsDuration: MutableState<String>,
     onEvent: (ExpenseEvent) -> Unit
 ) {
+
+    val map = mutableMapOf<Long, Float>()
+
+    for (date in startDate.value .. endDate.value){
+
+        var amount = 0f
+
+        for(expense in expenses.value){
+
+            if(expense.date == date){
+                amount -= expense.amount
+            }
+
+            map[date] = amount
+        }
+    }
+
+    // TODO: onEvent(ExpenseEvent.SetMap(map))
 
     Column(
         modifier = Modifier
@@ -738,15 +833,29 @@ fun Stats(
 
         ExpensesAverage()
 
-        StatsCard(values = arrayOf(50, 45, 0, 150, 600, 506, 970))
+        if(statsDuration.value == "Weekly") {
+
+            WeeklyStatsCard(
+                onEvent = onEvent,
+                map = map
+            )
+        }
+        else {
+            MonthlyStatsCard(
+                onEvent = onEvent,
+                map = map
+            )
+        }
 
         AnimatedSelector(
-            state = state,
+            statsDuration = statsDuration,
             onEvent = onEvent
         )
 
-        ListOfWeeklyExpenses(
-            state = state,
+        ListOfConstrainedExpenses(
+            startDate = startDate,
+            endDate = endDate,
+            expenses = expenses,
             onEvent = onEvent
         )
 
@@ -758,12 +867,19 @@ fun Stats(
 // Add Expense Screen
 @Composable
 fun AddExpense(
-    state : ExpenseState,
-    onEvent: (ExpenseEvent) -> Unit
+    title: MutableState<String>,
+    description: MutableState<String>,
+    amount: MutableState<Float>,
+    amountToShow: MutableState<String>,
+    type: MutableState<String>,
+    date: MutableState<Long>,
+    typeBoxExpanded: MutableState<Boolean>,
+    onEvent: (ExpenseEvent) -> Unit,
+    navFilled: MutableState<String>
 ) {
 
 
-    val isExpense = if (state.amount > 0) false else true
+    val isExpense = if (amount.value > 0) false else true
 
 
     Column(
@@ -784,28 +900,39 @@ fun AddExpense(
 
         // Edit Expense -> Similar to Expense Card
         EditExpense(
-            state = state,
+            title = title,
+            description = description,
+            amount = amount,
+            amountToShow = amountToShow,
+            type = type,
+            typeBoxExpanded = typeBoxExpanded,
             onEvent = onEvent
         )
 
 
         // Drop Down Type Selector
         TypeSelector(
-            state = state,
+            type = type,
+            typeBoxExpanded = typeBoxExpanded,
             onEvent = onEvent
         )
 
 
         // Date Picker
         DatePickerUI(
-            state = state,
+            date = date,
             onEvent = onEvent
         )
 
 
         // Save Button
         SaveButton(
-            state = state,
+            title = title,
+            description = description,
+            type = type,
+            date = date,
+            amount = amount,
+            navFilled = navFilled,
             onEvent = onEvent
         )
 
@@ -869,14 +996,91 @@ fun ExpensesAverage() {
 
 
 @Composable
-fun StatsCard(
-    values: Array<Int>
+fun WeeklyStatsCard(
+    onEvent: (ExpenseEvent) -> Unit,
+    map: MutableMap<Long, Float>
 ) {
 
-    val days = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-    var ind = 0;
+    val highestVal = map.values.toList().maxOrNull() ?: 0f
 
-    val highestVal = values.max()
+    var heightDp by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
+
+
+    Box(
+        modifier = Modifier
+            .padding(top = 24.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(colorResource(id = R.color.card_background))
+            .aspectRatio(1.374f)
+            .onGloballyPositioned { coordinates ->
+                heightDp = with(density) { coordinates.size.height.toDp() }
+            }
+
+    ) {
+
+        Box(
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxSize()
+        ) {
+
+            Row(
+                modifier = Modifier
+                    .fillMaxSize(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                val days = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+                var ind = 0;
+
+                for (height in map.values) {
+
+                    val fraction = height/ highestVal
+
+                    Column(
+                        verticalArrangement = Arrangement.Bottom,
+                        horizontalAlignment = CenterHorizontally
+                    ) {
+
+                        Box(
+                            modifier = Modifier
+                                .defaultMinSize(minHeight = 10.dp)
+                                .width(18.dp)
+                                .height((heightDp - 80.dp) * fraction)
+                                .clip(RoundedCornerShape(26.dp))
+                                .background(colorResource(id = R.color.main_text))
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .padding(top = 4.dp),
+                            text = days[ind],
+                            color = colorResource(id = R.color.light_text),
+                            fontSize = 10.sp,
+                            fontFamily = readexPro
+                        )
+                    }
+                    ind++
+                }
+            }
+
+        }
+
+    }
+
+}
+
+
+
+@Composable
+fun MonthlyStatsCard(
+    onEvent: (ExpenseEvent) -> Unit,
+    map: MutableMap<Long, Float>
+) {
+
+    val highestVal = map.values.toList().maxOrNull() ?: 0f
 
     var heightDp by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
@@ -908,9 +1112,9 @@ fun StatsCard(
                 verticalAlignment = Alignment.Bottom
             ) {
 
-                for (height in values) {
+                for (height in map.values) {
 
-                    val fraction = height/ highestVal.toFloat()
+                    val fraction = height/ highestVal
 
                     Column(
                         verticalArrangement = Arrangement.Bottom,
@@ -921,20 +1125,11 @@ fun StatsCard(
                             modifier = Modifier
                                 .defaultMinSize(minHeight = 10.dp)
                                 .width(18.dp)
-                                .height((heightDp - 80.dp) * fraction)
+                                .height((heightDp - 50.dp) * fraction)
                                 .clip(RoundedCornerShape(26.dp))
                                 .background(colorResource(id = R.color.main_text))
                         )
 
-                        Text(
-                            modifier = Modifier
-                                .padding(top = 4.dp),
-                            text = days[ind],
-                            color = colorResource(id = R.color.light_text),
-                            fontSize = 10.sp,
-                            fontFamily = readexPro
-                        )
-                        ind++
                     }
                 }
             }
@@ -947,10 +1142,12 @@ fun StatsCard(
 
 
 
+
+
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun AnimatedSelector(
-    state: ExpenseState,
+    statsDuration: MutableState<String>,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
@@ -974,7 +1171,7 @@ fun AnimatedSelector(
 
         // Animation for the selector position
         val selectorPosition by animateDpAsState(
-            targetValue = if (state.statsDuration == "Weekly") 0.dp else (widthDP / 2),
+            targetValue = if (statsDuration.value == "Weekly") 0.dp else (widthDP / 2),
             animationSpec = tween(durationMillis = 150)
         )
 
@@ -985,14 +1182,18 @@ fun AnimatedSelector(
                 .fillMaxHeight()
                 .fillMaxWidth(0.5f)
                 .offset(x = selectorPosition)
-                .clip(RoundedCornerShape(20.dp))
-                .border(
-                    5.dp,
-                    colorResource(id = R.color.card_background),
-                    RoundedCornerShape(20.dp)
-                )
-                .background(colorResource(id = R.color.main_text))
-        )
+        ) {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight(0.75f)
+                    .fillMaxWidth(0.92f)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(colorResource(id = R.color.main_text))
+                    .align(Alignment.Center)
+            )
+
+        }
 
         // Options
         Row(
@@ -1003,7 +1204,7 @@ fun AnimatedSelector(
             // Weekly Button
             Text(
                 text = "Weekly",
-                color = if (state.statsDuration == "Weekly") colorResource(id = R.color.card_background) else colorResource(id = R.color.light_text),
+                color = if (statsDuration.value == "Weekly") colorResource(id = R.color.card_background) else colorResource(id = R.color.light_text),
                 modifier = Modifier
                     .weight(1f)
                     .clickable(
@@ -1012,7 +1213,7 @@ fun AnimatedSelector(
                     ) {
                         CoroutineScope(Dispatchers.Main).launch {
                             delay(150)
-                            onEvent(ExpenseEvent.SetStatsDuration("Weekly"))
+                            statsDuration.value = "Weekly"
                         }
                     },
                 textAlign = TextAlign.Center
@@ -1021,7 +1222,7 @@ fun AnimatedSelector(
             // Monthly Button
             Text(
                 text = "Monthly",
-                color = if (state.statsDuration == "Monthly") colorResource(id = R.color.card_background) else colorResource(id = R.color.light_text),
+                color = if (statsDuration.value == "Monthly") colorResource(id = R.color.card_background) else colorResource(id = R.color.light_text),
                 modifier = Modifier
                     .weight(1f)
                     .clickable(
@@ -1030,7 +1231,7 @@ fun AnimatedSelector(
                     ) {
                         CoroutineScope(Dispatchers.Main).launch {
                             delay(150)
-                            onEvent(ExpenseEvent.SetStatsDuration("Monthly"))
+                            statsDuration.value = "Monthly"
                         }
                     },
                 textAlign = TextAlign.Center
@@ -1056,7 +1257,7 @@ fun BackButton(
 
         onClick = {
 
-            onEvent(ExpenseEvent.ClearState)
+            // TODO: onEvent(ExpenseEvent.ClearState)
 
             navController?.popBackStack()
 
@@ -1090,8 +1291,9 @@ fun BackButton(
 // Delete button
 @Composable
 fun DeleteButton(
+    expenses: MutableState<List<Expense>>,
     id: Int,
-    state: ExpenseState,
+    isDialogVisible: MutableState<Boolean>,
     onEvent: (ExpenseEvent) -> Unit,
     navController: NavController? = null
 ) {
@@ -1103,7 +1305,7 @@ fun DeleteButton(
 
         onClick = {
 
-            onEvent(ExpenseEvent.SetIsDialogVisible(true))
+            isDialogVisible.value = true
 
         },
         colors = IconButtonColors(
@@ -1129,16 +1331,16 @@ fun DeleteButton(
     }
 
     DeleteDialog(
-        state = state,
         onEvent = onEvent,
+        isDialogVisible = isDialogVisible,
         onDelete = {
 
-            onEvent(ExpenseEvent.DeleteExpense(expense = state.expenses.find { it.id == id }!!))
-            onEvent(ExpenseEvent.ClearState)
+            onEvent(ExpenseEvent.DeleteExpense(expense = expenses.value.find { it.id == id }!!))
+            // TODO: onEvent(ExpenseEvent.ClearState)
 
             navController?.popBackStack()
 
-            onEvent(ExpenseEvent.SetIsDialogVisible(false))
+            isDialogVisible.value = false
 
         }
     )
@@ -1150,14 +1352,14 @@ fun DeleteButton(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeleteDialog(
-    state: ExpenseState,
+    isDialogVisible: MutableState<Boolean>,
     onEvent: (ExpenseEvent) -> Unit,
     onDelete: () -> Unit
 ) {
-    if(state.isDialogVisible) {
+    if(isDialogVisible.value) {
         BasicAlertDialog(
             onDismissRequest = {
-                onEvent(ExpenseEvent.SetIsDialogVisible(false))
+                isDialogVisible.value = false
             },
             content = {
                 Box(
@@ -1165,6 +1367,7 @@ fun DeleteDialog(
                         .height(160.dp)
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(20.dp))
+
                         .background(colorResource(id = R.color.card_background))
                 ) {
 
@@ -1201,7 +1404,7 @@ fun DeleteDialog(
                                     )
                                     .padding(horizontal = 5.dp),
                                 onClick = {
-                                    onEvent(ExpenseEvent.SetIsDialogVisible(false))
+                                    isDialogVisible.value = false
                                 }
 
                             ) {
@@ -1247,7 +1450,12 @@ fun DeleteDialog(
 // Edit Expense fields (Inputs)
 @Composable
 fun EditExpense(
-    state: ExpenseState,
+    title: MutableState<String>,
+    description: MutableState<String>,
+    amount: MutableState<Float>,
+    amountToShow: MutableState<String>,
+    type: MutableState<String>,
+    typeBoxExpanded: MutableState<Boolean>,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
@@ -1291,14 +1499,14 @@ fun EditExpense(
                         .clip(RoundedCornerShape(15.dp))
                         .background(bgColor)
                         .clickable {
-                            onEvent(ExpenseEvent.SetTypeBoxExpanded(!state.typeBoxExpanded))
+                            typeBoxExpanded.value = !typeBoxExpanded.value
                         }
                 ) {
 
                     // Logo
                     Image(
-                        painter = Util.image(state.type),
-                        contentDescription = state.type,
+                        painter = Util.image(type.value),
+                        contentDescription = type.value,
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(1f)
@@ -1320,14 +1528,14 @@ fun EditExpense(
 
                     // Title text Field (custom)
                     BasicTextField(
-                        value = state.title,
+                        value = title.value,
 
                         // Cursor color
                         cursorBrush = SolidColor(Color.Blue),
 
                         onValueChange = {
 
-                            onEvent(ExpenseEvent.SetTitle(it))
+                            title.value = it
 
                         },
 
@@ -1343,7 +1551,7 @@ fun EditExpense(
                         decorationBox = { innerTextField ->
 
                             // Placeholder Text
-                            if (state.title.isEmpty()) {
+                            if (title.value.isEmpty()) {
                                 Text(
                                     text = "Enter Title",
                                     fontFamily = readexPro,
@@ -1361,13 +1569,13 @@ fun EditExpense(
 
                     // Description text Field (custom)
                     BasicTextField(
-                        value = state.description ?: "",
+                        value = description.value ?: "",
 
                         cursorBrush = SolidColor(Color.Blue),
 
                         onValueChange = {
 
-                            onEvent(ExpenseEvent.SetDescription(it))
+                            description.value = it
 
                         },
 
@@ -1383,7 +1591,7 @@ fun EditExpense(
                         decorationBox = { innerTextField ->
 
                             // Placeholder Text
-                            if (state.description.isNullOrEmpty()) {
+                            if (description.value.isNullOrEmpty()) {
                                 Text(
                                     text = "Description (optional)",
                                     fontFamily = readexPro,
@@ -1409,7 +1617,7 @@ fun EditExpense(
                 modifier = Modifier
                     .padding(end = 24.dp),
 
-                value = state.amountToShow,
+                value = amountToShow.value,
 
                 cursorBrush = SolidColor(Color.Blue),
 
@@ -1421,7 +1629,13 @@ fun EditExpense(
                     val regex = "^-?\\d*(\\.\\d{0,2})?$".toRegex()
 
                     if (regex.matches(newValue) && !newValue.contains(" ") && !newValue.contains(",")) {
-                        onEvent(ExpenseEvent.SetAmount(newValue))
+
+                        amountToShow.value = newValue
+                        amount.value = if(newValue in arrayOf("", " ", ".", "-"))
+                            -100.0f
+                        else
+                            newValue.toFloat()
+
                     }
 
                 },
@@ -1437,7 +1651,7 @@ fun EditExpense(
                 decorationBox = { innerTextField ->
 
                     // Placeholder Text
-                    if (state.amountToShow.isEmpty()) {
+                    if (amount.value == 0f) {
                         Text(
                             text = "Amount",
                             fontFamily = readexPro,
@@ -1469,7 +1683,8 @@ fun EditExpense(
 // Drop down Type Selector
 @Composable
 fun TypeSelector(
-    state: ExpenseState,
+    type: MutableState<String>,
+    typeBoxExpanded: MutableState<Boolean>,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
@@ -1487,7 +1702,7 @@ fun TypeSelector(
 
     // Giving animation and expand and shrink
     AnimatedVisibility(
-        visible = state.typeBoxExpanded,
+        visible = typeBoxExpanded.value,
         enter = expandVertically(),
         exit = shrinkVertically()
     ) {
@@ -1523,8 +1738,8 @@ fun TypeSelector(
 
                             .clickable {
                                 // Update state of type and close the selector
-                                onEvent(ExpenseEvent.SetType(item))
-                                onEvent(ExpenseEvent.SetTypeBoxExpanded(false))
+                                type.value = item
+                                typeBoxExpanded.value = false
                             }
 
                     ) {
@@ -1532,7 +1747,7 @@ fun TypeSelector(
                         // Logo
                         Image(
                             painter = Util.image(item),
-                            contentDescription = state.type,
+                            contentDescription = type.value,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(1f)
@@ -1560,7 +1775,7 @@ fun TypeSelector(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerUI(
-    state: ExpenseState,
+    date: MutableState<Long>,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
@@ -1571,7 +1786,7 @@ fun DatePickerUI(
 
 
     // Formatted date
-    val formattedDate = Util.formatToMonthDayYear(state.date)
+    val formattedDate = Util.formatToMonthDayYear(date.value)
 
 
     Row(
@@ -1628,7 +1843,7 @@ fun DatePickerUI(
                                 .format(formatter)
 
                         // Set the new date to State
-                        onEvent(ExpenseEvent.SetDate(anotherFormattedDate.toLong()))
+                        date.value = anotherFormattedDate.toLong()
 
                     }
                 ) {
@@ -1663,11 +1878,16 @@ fun DatePickerUI(
 // Save / Update Button
 @Composable
 fun SaveButton(
-    state: ExpenseState,
+    title: MutableState<String>,
+    description: MutableState<String>,
+    type: MutableState<String>,
+    amount: MutableState<Float>,
+    date: MutableState<Long>,
+    navFilled: MutableState<String>,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
-    val isExpense = if (state.amount > 0) false else true
+    val isExpense = if (amount.value > 0f) false else true
 
     // The button
     TextButton(
@@ -1680,11 +1900,26 @@ fun SaveButton(
         onClick = {
 
             // Save the Expense if title and amount are not empty
-            if (!(state.title.isBlank() || state.amountToShow.isBlank())) {
+            if (!(title.value.isBlank() || amount.value == 0f)) {
 
-                onEvent(ExpenseEvent.SaveExpense)
 
-                onEvent(ExpenseEvent.ChangeNavState("home"))
+                Log.d("Yes", "Condition satisfies for blank values")
+                Log.d("Yes", title.value)
+
+                onEvent(
+                    ExpenseEvent.SaveExpense(
+                        Expense(
+                            title = title.value,
+                            description = description.value,
+                            type = type.value,
+                            amount = amount.value,
+                            date = date.value,
+                            id = 1
+                        )
+                    )
+
+                )
+                navFilled.value = "home"
 
             }
 
@@ -1716,6 +1951,7 @@ fun SaveButton(
 // Navigation Bar Buttons
 @Composable
 fun NavBarButton(
+    navFilled: MutableState<String>,
     buttonLogo: String,
     filled: String,
     onEvent: (ExpenseEvent) -> Unit
@@ -1751,7 +1987,7 @@ fun NavBarButton(
 
         onClick = {
 
-            onEvent(ExpenseEvent.ChangeNavState(buttonLogo))
+            navFilled.value = buttonLogo
 
         }
 
@@ -1776,8 +2012,8 @@ fun NavBarButton(
 // Bottom Navigation Bar
 @Composable
 fun NavBar(
+    navFilled: MutableState<String>,
     modifier: Modifier = Modifier,
-    state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit,
     enabled: Boolean
 ) {
@@ -1799,22 +2035,25 @@ fun NavBar(
 
             // Home
             NavBarButton(
+                navFilled = navFilled,
                 buttonLogo = "home",
-                filled = state.navFilled,
+                filled = navFilled.value,
                 onEvent = onEvent
             )
 
             // Statistics (Graph)
             NavBarButton(
+                navFilled = navFilled,
                 buttonLogo = "stats",
-                filled = state.navFilled,
+                filled = navFilled.value,
                 onEvent = onEvent
             )
 
             // Add Expense
             NavBarButton(
+                navFilled = navFilled,
                 buttonLogo = "add",
-                filled = state.navFilled,
+                filled = navFilled.value,
                 onEvent = onEvent
             )
 
@@ -1832,87 +2071,5 @@ fun NavBar(
                 .background(Color.Transparent)
         )
 
-    }
-}
-
-
-
-// Preview
-@Preview
-@Composable
-fun CentsiblePreview() {
-    CentsibleTheme {
-
-        val navController = rememberNavController()
-
-        NavHost(
-            navController = navController,
-            startDestination = EditExpenseScreen(id = 1)
-        ) {
-
-            // Main screen (set content)
-            composable<MainScreen> {
-
-                Surface(
-                    modifier = Modifier
-                        .background(colorResource(id = R.color.background))
-                        .fillMaxSize()
-                        .padding(top = 42.dp)
-                ) {
-
-                    MainScreen(
-                        state = ExpenseState(
-                            expenses = emptyList(),
-                            id = -1,
-                            title = "title",
-                            description = "des",
-                            date = 20241206L,
-                            type = "good",
-                            amount = 100.0f,
-                            amountToShow = "100",
-                            navFilled = "home",
-                            typeBoxExpanded = true,
-                        ),
-                        onEvent = {},
-                        navController = navController
-                    )
-
-                }
-
-            }
-
-            // Edit Expense Screen
-            composable<EditExpenseScreen> {
-                val args = it.toRoute<EditExpenseScreen>()
-
-                Surface(
-                    modifier = Modifier
-                        .background(colorResource(id = R.color.background))
-                        .fillMaxSize()
-                        .padding(top = 42.dp)
-                ) {
-
-                    MainScreen(
-                        state = ExpenseState(
-                            expenses = emptyList(),
-                            id = -1,
-                            title = "title",
-                            description = null,
-                            date = 20241206L,
-                            type = "ent",
-                            amount = 100.0f,
-                            amountToShow = "100",
-                            navFilled = "stats",
-                            isDialogVisible = false,
-                            typeBoxExpanded = false,
-                        ),
-                        onEvent = {},
-                        navController = navController
-                    )
-
-                }
-
-            }
-        }
     }
 }

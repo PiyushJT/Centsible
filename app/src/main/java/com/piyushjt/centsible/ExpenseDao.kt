@@ -24,7 +24,4 @@ interface ExpenseDao {
     @Query("SELECT * FROM expense ORDER BY date DESC, id DESC")
     fun getAllExpense() : Flow<List<Expense>>
 
-    @Query("SELECT * FROM expense WHERE date >= :startDate AND date <= :endDate ORDER BY id DESC")
-    fun getConstrainedExpenses(startDate: Long, endDate: Long) : Flow<List<Expense>>
-
 }

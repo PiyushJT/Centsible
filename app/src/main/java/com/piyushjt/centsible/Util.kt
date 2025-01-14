@@ -10,7 +10,6 @@ import java.util.Calendar
 import java.util.Date
 
 
-
 object Util {
 
 
@@ -107,6 +106,7 @@ object Util {
         return Pair(formattedStart, formattedEnd)
 
     }
+
 
 
     // Get Start and End date for Monthly Stats
