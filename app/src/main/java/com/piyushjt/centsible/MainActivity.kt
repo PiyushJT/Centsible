@@ -32,6 +32,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +55,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import androidx.room.PrimaryKey
 import androidx.room.Room
 import com.piyushjt.centsible.Screens.ALlExpenses
 import com.piyushjt.centsible.Screens.AddExpense
@@ -95,26 +97,17 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            var expenses = remember { mutableStateOf(emptyList<Expense>()) }
-            var title = remember { mutableStateOf("Title") }
-            var description = remember { mutableStateOf("Desc") }
-            var type = remember { mutableStateOf("ent") }
-            var amount = remember { mutableFloatStateOf(-100.0f) }
-            var date = remember { mutableStateOf(20241231L) }
-            var id = remember { mutableStateOf(-1) }
+            val expenses = remember { mutableStateOf(emptyList<Expense>()) }
+            val title = remember { mutableStateOf("Title") }
+            val description = remember { mutableStateOf("Desc") }
+            val type = remember { mutableStateOf("ent") }
+            val amount = remember { mutableFloatStateOf(-100.0f) }
+            val date = remember { mutableLongStateOf(20241231L) }
+            val id = remember { mutableIntStateOf(-1) }
 
-            var navFilled = remember { mutableStateOf("add") }
+            val navFilled = remember { mutableStateOf("home") }
 
-            var typeBoxExpanded = remember { mutableStateOf(false) }
-
-            var amountToShow = remember { mutableStateOf("-100") }
-
-            var statsDate = remember { mutableLongStateOf(Util.getCurrentDate()) }
-            var statsDuration = remember { mutableStateOf("Weekly") }
-            var map = remember { mutableStateOf(mutableMapOf<Long, Float>()) }
-            var startDate = remember { mutableLongStateOf(20241223) }
-            var endDate = remember { mutableLongStateOf(20241229) }
-
+            val typeBoxExpanded = remember { mutableStateOf(false) }
 
 
             CentsibleTheme {
@@ -145,13 +138,9 @@ class MainActivity : ComponentActivity() {
                                 description = description,
                                 type = type,
                                 amount = amount,
-                                amountToShow = amountToShow,
                                 date = date,
                                 id = id,
-                                startDate = startDate,
-                                endDate = endDate,
                                 typeBoxExpanded = typeBoxExpanded,
-                                statsDuration = statsDuration,
                                 navFilled = navFilled,
                                 onEvent = viewModel::onEvent,
                                 navController = navController
@@ -173,14 +162,12 @@ class MainActivity : ComponentActivity() {
                         ) {
 
                             EditExpenseScreen(
-                                expense = Expense(
-                                    title = args.title,
-                                    description = args.description,
-                                    type = args.type,
-                                    amount = args.amount,
-                                    id = args.id,
-                                    date = args.date,
-                                ),
+                                title = args.title,
+                                description = args.description,
+                                type = args.type,
+                                amount = args.amount,
+                                date = args.date,
+                                id = args.id,
                                 navController = navController
                             )
 
@@ -224,19 +211,14 @@ fun MainScreen(
     description: MutableState<String>,
     type: MutableState<String>,
     amount: MutableState<Float>,
-    amountToShow: MutableState<String>,
     date: MutableState<Long>,
     id: MutableState<Int>,
     navFilled: MutableState<String>,
 
     typeBoxExpanded: MutableState<Boolean>,
 
-    startDate: MutableState<Long>,
-    endDate: MutableState<Long>,
-    statsDuration: MutableState<String>,
-
     onEvent: (ExpenseEvent) -> Unit,
-    navController: NavController
+    navController: NavController? = null
 ) {
 
     Box(
@@ -248,26 +230,24 @@ fun MainScreen(
         when (navFilled.value) {
 
             "home" -> ALlExpenses(
+                onEvent = onEvent,
                 state = state,
                 navController = navController
             )
 
             "stats" -> Stats(
-                startDate = startDate,
-                endDate = endDate,
-                expenses = expenses,
-                statsDuration = statsDuration,
-                onEvent = onEvent
+                onEvent = onEvent,
+                state = state
             )
 
             else -> AddExpense(
+                state = state,
                 title = title,
                 description = description,
                 type = type,
                 date = date,
                 typeBoxExpanded = typeBoxExpanded,
                 amount = amount,
-                amountToShow = amountToShow,
                 navFilled = navFilled,
                 onEvent = onEvent
             )
@@ -309,13 +289,10 @@ fun Heading(
 
 // Expense Card
 @Composable
-fun Expense(
-    id: Int,
-    title: String,
-    description: String?,
-    amount: Float,
-    type: String,
-    navController: NavController? = null
+fun ExpenseCard(
+    expense: Expense,
+    navController: NavController?,
+    onEvent: (ExpenseEvent) -> Unit
 ) {
 
     val bgColors = mapOf(
@@ -333,7 +310,7 @@ fun Expense(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-    ) {
+    ){
 
         /*
 
@@ -353,12 +330,12 @@ fun Expense(
 
                     navController?.navigate(
                         EditExpenseScreen(
-                                title = title,
-                                description = description,
-                                type = type,
-                                amount = amount,
-                                date = 20240101L,
-                                id = id
+                            expense.title,
+                            expense.description,
+                            expense.type,
+                            expense.amount,
+                            expense.date,
+                            expense.id
                         )
                     )
 
@@ -383,8 +360,8 @@ fun Expense(
 
                     // Logo
                     Image(
-                        painter = Util.image(type),
-                        contentDescription = type,
+                        painter = Util.image(expense.type),
+                        contentDescription = expense.type,
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(1f)
@@ -406,7 +383,7 @@ fun Expense(
 
                     // Title
                     Text(
-                        text = title,
+                        text = expense.title,
                         color = colorResource(id = R.color.text),
                         fontSize = 12.sp,
                         fontFamily = readexPro
@@ -414,7 +391,7 @@ fun Expense(
 
                     // Description
                     Text(
-                        text = if(description.isNullOrEmpty()) type else description,
+                        text = if(expense.description.isNullOrEmpty()) expense.type else expense.description,
                         color = colorResource(id = R.color.light_text),
                         fontSize = 10.sp,
                         fontFamily = readexPro
@@ -424,14 +401,17 @@ fun Expense(
             }
 
 
-            val amountToShow = if(amount < 0) "-₹${-amount}" else "₹$amount"
+            val amountToShow = if(expense.amount < 0) "-₹${-expense.amount}" else "+₹${expense.amount}"
 
             // Amount
             Text(
                 modifier = Modifier
                     .padding(14.dp),
                 text = amountToShow,
-                color = colorResource(id = R.color.main_text),
+                color = if(expense.amount < 0)
+                    colorResource(id = R.color.main_text)
+                else
+                    colorResource(id = R.color.lime),
                 fontSize = 14.sp,
                 fontFamily = readexPro
             )
@@ -571,9 +551,7 @@ fun NavBar(
         Box(
             modifier = Modifier
                 .height(
-                    WindowInsets.navigationBars
-                        .asPaddingValues()
-                        .calculateBottomPadding()
+                    Util.getBottomPadding()
                 )
                 .background(Color.Transparent)
         )

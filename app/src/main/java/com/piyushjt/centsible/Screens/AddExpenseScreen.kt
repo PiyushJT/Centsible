@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,7 +15,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,14 +29,11 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
@@ -48,21 +46,14 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
-import com.piyushjt.centsible.EditExpenseScreen
 import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
-import com.piyushjt.centsible.MainScreen
+import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.R
 import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.readexPro
-import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -71,10 +62,10 @@ import java.time.format.DateTimeFormatter
 // Add Expense Screen
 @Composable
 fun AddExpense(
+    state: ExpenseState,
     title: MutableState<String>,
     description: MutableState<String>,
     amount: MutableState<Float>,
-    amountToShow: MutableState<String>,
     type: MutableState<String>,
     date: MutableState<Long>,
     typeBoxExpanded: MutableState<Boolean>,
@@ -107,7 +98,6 @@ fun AddExpense(
             title = title,
             description = description,
             amount = amount,
-            amountToShow = amountToShow,
             type = type,
             typeBoxExpanded = typeBoxExpanded,
             onEvent = onEvent
@@ -146,13 +136,13 @@ fun AddExpense(
 
 
 
+
 // Edit Expense fields (Inputs)
 @Composable
 fun EditExpense(
     title: MutableState<String>,
     description: MutableState<String>,
     amount: MutableState<Float>,
-    amountToShow: MutableState<String>,
     type: MutableState<String>,
     typeBoxExpanded: MutableState<Boolean>,
     onEvent: (ExpenseEvent) -> Unit
@@ -290,7 +280,7 @@ fun EditExpense(
                         decorationBox = { innerTextField ->
 
                             // Placeholder Text
-                            if (description.value.isNullOrEmpty()) {
+                            if (description.value.isEmpty()) {
                                 Text(
                                     text = "Description (optional)",
                                     fontFamily = readexPro,
@@ -316,7 +306,7 @@ fun EditExpense(
                 modifier = Modifier
                     .padding(end = 24.dp),
 
-                value = amountToShow.value,
+                value = amount.value.toString(),
 
                 cursorBrush = SolidColor(Color.Blue),
 
@@ -329,7 +319,7 @@ fun EditExpense(
 
                     if (regex.matches(newValue) && !newValue.contains(" ") && !newValue.contains(",")) {
 
-                        amountToShow.value = newValue
+                        amount.value = newValue.toFloat()
                         amount.value = if(newValue in arrayOf("", " ", ".", "-"))
                             -100.0f
                         else

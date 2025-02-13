@@ -1,30 +1,43 @@
 package com.piyushjt.centsible.Screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.piyushjt.centsible.Expense
+import com.piyushjt.centsible.ExpenseCard
+import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.Heading
 import com.piyushjt.centsible.MainScreen
 import com.piyushjt.centsible.R
+import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.readexPro
+import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -33,8 +46,9 @@ import java.util.Locale
 // All Expenses to be shown in a Nav Item
 @Composable
 fun ALlExpenses(
+    onEvent: (ExpenseEvent) -> Unit,
     state: ExpenseState,
-    navController: NavController
+    navController: NavController?
 ) {
 
     Column(
@@ -69,6 +83,7 @@ fun ALlExpenses(
         Header()
 
         ListOfExpenses(
+            onEvent = onEvent,
             state = state,
             navController = navController
         )
@@ -79,12 +94,16 @@ fun ALlExpenses(
 // List of All Expenses
 @Composable
 fun ListOfExpenses(
+    onEvent: (ExpenseEvent) -> Unit,
     state: ExpenseState,
-    navController: NavController
+    navController: NavController?
 ) {
+
+    val bottomPadding = 90.dp + Util.getBottomPadding()
 
     Column(
         modifier = Modifier
+            .padding(bottom = bottomPadding)
             .verticalScroll(rememberScrollState()),
     ) {
 
@@ -93,38 +112,19 @@ fun ListOfExpenses(
 
 
         // All Expenses
-        for(expense in state.expenses){
+        for (expense in state.expenses) {
 
-            Expense(
-                id = expense.id,
-                title = expense.title,
-                description = expense.description,
-                amount = expense.amount,
-                type = expense.type,
+            ExpenseCard(
+                onEvent = onEvent,
+                expense = expense,
                 navController = navController
             )
 
         }
 
-
-        // Spacer for bottom navigation bar
-        Spacer(
-            modifier = Modifier
-                .height(
-                    WindowInsets.navigationBars
-                        .asPaddingValues()
-                        .calculateBottomPadding()
-                            + 110.dp
-                )
-        )
-
     }
 
 }
-
-
-
-
 
 
 // Header for All Expenses
@@ -187,7 +187,7 @@ fun TotalBalance() {
 
         // Balance
         Text(
-            text = "₹5,21,985.00",
+            text = "₹58,21,985.70",
             color = colorResource(id = R.color.lime),
             fontSize = 34.sp,
             fontFamily = readexPro
@@ -197,4 +197,147 @@ fun TotalBalance() {
 
 }
 
+@Preview
+@Composable
+private fun HomeScreenPreview() {
 
+    CentsibleTheme {
+        Surface(
+            modifier = Modifier
+                .background(colorResource(id = R.color.background))
+                .fillMaxSize()
+                .padding(top = 42.dp)
+        ) {
+
+
+            val expenses = remember { mutableStateOf(emptyList<Expense>()) }
+            val title = remember { mutableStateOf("Title") }
+            val description = remember { mutableStateOf("Desc") }
+            val type = remember { mutableStateOf("ent") }
+            val amount = remember { mutableFloatStateOf(-100.0f) }
+            val date = remember { mutableLongStateOf(20241231L) }
+            val id = remember { mutableIntStateOf(-1) }
+            val navFilled = remember { mutableStateOf("home") }
+            val typeBoxExpanded = remember { mutableStateOf(false) }
+
+            MainScreen(
+                state = ExpenseState(
+
+                    expenses = listOf(
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        )
+
+                    ),
+                ),
+                expenses = expenses,
+                title = title,
+                description = description,
+                type = type,
+                amount = amount,
+                date = date,
+                id = id,
+                typeBoxExpanded = typeBoxExpanded,
+                navFilled = navFilled,
+                onEvent = {},
+            )
+        }
+
+    }
+}

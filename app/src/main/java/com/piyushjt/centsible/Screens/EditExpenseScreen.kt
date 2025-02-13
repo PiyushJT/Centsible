@@ -17,44 +17,35 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
-import com.piyushjt.centsible.EditExpenseScreen
+import androidx.room.PrimaryKey
 import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
-import com.piyushjt.centsible.MainScreen
 import com.piyushjt.centsible.R
-import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.readexPro
-import com.piyushjt.centsible.ui.theme.CentsibleTheme
 
 
 // Edit Expense Screen
 @Composable
 fun EditExpenseScreen(
-    expense: Expense,
+    title: String,
+    description: String?,
+    type: String,
+    amount: Float,
+    date: Long,
+    id: Int,
     navController: NavController
 ) {
 
@@ -81,7 +72,7 @@ fun EditExpenseScreen(
 @Composable
 fun BackButton(
     onEvent: (ExpenseEvent) -> Unit,
-    navController: NavController? = null
+    navController: NavController
 ) {
 
     IconButton(
@@ -93,7 +84,7 @@ fun BackButton(
 
             // TODO: onEvent(ExpenseEvent.ClearState)
 
-            navController?.popBackStack()
+            navController.popBackStack()
 
         },
 
@@ -132,7 +123,7 @@ fun DeleteButton(
     id: Int,
     isDialogVisible: MutableState<Boolean>,
     onEvent: (ExpenseEvent) -> Unit,
-    navController: NavController? = null
+    navController: NavController
 ) {
 
     IconButton(
@@ -175,7 +166,7 @@ fun DeleteButton(
             onEvent(ExpenseEvent.DeleteExpense(expense = expenses.value.find { it.id == id }!!))
             // TODO: onEvent(ExpenseEvent.ClearState)
 
-            navController?.popBackStack()
+            navController.popBackStack()
 
             isDialogVisible.value = false
 

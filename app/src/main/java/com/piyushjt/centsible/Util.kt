@@ -1,9 +1,15 @@
 package com.piyushjt.centsible
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.Calendar
@@ -129,6 +135,19 @@ object Util {
         val endDate = String.format("%04d%02d%02d", year, month, daysInMonth[month - 1]).toLong()
 
         return Pair(startDate, endDate)
+    }
+
+
+    @Composable
+    fun getDeviceHeightInDp(): Dp {
+        val configuration = LocalConfiguration.current
+        val screenHeightPx = configuration.screenHeightDp
+        return screenHeightPx.dp
+    }
+
+    @Composable
+    fun getBottomPadding(): Dp {
+        return WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     }
 
 }
