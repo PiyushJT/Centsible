@@ -29,6 +29,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -116,7 +118,9 @@ class MainActivity : ComponentActivity() {
 
 
             CentsibleTheme {
-                
+
+                val state by viewModel.state.collectAsState()
+
                 val navController = rememberNavController()
 
                 NavHost(
@@ -135,6 +139,7 @@ class MainActivity : ComponentActivity() {
                         ) {
 
                             MainScreen(
+                                state = state,
                                 expenses = expenses,
                                 title = title,
                                 description = description,
@@ -213,6 +218,7 @@ val readexPro = FontFamily(
 
 @Composable
 fun MainScreen(
+    state: ExpenseState,
     expenses: MutableState<List<Expense>>,
     title: MutableState<String>,
     description: MutableState<String>,
@@ -242,7 +248,7 @@ fun MainScreen(
         when (navFilled.value) {
 
             "home" -> ALlExpenses(
-                expenses = expenses,
+                state = state,
                 navController = navController
             )
 

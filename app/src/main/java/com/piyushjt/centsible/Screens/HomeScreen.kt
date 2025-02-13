@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.piyushjt.centsible.Expense
+import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.Heading
 import com.piyushjt.centsible.MainScreen
 import com.piyushjt.centsible.R
@@ -32,7 +33,7 @@ import java.util.Locale
 // All Expenses to be shown in a Nav Item
 @Composable
 fun ALlExpenses(
-    expenses: MutableState<List<Expense>>,
+    state: ExpenseState,
     navController: NavController
 ) {
 
@@ -68,7 +69,7 @@ fun ALlExpenses(
         Header()
 
         ListOfExpenses(
-            expenses = expenses,
+            state = state,
             navController = navController
         )
     }
@@ -78,7 +79,7 @@ fun ALlExpenses(
 // List of All Expenses
 @Composable
 fun ListOfExpenses(
-    expenses: MutableState<List<Expense>>,
+    state: ExpenseState,
     navController: NavController
 ) {
 
@@ -92,7 +93,7 @@ fun ListOfExpenses(
 
 
         // All Expenses
-        for(expense in expenses.value){
+        for(expense in state.expenses){
 
             Expense(
                 id = expense.id,
