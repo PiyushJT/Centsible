@@ -9,6 +9,7 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,6 +36,8 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -60,10 +63,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
@@ -151,6 +157,14 @@ fun AddExpense(
             amount = amount,
             navFilled = navFilled,
             onEvent = onEvent
+        )
+
+        CustomDropdownMenu(
+            list = listOf("as", "aif"),
+            defaultSelected = "as",
+            color = Color.Blue,
+            modifier = Modifier,
+            onSelected = {}
         )
 
     }
@@ -392,74 +406,145 @@ fun TypeSelector(
 
         }
 
-    // Giving animation and expand and shrink
-    AnimatedVisibility(
-        visible = typeBoxExpanded.value,
-        enter = expandHorizontally(),
-        exit = shrinkHorizontally()
-    ) {
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
+        // Giving animation and expand and shrink
+        AnimatedVisibility(
+            visible = typeBoxExpanded.value,
+            enter = expandHorizontally(),
+            exit = shrinkHorizontally()
         ) {
-            Row(
+
+            Box(
                 modifier = Modifier
-                    .padding(top = 20.dp)
-                    .border(
-                        0.5.dp, colorResource(id = R.color.hint_text), RoundedCornerShape(20.dp)
-                    )
                     .fillMaxWidth()
-                    .height(80.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(colorResource(id = R.color.card_background))
-                    .horizontalScroll(rememberScrollState())
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(top = 20.dp)
+                        .border(
+                            0.5.dp, colorResource(id = R.color.hint_text), RoundedCornerShape(20.dp)
+                        )
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(colorResource(id = R.color.card_background))
+                        .horizontalScroll(rememberScrollState())
                 ) {
 
-                // Showing all types (logos only)
-                for (item in list) {
+                    // Showing all types (logos only)
+                    for (item in list) {
 
 
-                    // Background color
-                    val bgColor = bgColors[(1..5).random()]!!
+                        // Background color
+                        val bgColor = bgColors[(1..5).random()]!!
 
-                    Box(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(15.dp))
-                            .background(bgColor)
-                            .clickable {
-                                // Update state of type and close the selector
-                                type.value = item
-                                typeBoxExpanded.value = false
-                            }
-
-                    ) {
-
-                        // Logo
-                        Image(
-                            painter = Util.image(item),
-                            contentDescription = type.value,
+                        Box(
                             modifier = Modifier
-                                .fillMaxHeight()
+                                .padding(8.dp)
                                 .aspectRatio(1f)
-                                .padding(10.dp)
-                        )
+                                .clip(RoundedCornerShape(15.dp))
+                                .background(bgColor)
+                                .clickable {
+                                    // Update state of type and close the selector
+                                    type.value = item
+                                    typeBoxExpanded.value = false
+                                }
+
+                        ) {
+
+                            // Logo
+                            Image(
+                                painter = Util.image(item),
+                                contentDescription = type.value,
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .aspectRatio(1f)
+                                    .padding(10.dp)
+                            )
+
+                        }
 
                     }
 
+
+                    // Spacer for another type
+                    Spacer(
+                        modifier = Modifier.height(12.dp)
+                    )
+
                 }
-
-
-                // Spacer for another type
-                Spacer(
-                    modifier = Modifier.height(12.dp)
-                )
-
             }
         }
     }
+}
+
+
+@Composable
+fun CustomDropdownMenu(
+    list: List<String>, // Menu Options
+    defaultSelected: String, // Default Selected Option on load
+    color: Color, // Color
+    modifier: Modifier, //
+    onSelected: (Int) -> Unit, // Pass the Selected Option
+) {
+    var selectedIndex by remember { mutableStateOf(0) }
+    var expand by remember { mutableStateOf(false) }
+    var stroke by remember { mutableStateOf(1) }
+    Box(
+        modifier
+            .padding(8.dp)
+            .border(
+                border = BorderStroke(stroke.dp, color),
+                shape = RoundedCornerShape(4.dp)
+            )
+            .clickable {
+                expand = true
+                stroke = if (expand) 2 else 1
+            },
+        contentAlignment = Alignment.Center
+    ) {
+
+        Text(
+            text = defaultSelected,
+            color = color,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+        )
+
+        DropdownMenu(
+            expanded = expand,
+            onDismissRequest = {
+                expand = false
+                stroke = if (expand) 2 else 1
+            },
+            properties = PopupProperties(
+                focusable = false,
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true,
+            ),
+            modifier = Modifier
+                .background(Color.White)
+                .padding(2.dp)
+                .fillMaxWidth(.4f)
+        ) {
+            list.forEachIndexed { index, item ->
+                DropdownMenuItem(
+                    onClick = {
+                        selectedIndex = index
+                        expand = false
+                        stroke = if (expand) 2 else 1
+                        onSelected(selectedIndex)
+                    },
+                    text = {
+                        Text(
+                            text = "hi"
+                        )
+                    },
+                    modifier = Modifier,
+                )
+            }
+        }
+
     }
 }
 
