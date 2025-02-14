@@ -105,7 +105,7 @@ class MainActivity : ComponentActivity() {
             val date = remember { mutableLongStateOf(20241231L) }
             val id = remember { mutableIntStateOf(-1) }
 
-            val navFilled = remember { mutableStateOf("home") }
+            val navFilled = remember { mutableStateOf("add") }
 
             val typeBoxExpanded = remember { mutableStateOf(false) }
 
@@ -245,7 +245,6 @@ fun MainScreen(
                 title = title,
                 description = description,
                 type = type,
-                date = date,
                 typeBoxExpanded = typeBoxExpanded,
                 amount = amount,
                 navFilled = navFilled,
