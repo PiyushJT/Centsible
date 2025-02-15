@@ -239,12 +239,6 @@ fun MainScreen(
             )
 
             else -> AddExpense(
-                state = state,
-                title = title,
-                description = description,
-                type = type,
-                typeBoxExpanded = typeBoxExpanded,
-                amount = amount,
                 navFilled = navFilled,
                 onEvent = onEvent
             )
@@ -388,7 +382,11 @@ fun ExpenseCard(
 
                     // Description
                     Text(
-                        text = if(expense.description.isNullOrEmpty()) expense.type else expense.description,
+                        text = if(expense.description.isNullOrEmpty())
+                            expense.type
+                        else
+                            expense.description!!,
+
                         color = colorResource(id = R.color.light_text),
                         fontSize = 10.sp,
                         fontFamily = readexPro

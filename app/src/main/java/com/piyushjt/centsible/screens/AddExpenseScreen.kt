@@ -1,20 +1,16 @@
 package com.piyushjt.centsible.screens
 
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.shrinkHorizontally
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -53,6 +48,7 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -74,15 +70,19 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 
+val expense = Expense(
+    title = "",
+    description = "",
+    type = "ent",
+    amount = 0f,
+    date = Util.getCurrentDate(),
+    id = -1,
+)
+
+
 // Add Expense Screen
 @Composable
 fun AddExpense(
-    state: ExpenseState,
-    title: MutableState<String>,
-    description: MutableState<String>,
-    amount: MutableState<Float>,
-    type: MutableState<String>,
-    typeBoxExpanded: MutableState<Boolean>,
     onEvent: (ExpenseEvent) -> Unit,
     navFilled: MutableState<String>
 ) {
@@ -91,7 +91,7 @@ fun AddExpense(
 
     val date = remember { mutableLongStateOf(todayDate) }
 
-    val isExpense = if (amount.value > 0) false else true
+    val isExpense = if (expense.amount > 0) false else true
 
 
     Column(
@@ -138,20 +138,14 @@ fun AddExpense(
         ) {
 
             TypeSelector(
-                modifier = Modifier,
-
-                type = type
+                modifier = Modifier
             )
 
         }
 
         // Save Button
         SaveButton(
-            title = title,
-            description = description,
-            type = type,
-            date = date,
-            amount = amount,
+            expense = expense,
             navFilled = navFilled,
             onEvent = onEvent
         )
@@ -187,7 +181,10 @@ fun Title(
             fontSize = 24.sp
         ),
         shape = RoundedCornerShape(20.dp),
-        onValueChange = { value = it },
+        onValueChange = {
+            value = it
+            expense.title = it
+        },
         placeholder = {
             Text(
                 text = "Title",
@@ -233,7 +230,10 @@ fun Description(
             fontSize = 18.sp
         ),
         shape = RoundedCornerShape(20.dp),
-        onValueChange = { value = it },
+        onValueChange = {
+            value = it
+            expense.description = it
+        },
         placeholder = {
             Text(
                 text = "Description",
@@ -290,14 +290,19 @@ fun Amount(
 
                 value = newValue
 
-                value = if(newValue in arrayOf("", " ", "."))
+                value = if (newValue in arrayOf("", " ", "."))
                     ""
                 else
                     newValue
 
+                expense.amount = if (value != "-" && value.isNotEmpty())
+                    value.toFloat()
+                else
+                    0f
+
             }
 
-            },
+        },
         placeholder = {
             Text(
                 text = "Amount",
@@ -324,9 +329,7 @@ fun Amount(
 
 @Composable
 fun TypeSelector(
-    modifier: Modifier,
-
-    type: MutableState<String>
+    modifier: Modifier
 ) {
 
     // Background color
@@ -367,8 +370,8 @@ fun TypeSelector(
 
                 // Logo
                 Image(
-                    painter = Util.image(type.value),
-                    contentDescription = type.value,
+                    painter = Util.image(expense.type),
+                    contentDescription = expense.type,
                     modifier = Modifier
                         .aspectRatio(1f)
                         .padding(10.dp)
@@ -407,7 +410,7 @@ fun TypeSelector(
                 DropdownMenuItem(
 
                     onClick = {
-                        type.value = item
+                        expense.type = item
                         expand = false
                     },
 
@@ -548,16 +551,17 @@ fun DatePickerUI(
 // Save / Update Button
 @Composable
 fun SaveButton(
-    title: MutableState<String>,
-    description: MutableState<String>,
-    type: MutableState<String>,
-    amount: MutableState<Float>,
-    date: MutableState<Long>,
+    expense: Expense,
     navFilled: MutableState<String>,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
-    val isExpense = if (amount.value > 0f) false else true
+    val isExpense = if (expense.amount > 0f) false else true
+
+
+    val context = LocalContext.current
+    var toast: Toast? by remember { mutableStateOf(null) }
+
 
     // The button
     TextButton(
@@ -570,26 +574,27 @@ fun SaveButton(
         onClick = {
 
             // Save the Expense if title and amount are not empty
-            if (!(title.value.isBlank() || amount.value == 0f)) {
+            if (!(expense.title.isBlank() || expense.amount == 0f)) {
 
 
                 Log.d("Yes", "Condition satisfies for blank values")
-                Log.d("Yes", title.value)
+                Log.d("Yes", expense.title)
 
                 onEvent(
-                    ExpenseEvent.SaveExpense(
-                        Expense(
-                            title = title.value,
-                            description = description.value,
-                            type = type.value,
-                            amount = amount.value,
-                            date = date.value,
-                            id = 1
-                        )
-                    )
+                    ExpenseEvent.SaveExpense(expense)
 
                 )
                 navFilled.value = "home"
+
+            }
+            else{
+
+                // Cancel the existing toast if it's showing
+                toast?.cancel()
+
+                // Show a new toast for invalid input
+                toast = Toast.makeText(context, "Title and Amount cannot be empty", Toast.LENGTH_SHORT)
+                toast?.show()
 
             }
 
@@ -618,147 +623,147 @@ fun SaveButton(
 }
 
 
-    @Preview
-    @Composable
-    private fun AddScreenPreview() {
+@Preview
+@Composable
+private fun AddScreenPreview() {
 
-        CentsibleTheme {
-            Surface(
-                modifier = Modifier
-                    .background(colorResource(id = R.color.background))
-                    .fillMaxSize()
-                    .padding(top = 42.dp)
-            ) {
+    CentsibleTheme {
+        Surface(
+            modifier = Modifier
+                .background(colorResource(id = R.color.background))
+                .fillMaxSize()
+                .padding(top = 42.dp)
+        ) {
 
 
-                val expenses = remember { mutableStateOf(emptyList<Expense>()) }
-                val title = remember { mutableStateOf("Title") }
-                val description = remember { mutableStateOf("Desc") }
-                val type = remember { mutableStateOf("ent") }
-                val amount = remember { mutableFloatStateOf(-100.0f) }
-                val date = remember { mutableLongStateOf(20241231L) }
-                val id = remember { mutableIntStateOf(-1) }
-                val navFilled = remember { mutableStateOf("add") }
-                val typeBoxExpanded = remember { mutableStateOf(false) }
+            val expenses = remember { mutableStateOf(emptyList<Expense>()) }
+            val title = remember { mutableStateOf("Title") }
+            val description = remember { mutableStateOf("Desc") }
+            val type = remember { mutableStateOf("ent") }
+            val amount = remember { mutableFloatStateOf(-100.0f) }
+            val date = remember { mutableLongStateOf(20241231L) }
+            val id = remember { mutableIntStateOf(-1) }
+            val navFilled = remember { mutableStateOf("add") }
+            val typeBoxExpanded = remember { mutableStateOf(false) }
 
-                MainScreen(
-                    state = ExpenseState(
+            MainScreen(
+                state = ExpenseState(
 
-                        expenses = listOf(
+                    expenses = listOf(
 
-                            Expense(
-                                title = "Title",
-                                description = "Desc",
-                                type = "ent",
-                                amount = -100.0f,
-                                date = 20241231L,
-                                id = 1
-                            ),
-
-                            Expense(
-                                title = "Title",
-                                description = "Desc",
-                                type = "ent",
-                                amount = -100.0f,
-                                date = 20241231L,
-                                id = 1
-                            ),
-
-                            Expense(
-                                title = "Title",
-                                description = "Desc",
-                                type = "ent",
-                                amount = -100.0f,
-                                date = 20241231L,
-                                id = 1
-                            ),
-
-                            Expense(
-                                title = "Title",
-                                description = "Desc",
-                                type = "ent",
-                                amount = -100.0f,
-                                date = 20241231L,
-                                id = 1
-                            ),
-
-                            Expense(
-                                title = "Title",
-                                description = "Desc",
-                                type = "ent",
-                                amount = -100.0f,
-                                date = 20241231L,
-                                id = 1
-                            ),
-
-                            Expense(
-                                title = "Title",
-                                description = "Desc",
-                                type = "ent",
-                                amount = -100.0f,
-                                date = 20241231L,
-                                id = 1
-                            ),
-
-                            Expense(
-                                title = "Title",
-                                description = "Desc",
-                                type = "ent",
-                                amount = -100.0f,
-                                date = 20241231L,
-                                id = 1
-                            ),
-
-                            Expense(
-                                title = "Title",
-                                description = "Desc",
-                                type = "ent",
-                                amount = -100.0f,
-                                date = 20241231L,
-                                id = 1
-                            ),
-
-                            Expense(
-                                title = "Title",
-                                description = "Desc",
-                                type = "ent",
-                                amount = -100.0f,
-                                date = 20241231L,
-                                id = 1
-                            ),
-
-                            Expense(
-                                title = "Title",
-                                description = "Desc",
-                                type = "ent",
-                                amount = -100.0f,
-                                date = 20241231L,
-                                id = 1
-                            ),
-
-                            Expense(
-                                title = "Title",
-                                description = "Desc",
-                                type = "ent",
-                                amount = -100.0f,
-                                date = 20241231L,
-                                id = 1
-                            )
-
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
                         ),
-                    ),
-                    expenses = expenses,
-                    title = title,
-                    description = description,
-                    type = type,
-                    amount = amount,
-                    date = date,
-                    id = id,
-                    typeBoxExpanded = typeBoxExpanded,
-                    navFilled = navFilled,
-                    onEvent = {},
-                )
-            }
 
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        ),
+
+                        Expense(
+                            title = "Title",
+                            description = "Desc",
+                            type = "ent",
+                            amount = -100.0f,
+                            date = 20241231L,
+                            id = 1
+                        )
+
+                    ),
+                ),
+                expenses = expenses,
+                title = title,
+                description = description,
+                type = type,
+                amount = amount,
+                date = date,
+                id = id,
+                typeBoxExpanded = typeBoxExpanded,
+                navFilled = navFilled,
+                onEvent = {},
+            )
         }
+
     }
+}
