@@ -13,13 +13,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -55,12 +52,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import androidx.room.PrimaryKey
 import androidx.room.Room
-import com.piyushjt.centsible.Screens.ALlExpenses
-import com.piyushjt.centsible.Screens.AddExpense
-import com.piyushjt.centsible.Screens.EditExpenseScreen
-import com.piyushjt.centsible.Screens.Stats
+import com.piyushjt.centsible.screens.ALlExpenses
+import com.piyushjt.centsible.screens.AddExpense
+import com.piyushjt.centsible.screens.EditExpenseScreen
+import com.piyushjt.centsible.screens.Stats
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import kotlinx.serialization.Serializable
 
@@ -200,6 +196,8 @@ data class EditExpenseScreen(
 val readexPro = FontFamily(
     Font(R.font.readex_pro, FontWeight.Medium)
 )
+
+val types = listOf("misc", "food", "shopping", "travel", "ent", "grocery", "everyday", "skill")
 
 
 

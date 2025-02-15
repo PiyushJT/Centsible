@@ -1,4 +1,4 @@
-package com.piyushjt.centsible.Screens
+package com.piyushjt.centsible.screens
 
 import androidx.compose.runtime.Composable
 import com.piyushjt.centsible.ExpenseEvent

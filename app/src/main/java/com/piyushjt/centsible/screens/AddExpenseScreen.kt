@@ -1,14 +1,9 @@
-package com.piyushjt.centsible.Screens
+package com.piyushjt.centsible.screens
 
 import android.util.Log
-import android.widget.EditText
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,10 +25,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
@@ -43,7 +36,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
@@ -63,9 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,6 +67,7 @@ import com.piyushjt.centsible.MainScreen
 import com.piyushjt.centsible.R
 import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.readexPro
+import com.piyushjt.centsible.types
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.time.Instant
 import java.time.ZoneId
@@ -140,13 +131,19 @@ fun AddExpense(
 
 
 
-        // Drop Down Type Selector
-        TypeSelector(
-            type = type,
-            typeBoxExpanded = typeBoxExpanded,
-            onEvent = onEvent
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
 
+            TypeSelector(
+                modifier = Modifier,
+
+                type = type
+            )
+
+        }
 
         // Save Button
         SaveButton(
@@ -157,14 +154,6 @@ fun AddExpense(
             amount = amount,
             navFilled = navFilled,
             onEvent = onEvent
-        )
-
-        CustomDropdownMenu(
-            list = listOf("as", "aif"),
-            defaultSelected = "as",
-            color = Color.Blue,
-            modifier = Modifier,
-            onSelected = {}
         )
 
     }
@@ -331,220 +320,121 @@ fun Amount(
 }
 
 
-// Drop down Type Selector
+
+
 @Composable
 fun TypeSelector(
-    type: MutableState<String>,
-    typeBoxExpanded: MutableState<Boolean>,
-    onEvent: (ExpenseEvent) -> Unit
+    modifier: Modifier,
+
+    type: MutableState<String>
 ) {
 
-    // List of Types
-    val list = listOf("misc", "food", "shopping", "travel", "ent", "grocery", "everyday", "skill")
-
-    val bgColors = mapOf(
-        1 to colorResource(id = R.color.green_bg),
-        2 to colorResource(id = R.color.red_bg),
-        3 to colorResource(id = R.color.pink_bg),
-        4 to colorResource(id = R.color.gray_bg),
-        5 to colorResource(id = R.color.cream_bg)
-    )
-
-
     // Background color
-    val bgColor = bgColors[(1..5).random()]!!
+    val bgColor = Util.getRandomColor()
+
+    var expand by remember { mutableStateOf(false) }
 
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = CenterVertically
+    Box(
+        modifier
+            .width(80.dp),
+        contentAlignment = Alignment.Center
     ) {
 
 
-        Box(
+        Row(
             modifier = Modifier
-                .width(80.dp)
-        ) {
-
-            Row(
-                modifier = Modifier
-                    .padding(top = 20.dp)
-                    .border(
-                        0.5.dp, colorResource(id = R.color.hint_text), RoundedCornerShape(20.dp)
-                    )
-                    .height(80.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(colorResource(id = R.color.card_background))
-            ) {
-
-                Box(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(15.dp))
-                        .background(bgColor)
-                        .clickable {
-                            typeBoxExpanded.value = !typeBoxExpanded.value
-                        }
-
-                ) {
-
-                    // Logo
-                    Image(
-                        painter = Util.image(type.value),
-                        contentDescription = type.value,
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .padding(10.dp)
-                            .background(bgColor)
-                    )
-
+                .padding(top = 20.dp)
+                .border(
+                    0.5.dp, colorResource(id = R.color.hint_text), RoundedCornerShape(20.dp)
+                )
+                .height(80.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(colorResource(id = R.color.card_background))
+                .clickable {
+                    expand = true
                 }
-            }
-
-        }
-
-        // Giving animation and expand and shrink
-        AnimatedVisibility(
-            visible = typeBoxExpanded.value,
-            enter = expandHorizontally(),
-            exit = shrinkHorizontally()
         ) {
 
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(bgColor)
+
             ) {
-                Row(
+
+                // Logo
+                Image(
+                    painter = Util.image(type.value),
+                    contentDescription = type.value,
                     modifier = Modifier
-                        .padding(top = 20.dp)
-                        .border(
-                            0.5.dp, colorResource(id = R.color.hint_text), RoundedCornerShape(20.dp)
-                        )
-                        .fillMaxWidth()
-                        .height(80.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(colorResource(id = R.color.card_background))
-                        .horizontalScroll(rememberScrollState())
-                ) {
+                        .aspectRatio(1f)
+                        .padding(10.dp)
+                        .background(bgColor)
+                )
 
-                    // Showing all types (logos only)
-                    for (item in list) {
+            }
+        }
 
+        DropdownMenu(
 
-                        // Background color
-                        val bgColor = bgColors[(1..5).random()]!!
+            modifier = Modifier
+                .background(colorResource(id = R.color.card_background))
+                .width(80.dp)
+                .fillMaxHeight(0.4f),
+
+            expanded = expand,
+
+            onDismissRequest = {
+                expand = false
+            },
+
+            properties = PopupProperties(
+                focusable = false,
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true
+            ),
+
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(0.5.dp, colorResource(id = R.color.hint_text))
+
+        ) {
+
+            types.forEach{ item ->
+
+                DropdownMenuItem(
+
+                    onClick = {
+                        type.value = item
+                        expand = false
+                    },
+
+                    text = {
 
                         Box(
                             modifier = Modifier
-                                .padding(8.dp)
+                                .padding(vertical = 4.dp)
                                 .aspectRatio(1f)
                                 .clip(RoundedCornerShape(15.dp))
                                 .background(bgColor)
-                                .clickable {
-                                    // Update state of type and close the selector
-                                    type.value = item
-                                    typeBoxExpanded.value = false
-                                }
-
                         ) {
 
                             // Logo
                             Image(
                                 painter = Util.image(item),
-                                contentDescription = type.value,
+                                contentDescription = item,
                                 modifier = Modifier
-                                    .fillMaxHeight()
                                     .aspectRatio(1f)
                                     .padding(10.dp)
                             )
 
                         }
-
                     }
-
-
-                    // Spacer for another type
-                    Spacer(
-                        modifier = Modifier.height(12.dp)
-                    )
-
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun CustomDropdownMenu(
-    list: List<String>, // Menu Options
-    defaultSelected: String, // Default Selected Option on load
-    color: Color, // Color
-    modifier: Modifier, //
-    onSelected: (Int) -> Unit, // Pass the Selected Option
-) {
-    var selectedIndex by remember { mutableStateOf(0) }
-    var expand by remember { mutableStateOf(false) }
-    var stroke by remember { mutableStateOf(1) }
-    Box(
-        modifier
-            .padding(8.dp)
-            .border(
-                border = BorderStroke(stroke.dp, color),
-                shape = RoundedCornerShape(4.dp)
-            )
-            .clickable {
-                expand = true
-                stroke = if (expand) 2 else 1
-            },
-        contentAlignment = Alignment.Center
-    ) {
-
-        Text(
-            text = defaultSelected,
-            color = color,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
-        )
-
-        DropdownMenu(
-            expanded = expand,
-            onDismissRequest = {
-                expand = false
-                stroke = if (expand) 2 else 1
-            },
-            properties = PopupProperties(
-                focusable = false,
-                dismissOnBackPress = true,
-                dismissOnClickOutside = true,
-            ),
-            modifier = Modifier
-                .background(Color.White)
-                .padding(2.dp)
-                .fillMaxWidth(.4f)
-        ) {
-            list.forEachIndexed { index, item ->
-                DropdownMenuItem(
-                    onClick = {
-                        selectedIndex = index
-                        expand = false
-                        stroke = if (expand) 2 else 1
-                        onSelected(selectedIndex)
-                    },
-                    text = {
-                        Text(
-                            text = "hi"
-                        )
-                    },
-                    modifier = Modifier,
                 )
             }
         }
-
     }
 }
 
