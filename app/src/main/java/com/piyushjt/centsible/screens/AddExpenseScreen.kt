@@ -123,7 +123,6 @@ fun AddExpense(
 
             // Date Picker
             DatePickerUI(
-                date = date,
                 onEvent = onEvent
             )
 
@@ -192,7 +191,7 @@ fun Title(
                 color = colorResource(id = R.color.hint_text)
             )
         },
-        maxLines = 1,
+        singleLine = true,
         modifier = Modifier
             .padding(top = 20.dp)
             .fillMaxWidth()
@@ -241,7 +240,7 @@ fun Description(
                 color = colorResource(id = R.color.hint_text)
             )
         },
-        maxLines = 1,
+        singleLine = true,
         modifier = Modifier
             .padding(top = 20.dp)
             .fillMaxWidth()
@@ -286,7 +285,7 @@ fun Amount(
             val regex = "^-?\\d*(\\.\\d{0,2})?$".toRegex()
 
 
-            if (regex.matches(newValue) && !newValue.contains(" ") && !newValue.contains(",")) {
+            if (regex.matches(newValue) && !newValue.contains(" ") && !newValue.contains(",") && !newValue.startsWith("-.")) {
 
                 value = newValue
 
@@ -295,7 +294,7 @@ fun Amount(
                 else
                     newValue
 
-                expense.amount = if (value != "-" && value.isNotEmpty())
+                expense.amount = if (value != "-" && value.isNotEmpty() && value != "-.")
                     value.toFloat()
                 else
                     0f
@@ -315,7 +314,7 @@ fun Amount(
             keyboardType = KeyboardType.Number
         ),
 
-        maxLines = 1,
+        singleLine = true,
         modifier = Modifier
             .fillMaxWidth(0.4f)
             .padding(top = 20.dp)
@@ -446,9 +445,10 @@ fun TypeSelector(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerUI(
-    date: MutableState<Long>,
     onEvent: (ExpenseEvent) -> Unit
 ) {
+
+    val date = remember { mutableLongStateOf(Util.getCurrentDate()) }
 
 
     // Some temp States
@@ -457,7 +457,7 @@ fun DatePickerUI(
 
 
     // Formatted date
-    val formattedDate = Util.formatToMonthDayYear(date.value)
+    val formattedDate = Util.formatToMonthDayYear(date.longValue)
 
 
     Row(
@@ -515,7 +515,9 @@ fun DatePickerUI(
                                 .format(formatter)
 
                         // Set the new date to State
-                        date.value = anotherFormattedDate.toLong()
+                        date.longValue = anotherFormattedDate.toLong()
+
+                        expense.date = date.longValue
 
                     }
                 ) {
