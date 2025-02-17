@@ -3,6 +3,7 @@
 package com.piyushjt.centsible
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,25 +47,10 @@ class ExpenseViewModel(
                 val type = data.type
                 val amount = data.amount
                 val date = data.date
-                val id = data.id
-
-                Log.d("Yes", "Came to save expense iin view Model")
-                Log.d("Yes", title)
 
                 if (title.isBlank() || amount == 0f) {
                     return
                 }
-
-
-                // To Update the Expense
-                val updateExpense = Expense(
-                    title = title,
-                    description = description,
-                    type = type,
-                    amount = amount,
-                    date = date,
-                    id = id
-                )
 
 
                 // To Create a new Expense
@@ -78,8 +64,37 @@ class ExpenseViewModel(
 
 
                 viewModelScope.launch {
-                    Log.d("Yes", "Came to save expense iin view Model in new coroutine")
                     dao.upsertExpense(newExpense)
+                }
+
+            }
+
+
+            // Delete an Expense
+            is ExpenseEvent.UpdateExpense -> {
+
+
+                val data = event.expense
+
+                // To Update the Expense
+                val updateExpense = Expense(
+                    title = data.title,
+                    description = data.description,
+                    type = data.type,
+                    amount = data.amount,
+                    date = data.date,
+                    id = data.id
+                )
+
+                Log.d("HEh", data.id.toString())
+                Log.d("HEh", data.title)
+                Log.d("HEh", data.description.toString())
+                Log.d("HEh", data.date.toString())
+                Log.d("HEh", data.amount.toString())
+                Log.d("HEh", data.type)
+
+                viewModelScope.launch {
+                    dao.upsertExpense(updateExpense)
                 }
 
             }

@@ -604,13 +604,8 @@ fun SaveButton(
             // Save the Expense if title and amount are not empty
             if (!(expense.title.isBlank() || expense.amount == 0f)) {
 
-
-                Log.d("Yes", "Condition satisfies for blank values")
-                Log.d("Yes", expense.title)
-
                 onEvent(
                     ExpenseEvent.SaveExpense(expense)
-
                 )
                 navFilled.value = "home"
 

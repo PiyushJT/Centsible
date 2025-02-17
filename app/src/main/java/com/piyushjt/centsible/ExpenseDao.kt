@@ -5,7 +5,6 @@ package com.piyushjt.centsible
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
-import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
@@ -14,9 +13,6 @@ interface ExpenseDao {
 
     @Upsert
     suspend fun upsertExpense(expense: Expense)
-
-    @Update
-    suspend fun updateExpense(expense: Expense)
 
     @Delete
     suspend fun deleteExpense(expense: Expense)

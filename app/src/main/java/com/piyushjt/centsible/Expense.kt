@@ -15,5 +15,5 @@ data class Expense(
     var type: String,
     var amount: Float,
     var date: Long,
-    @PrimaryKey(autoGenerate = true) val id: Int = 0
+    @PrimaryKey(autoGenerate = true) var id: Int = 0
 )

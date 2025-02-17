@@ -47,30 +47,6 @@ fun ALlExpenses(
             .padding(horizontal = 24.dp)
     ) {
 
-/*
-
-        TextButton(
-            onClick = {
-                navController.navigate(
-                    com.piyushjt.centsible.EditExpenseScreen(
-                        title = "",
-                        description = "da",
-                        type = "ent",
-                        amount = 9f,
-                        date = 20240101L,
-                        id = 1
-                    )
-                )
-            }
-        ) {
-            Text(
-                text = "Click"
-            )
-        }
-
-*/
-
-
         Header()
 
         ListOfExpenses(

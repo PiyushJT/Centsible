@@ -90,18 +90,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            val expenses = remember { mutableStateOf(emptyList<Expense>()) }
-            val title = remember { mutableStateOf("Title") }
-            val description = remember { mutableStateOf("Desc") }
-            val type = remember { mutableStateOf("ent") }
-            val amount = remember { mutableFloatStateOf(-100.0f) }
-            val date = remember { mutableLongStateOf(20241231L) }
-            val id = remember { mutableIntStateOf(-1) }
-
             val navFilled = remember { mutableStateOf("add") }
-
-            val typeBoxExpanded = remember { mutableStateOf(false) }
-
 
             CentsibleTheme {
 
@@ -155,6 +144,7 @@ class MainActivity : ComponentActivity() {
                                 id = args.id,
                                 navController = navController,
                                 onEvent = viewModel::onEvent,
+                                navFilled = navFilled
                             )
 
                         }
