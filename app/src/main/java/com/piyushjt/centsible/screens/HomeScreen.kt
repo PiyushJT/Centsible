@@ -15,7 +15,6 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,10 +25,9 @@ import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.Heading
 import com.piyushjt.centsible.MainScreen
-import com.piyushjt.centsible.R
 import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.UI.readexPro
-import com.piyushjt.centsible.UI.types
+import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -144,7 +142,7 @@ fun DayDate() {
         // Day
         Text(
             text = SimpleDateFormat("EEEE,", Locale.getDefault()).format(Date()),
-            color = colorResource(id = R.color.light_text),
+            color = UI.colors("light_text"),
             fontSize = 14.sp,
             fontFamily = readexPro
         )
@@ -152,7 +150,7 @@ fun DayDate() {
         // Date
         Text(
             text = SimpleDateFormat("dd MMMM", Locale.getDefault()).format(Date()),
-            color = colorResource(id = R.color.main_text),
+            color = UI.colors("main_text"),
             fontSize = 18.sp,
             fontFamily = readexPro
         )
@@ -173,7 +171,7 @@ fun TotalBalance() {
 
         Text(
             text = "Total Balance",
-            color = colorResource(id = R.color.light_text),
+            color = UI.colors("light_text"),
             fontSize = 18.sp,
             fontFamily = readexPro
         )
@@ -181,7 +179,7 @@ fun TotalBalance() {
         // Balance
         Text(
             text = "₹58,21,985.70",
-            color = colorResource(id = R.color.lime),
+            color = UI.colors("lime"),
             fontSize = 34.sp,
             fontFamily = readexPro
         )
@@ -197,7 +195,7 @@ private fun HomeScreenPreview() {
     CentsibleTheme {
         Surface(
             modifier = Modifier
-                .background(colorResource(id = R.color.background))
+                .background(UI.colors("background"))
                 .fillMaxSize()
                 .padding(top = 42.dp)
         ) {
@@ -215,7 +213,6 @@ private fun HomeScreenPreview() {
 
             MainScreen(
                 state = ExpenseState(
-
                     expenses = listOf(
 
                         Expense(
@@ -319,16 +316,8 @@ private fun HomeScreenPreview() {
 
                     ),
                 ),
-                expenses = expenses,
-                title = title,
-                description = description,
-                type = type,
-                amount = amount,
-                date = date,
-                id = id,
-                typeBoxExpanded = typeBoxExpanded,
                 navFilled = navFilled,
-                onEvent = {},
+                onEvent = {}
             )
         }
 

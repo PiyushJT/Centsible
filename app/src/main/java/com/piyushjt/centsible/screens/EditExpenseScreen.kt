@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,6 +32,7 @@ import androidx.navigation.NavController
 import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.R
+import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
 
 
@@ -45,23 +45,48 @@ fun EditExpenseScreen(
     amount: Float,
     date: Long,
     id: Int,
-    navController: NavController
+    navController: NavController,
+    onEvent: (ExpenseEvent) -> Unit
 ) {
 
-/*
-    TextButton(
-        onClick = {
-            navController.navigate(
-                MainScreen
+
+    Column (
+
+        modifier = Modifier
+            .fillMaxSize(),
+
+        horizontalAlignment = CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceAround
+
+    ) {
+
+
+        TextButton(
+            onClick = {
+                onEvent(ExpenseEvent.DeleteExpense(
+                    expense = Expense(
+                        title = title,
+                        description = description,
+                        type = type,
+                        amount = amount,
+                        date = date,
+                        id = id
+                    )
+                ))
+
+                navController.popBackStack()
+            }
+        ) {
+            Text(
+                text = "Delete"
             )
         }
-    ) {
-        Text(
-            text = "Click"
-        )
-    }
 
-*/
+        Text(
+            text =  "$title \n$description \n$type \n$amount \n$date \n$id"
+        )
+
+    }
 
 }
 
@@ -88,10 +113,10 @@ fun BackButton(
         },
 
         colors = IconButtonColors(
-            contentColor = colorResource(id = R.color.main_text),
-            disabledContentColor = colorResource(id = R.color.card_background),
-            containerColor = colorResource(id = R.color.card_background),
-            disabledContainerColor = colorResource(id = R.color.card_background)
+            contentColor = UI.colors("main_text"),
+            disabledContentColor = UI.colors("card_background"),
+            containerColor = UI.colors("card_background"),
+            disabledContainerColor = UI.colors("card_background")
         )
 
     ) {
@@ -136,10 +161,10 @@ fun DeleteButton(
 
         },
         colors = IconButtonColors(
-            contentColor = colorResource(id = R.color.red),
-            disabledContentColor = colorResource(id = R.color.red50),
-            containerColor = colorResource(id = R.color.card_background),
-            disabledContainerColor = colorResource(id = R.color.card_background)
+            contentColor = UI.colors("red"),
+            disabledContentColor = UI.colors("red50"),
+            containerColor = UI.colors("card_background"),
+            disabledContainerColor = UI.colors("card_background")
         ),
 
         ) {
@@ -197,7 +222,7 @@ fun DeleteDialog(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(20.dp))
 
-                        .background(colorResource(id = R.color.card_background))
+                        .background(UI.colors("card_background"))
                 ) {
 
                     Column(
@@ -209,7 +234,7 @@ fun DeleteDialog(
 
                         Text(
                             text = "Confirm Delete?",
-                            color = colorResource(id = R.color.text),
+                            color = UI.colors("text"),
                             fontSize = 26.sp,
                             fontFamily = readexPro
                         )
@@ -225,10 +250,10 @@ fun DeleteDialog(
                                 modifier = Modifier
                                     .padding(horizontal = 10.dp)
                                     .clip(RoundedCornerShape(15.dp))
-                                    .background(colorResource(id = R.color.trans))
+                                    .background(UI.colors("trans"))
                                     .border(
                                         1.dp,
-                                        colorResource(id = R.color.text),
+                                        UI.colors("text"),
                                         RoundedCornerShape(15.dp)
                                     )
                                     .padding(horizontal = 5.dp),
@@ -239,7 +264,7 @@ fun DeleteDialog(
                             ) {
                                 Text(
                                     text = "Cancel",
-                                    color = colorResource(id = R.color.text),
+                                    color = UI.colors("text"),
                                     fontSize = 20.sp,
                                     fontFamily = readexPro
                                 )
@@ -251,14 +276,14 @@ fun DeleteDialog(
                                 modifier = Modifier
                                     .padding(horizontal = 10.dp)
                                     .clip(RoundedCornerShape(15.dp))
-                                    .background(colorResource(id = R.color.red))
+                                    .background(UI.colors("red"))
                                     .padding(horizontal = 5.dp),
                                 onClick = onDelete
 
                             ) {
                                 Text(
                                     text = "Delete",
-                                    color = colorResource(id = R.color.black),
+                                    color = UI.colors("black"),
                                     fontSize = 20.sp,
                                     fontFamily = readexPro
                                 )

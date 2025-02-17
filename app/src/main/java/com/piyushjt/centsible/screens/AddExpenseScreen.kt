@@ -1,5 +1,6 @@
 package com.piyushjt.centsible.screens
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -34,10 +35,10 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,10 +60,10 @@ import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.MainScreen
-import com.piyushjt.centsible.R
-import com.piyushjt.centsible.Util
+import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
-import com.piyushjt.centsible.UI.types
+import com.piyushjt.centsible.Util.types
+import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.time.Instant
 import java.time.ZoneId
@@ -81,17 +81,16 @@ val expense = Expense(
 
 
 // Add Expense Screen
+@SuppressLint("AutoboxingStateValueProperty")
 @Composable
 fun AddExpense(
     onEvent: (ExpenseEvent) -> Unit,
     navFilled: MutableState<String>
 ) {
 
-    val todayDate = Util.getCurrentDate()
+    val amount = remember { mutableFloatStateOf(expense.amount) }
 
-    val date = remember { mutableLongStateOf(todayDate) }
-
-    val isExpense = if (expense.amount > 0) false else true
+    val isExpense = if (amount.floatValue > 0) false else true
 
 
     Column(
@@ -104,7 +103,7 @@ fun AddExpense(
         // Header
         Text(
             text = if (isExpense) "Add an Expense" else "Add an Earning",
-            color = colorResource(id = R.color.main_text),
+            color = UI.colors("main_text"),
             fontSize = 18.sp,
             fontFamily = readexPro
         )
@@ -119,7 +118,9 @@ fun AddExpense(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
-            Amount()
+            Amount(
+                amount = amount
+            )
 
             // Date Picker
             DatePickerUI(
@@ -144,6 +145,7 @@ fun AddExpense(
 
         // Save Button
         SaveButton(
+            amount = amount,
             expense = expense,
             navFilled = navFilled,
             onEvent = onEvent
@@ -164,16 +166,16 @@ fun Title(
         value = value,
         colors = TextFieldDefaults.colors(
 
-            focusedContainerColor = colorResource(id = R.color.card_background),
-            unfocusedContainerColor = colorResource(id = R.color.card_background),
+            focusedContainerColor = UI.colors("card_background"),
+            unfocusedContainerColor = UI.colors("card_background"),
 
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
 
-            focusedTextColor = colorResource(id = R.color.text),
-            unfocusedTextColor = colorResource(id = R.color.text),
+            focusedTextColor = UI.colors("text"),
+            unfocusedTextColor = UI.colors("text"),
 
-            cursorColor = colorResource(id = R.color.text)
+            cursorColor = UI.colors("text")
 
         ),
         textStyle = TextStyle(
@@ -188,14 +190,18 @@ fun Title(
             Text(
                 text = "Title",
                 fontSize = 24.sp,
-                color = colorResource(id = R.color.hint_text)
+                color = UI.colors("hint_text")
             )
         },
         singleLine = true,
         modifier = Modifier
             .padding(top = 20.dp)
             .fillMaxWidth()
-            .border(0.3.dp, colorResource(id = R.color.hint_text), RoundedCornerShape(20.dp))
+            .border(
+                0.3.dp,
+                color = UI.colors("hint_text"),
+                RoundedCornerShape(20.dp)
+            )
     )
 
 }
@@ -213,16 +219,16 @@ fun Description(
         value = value,
         colors = TextFieldDefaults.colors(
 
-            focusedContainerColor = colorResource(id = R.color.card_background),
-            unfocusedContainerColor = colorResource(id = R.color.card_background),
+            focusedContainerColor = UI.colors("card_background"),
+            unfocusedContainerColor = UI.colors("card_background"),
 
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
 
-            focusedTextColor = colorResource(id = R.color.text),
-            unfocusedTextColor = colorResource(id = R.color.text),
+            focusedTextColor = UI.colors("text"),
+            unfocusedTextColor = UI.colors("text"),
 
-            cursorColor = colorResource(id = R.color.text)
+            cursorColor = UI.colors("text")
 
         ),
         textStyle = TextStyle(
@@ -237,14 +243,18 @@ fun Description(
             Text(
                 text = "Description",
                 fontSize = 18.sp,
-                color = colorResource(id = R.color.hint_text)
+                color = UI.colors("hint_text")
             )
         },
         singleLine = true,
         modifier = Modifier
             .padding(top = 20.dp)
             .fillMaxWidth()
-            .border(0.3.dp, colorResource(id = R.color.hint_text), RoundedCornerShape(20.dp))
+            .border(
+                0.3.dp,
+                color = UI.colors("hint_text"),
+                RoundedCornerShape(20.dp)
+            )
     )
 
 }
@@ -253,6 +263,7 @@ fun Description(
 
 @Composable
 fun Amount(
+    amount: MutableFloatState,
     modifier: Modifier = Modifier
 ) {
 
@@ -262,16 +273,16 @@ fun Amount(
         value = value,
         colors = TextFieldDefaults.colors(
 
-            focusedContainerColor = colorResource(id = R.color.card_background),
-            unfocusedContainerColor = colorResource(id = R.color.card_background),
+            focusedContainerColor = UI.colors("card_background"),
+            unfocusedContainerColor = UI.colors("card_background"),
 
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
 
-            focusedTextColor = colorResource(id = R.color.text),
-            unfocusedTextColor = colorResource(id = R.color.text),
+            focusedTextColor = UI.colors("text"),
+            unfocusedTextColor = UI.colors("text"),
 
-            cursorColor = colorResource(id = R.color.text)
+            cursorColor = UI.colors("text")
 
         ),
         textStyle = TextStyle(
@@ -299,6 +310,8 @@ fun Amount(
                 else
                     0f
 
+                amount.floatValue = expense.amount
+
             }
 
         },
@@ -306,7 +319,7 @@ fun Amount(
             Text(
                 text = "Amount",
                 fontSize = 16.sp,
-                color = colorResource(id = R.color.hint_text)
+                color = UI.colors("hint_text")
             )
         },
 
@@ -318,7 +331,11 @@ fun Amount(
         modifier = Modifier
             .fillMaxWidth(0.4f)
             .padding(top = 20.dp)
-            .border(0.3.dp, colorResource(id = R.color.hint_text), RoundedCornerShape(20.dp))
+            .border(
+                0.3.dp,
+                color = UI.colors("hint_text"),
+                RoundedCornerShape(20.dp)
+            )
     )
 
 }
@@ -348,11 +365,13 @@ fun TypeSelector(
             modifier = Modifier
                 .padding(top = 20.dp)
                 .border(
-                    0.5.dp, colorResource(id = R.color.hint_text), RoundedCornerShape(20.dp)
+                    0.5.dp,
+                    color = UI.colors("hint_text"),
+                    RoundedCornerShape(20.dp)
                 )
                 .height(80.dp)
                 .clip(RoundedCornerShape(20.dp))
-                .background(colorResource(id = R.color.card_background))
+                .background(color = UI.colors("card_background"))
                 .clickable {
                     expand = true
                 }
@@ -383,7 +402,7 @@ fun TypeSelector(
         DropdownMenu(
 
             modifier = Modifier
-                .background(colorResource(id = R.color.card_background))
+                .background(color = UI.colors("card_background"))
                 .width(80.dp)
                 .fillMaxHeight(0.4f),
 
@@ -400,7 +419,10 @@ fun TypeSelector(
             ),
 
             shape = RoundedCornerShape(20.dp),
-            border = BorderStroke(0.5.dp, colorResource(id = R.color.hint_text))
+            border = BorderStroke(
+                0.5.dp,
+                color = UI.colors("hint_text")
+            )
 
         ) {
 
@@ -470,9 +492,13 @@ fun DatePickerUI(
         // Box to open date picker
         Box(
             modifier = Modifier
-                .border(0.3.dp, colorResource(id = R.color.hint_text), RoundedCornerShape(20.dp))
+                .border(
+                    0.3.dp,
+                    color = UI.colors("hint_text"),
+                    RoundedCornerShape(20.dp)
+                )
                 .clip(RoundedCornerShape(20.dp))
-                .background(colorResource(id = R.color.card_background))
+                .background(color = UI.colors("card_background"))
                 .clickable { showDialog.value = true }
                 .padding(horizontal = 20.dp, vertical = 12.dp)
                 .align(CenterVertically)
@@ -481,7 +507,7 @@ fun DatePickerUI(
             // Showing the selected date
             Text(
                 text = formattedDate,
-                color = colorResource(id = R.color.text),
+                color = UI.colors("text"),
                 fontSize = 16.sp,
                 fontFamily = readexPro
             )
@@ -553,13 +579,13 @@ fun DatePickerUI(
 // Save / Update Button
 @Composable
 fun SaveButton(
+    amount: MutableFloatState,
     expense: Expense,
     navFilled: MutableState<String>,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
-    val isExpense = if (expense.amount > 0f) false else true
-
+    val isExpense = if (amount.floatValue > 0f) false else true
 
     val context = LocalContext.current
     var toast: Toast? by remember { mutableStateOf(null) }
@@ -604,11 +630,15 @@ fun SaveButton(
 
         shape = RoundedCornerShape(20.dp),
         colors = ButtonColors(
-            containerColor = if (isExpense) colorResource(id = R.color.red)
-            else colorResource(id = R.color.lime),
-            contentColor = colorResource(id = R.color.black),
-            disabledContainerColor = colorResource(id = R.color.red),
-            disabledContentColor = colorResource(id = R.color.black)
+
+            containerColor = if (isExpense)
+                UI.colors("red")
+            else
+                UI.colors("lime"),
+
+            contentColor = UI.colors("black"),
+            disabledContainerColor = UI.colors("red"),
+            disabledContentColor = UI.colors("black")
         )
 
     ) {
@@ -616,7 +646,7 @@ fun SaveButton(
         // Text on the button
         Text(
             text = if (isExpense) "Save Expense" else "Save Earning",
-            color = colorResource(id = R.color.black),
+            color = UI.colors("black"),
             fontSize = 20.sp,
             fontFamily = readexPro
         )
@@ -632,25 +662,15 @@ private fun AddScreenPreview() {
     CentsibleTheme {
         Surface(
             modifier = Modifier
-                .background(colorResource(id = R.color.background))
+                .background(UI.colors("background"))
                 .fillMaxSize()
                 .padding(top = 42.dp)
         ) {
 
-
-            val expenses = remember { mutableStateOf(emptyList<Expense>()) }
-            val title = remember { mutableStateOf("Title") }
-            val description = remember { mutableStateOf("Desc") }
-            val type = remember { mutableStateOf("ent") }
-            val amount = remember { mutableFloatStateOf(-100.0f) }
-            val date = remember { mutableLongStateOf(20241231L) }
-            val id = remember { mutableIntStateOf(-1) }
             val navFilled = remember { mutableStateOf("add") }
-            val typeBoxExpanded = remember { mutableStateOf(false) }
 
             MainScreen(
                 state = ExpenseState(
-
                     expenses = listOf(
 
                         Expense(
@@ -754,14 +774,6 @@ private fun AddScreenPreview() {
 
                     ),
                 ),
-                expenses = expenses,
-                title = title,
-                description = description,
-                type = type,
-                amount = amount,
-                date = date,
-                id = id,
-                typeBoxExpanded = typeBoxExpanded,
                 navFilled = navFilled,
                 onEvent = {},
             )

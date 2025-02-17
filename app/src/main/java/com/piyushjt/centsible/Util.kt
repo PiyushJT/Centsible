@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -78,11 +77,11 @@ object Util {
     fun getRandomColor() : Color {
 
         val bgColors = mapOf(
-            1 to colorResource(id = R.color.green_bg),
-            2 to colorResource(id = R.color.red_bg),
-            3 to colorResource(id = R.color.pink_bg),
-            4 to colorResource(id = R.color.gray_bg),
-            5 to colorResource(id = R.color.cream_bg)
+            1 to UI.colors("green_bg"),
+            2 to UI.colors("red_bg"),
+            3 to UI.colors("pink_bg"),
+            4 to UI.colors("gray_bg"),
+            5 to UI.colors("cream_bg")
         )
 
 
@@ -104,5 +103,9 @@ object Util {
     fun getBottomPadding(): Dp {
         return WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     }
+
+
+    val types = listOf("misc", "food", "shopping", "travel", "ent", "grocery", "everyday", "skill")
+
 
 }

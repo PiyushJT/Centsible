@@ -38,11 +38,7 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
@@ -123,21 +119,13 @@ class MainActivity : ComponentActivity() {
 
                         Surface(
                             modifier = Modifier
-                                .background(colorResource(id = R.color.background))
+                                .background(UI.colors("background"))
                                 .fillMaxSize()
                                 .padding(top = 42.dp)
                         ) {
 
                             MainScreen(
                                 state = state,
-                                expenses = expenses,
-                                title = title,
-                                description = description,
-                                type = type,
-                                amount = amount,
-                                date = date,
-                                id = id,
-                                typeBoxExpanded = typeBoxExpanded,
                                 navFilled = navFilled,
                                 onEvent = viewModel::onEvent,
                                 navController = navController
@@ -153,7 +141,7 @@ class MainActivity : ComponentActivity() {
 
                         Surface(
                             modifier = Modifier
-                                .background(colorResource(id = R.color.background))
+                                .background(UI.colors("background"))
                                 .fillMaxSize()
                                 .padding(top = 42.dp)
                         ) {
@@ -165,7 +153,8 @@ class MainActivity : ComponentActivity() {
                                 amount = args.amount,
                                 date = args.date,
                                 id = args.id,
-                                navController = navController
+                                navController = navController,
+                                onEvent = viewModel::onEvent,
                             )
 
                         }
@@ -198,17 +187,7 @@ data class EditExpenseScreen(
 @Composable
 fun MainScreen(
     state: ExpenseState,
-    expenses: MutableState<List<Expense>>,
-    title: MutableState<String>,
-    description: MutableState<String>,
-    type: MutableState<String>,
-    amount: MutableState<Float>,
-    date: MutableState<Long>,
-    id: MutableState<Int>,
     navFilled: MutableState<String>,
-
-    typeBoxExpanded: MutableState<Boolean>,
-
     onEvent: (ExpenseEvent) -> Unit,
     navController: NavController? = null
 ) {
@@ -263,7 +242,7 @@ fun Heading(
         modifier = Modifier
             .padding(top = 12.dp, bottom = 18.dp),
         text = text,
-        color = colorResource(id = R.color.heading_text),
+        color = UI.colors("heading_text"),
         fontSize = 18.sp,
         fontFamily = readexPro
     )
@@ -299,7 +278,7 @@ fun ExpenseCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(colorResource(id = R.color.card_background))
+                .background(UI.colors("card_background"))
                 .height(80.dp)
                 .clickable {
 
@@ -359,7 +338,7 @@ fun ExpenseCard(
                     // Title
                     Text(
                         text = expense.title,
-                        color = colorResource(id = R.color.text),
+                        color = UI.colors("text"),
                         fontSize = 12.sp,
                         fontFamily = readexPro
                     )
@@ -371,7 +350,7 @@ fun ExpenseCard(
                         else
                             expense.description!!,
 
-                        color = colorResource(id = R.color.light_text),
+                        color = UI.colors("light_text"),
                         fontSize = 10.sp,
                         fontFamily = readexPro
                     )
@@ -388,9 +367,9 @@ fun ExpenseCard(
                     .padding(14.dp),
                 text = amountToShow,
                 color = if(expense.amount < 0)
-                    colorResource(id = R.color.main_text)
+                    UI.colors("main_text")
                 else
-                    colorResource(id = R.color.lime),
+                    UI.colors("lime"),
                 fontSize = 14.sp,
                 fontFamily = readexPro
             )
@@ -465,7 +444,7 @@ fun NavBarButton(
                 .height(25.dp)
                 .width(25.dp),
 
-            tint = colorResource(id = R.color.main_text),
+            tint = UI.colors("main_text"),
             painter = icon,
 
             contentDescription = buttonLogo
@@ -488,7 +467,7 @@ fun NavBar(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
-            .background(colorResource(id = R.color.card_background)),
+            .background(UI.colors("card_background")),
     ) {
 
         Row(

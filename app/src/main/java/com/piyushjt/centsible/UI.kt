@@ -52,7 +52,4 @@ object UI {
         Font(R.font.readex_pro, FontWeight.Medium)
     )
 
-    val types = listOf("misc", "food", "shopping", "travel", "ent", "grocery", "everyday", "skill")
-
-
 }
