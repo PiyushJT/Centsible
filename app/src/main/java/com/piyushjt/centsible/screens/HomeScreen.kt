@@ -28,7 +28,8 @@ import com.piyushjt.centsible.Heading
 import com.piyushjt.centsible.MainScreen
 import com.piyushjt.centsible.R
 import com.piyushjt.centsible.Util
-import com.piyushjt.centsible.readexPro
+import com.piyushjt.centsible.UI.readexPro
+import com.piyushjt.centsible.UI.types
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.text.SimpleDateFormat
 import java.util.Date

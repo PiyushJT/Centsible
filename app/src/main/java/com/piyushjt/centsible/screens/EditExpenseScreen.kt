@@ -33,7 +33,7 @@ import androidx.navigation.NavController
 import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.R
-import com.piyushjt.centsible.readexPro
+import com.piyushjt.centsible.UI.readexPro
 
 
 // Edit Expense Screen

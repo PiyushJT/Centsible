@@ -53,6 +53,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.room.Room
+import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.screens.ALlExpenses
 import com.piyushjt.centsible.screens.AddExpense
 import com.piyushjt.centsible.screens.EditExpenseScreen
@@ -192,13 +193,6 @@ data class EditExpenseScreen(
 )
 
 
-// Custom font
-val readexPro = FontFamily(
-    Font(R.font.readex_pro, FontWeight.Medium)
-)
-
-val types = listOf("misc", "food", "shopping", "travel", "ent", "grocery", "everyday", "skill")
-
 
 
 @Composable
@@ -286,17 +280,7 @@ fun ExpenseCard(
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
-    val bgColors = mapOf(
-        1 to colorResource(id = R.color.green_bg),
-        2 to colorResource(id = R.color.red_bg),
-        3 to colorResource(id = R.color.pink_bg),
-        4 to colorResource(id = R.color.gray_bg),
-        5 to colorResource(id = R.color.cream_bg)
-    )
-
-    val bgColor = bgColors[(1..5).random()]!!
-
-
+    val bgColor = Util.getRandomColor()
 
     Column(
         modifier = Modifier
