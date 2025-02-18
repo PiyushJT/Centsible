@@ -1,5 +1,6 @@
 package com.piyushjt.centsible
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -56,6 +57,8 @@ import com.piyushjt.centsible.screens.EditExpenseScreen
 import com.piyushjt.centsible.screens.Stats
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import kotlinx.serialization.Serializable
+import kotlin.math.abs
+import kotlin.math.floor
 
 class MainActivity : ComponentActivity() {
 
@@ -242,6 +245,7 @@ fun Heading(
 
 
 // Expense Card
+@SuppressLint("DefaultLocale")
 @Composable
 fun ExpenseCard(
     expense: Expense,
@@ -349,7 +353,12 @@ fun ExpenseCard(
             }
 
 
-            val amountToShow = if(expense.amount < 0) "-₹${-expense.amount}" else "+₹${expense.amount}"
+            val amountToShow = if (expense.amount < 0) {
+                "-₹%.2f".format(-expense.amount)
+            } else {
+                "+₹%.2f".format(expense.amount)
+            }
+
 
             // Amount
             Text(

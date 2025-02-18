@@ -9,9 +9,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -25,9 +22,9 @@ import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.Heading
 import com.piyushjt.centsible.MainScreen
-import com.piyushjt.centsible.Util
-import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.UI
+import com.piyushjt.centsible.UI.readexPro
+import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -176,16 +173,7 @@ private fun HomeScreenPreview() {
                 .padding(top = 42.dp)
         ) {
 
-
-            val expenses = remember { mutableStateOf(emptyList<Expense>()) }
-            val title = remember { mutableStateOf("Title") }
-            val description = remember { mutableStateOf("Desc") }
-            val type = remember { mutableStateOf("ent") }
-            val amount = remember { mutableFloatStateOf(-100.0f) }
-            val date = remember { mutableLongStateOf(20241231L) }
-            val id = remember { mutableIntStateOf(-1) }
             val navFilled = remember { mutableStateOf("home") }
-            val typeBoxExpanded = remember { mutableStateOf(false) }
 
             MainScreen(
                 state = ExpenseState(
