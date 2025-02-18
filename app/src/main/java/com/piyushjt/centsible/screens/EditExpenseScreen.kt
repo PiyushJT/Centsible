@@ -1,6 +1,7 @@
 package com.piyushjt.centsible.screens
 
 import android.util.Log
+import android.widget.RemoteViews
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -114,12 +115,10 @@ fun EditExpenseScreen(
         horizontalAlignment = CenterHorizontally
     ) {
 
-        // Header
-        Text(
-            text = if (isExpense) "Edit Expense" else "Edit Earning",
-            color = UI.colors("main_text"),
-            fontSize = 18.sp,
-            fontFamily = readexPro
+        EditExpenseHeader(
+            isExpense = isExpense,
+            onEvent = onEvent,
+            navController = navController
         )
 
         EditTitle(
@@ -167,6 +166,45 @@ fun EditExpenseScreen(
         UpdateButton(
             amount = newAmount,
             navFilled = navFilled,
+            onEvent = onEvent,
+            navController = navController
+        )
+
+    }
+}
+
+
+@Composable
+fun EditExpenseHeader(
+    modifier: Modifier = Modifier,
+    isExpense: Boolean,
+    onEvent: (ExpenseEvent) -> Unit,
+    navController: NavController
+) {
+
+    Row (
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = CenterVertically
+
+    ) {
+
+        BackButton(
+            onEvent = onEvent,
+            navController = navController
+        )
+
+        // Header
+        Text(
+            text = if (isExpense) "Edit Expense" else "Edit Earning",
+            color = UI.colors("main_text"),
+            fontSize = 18.sp,
+            fontFamily = readexPro
+        )
+
+        DeleteButton(
+            expense = newExpense,
             onEvent = onEvent,
             navController = navController
         )
@@ -227,12 +265,12 @@ fun BackButton(
 // Delete button
 @Composable
 fun DeleteButton(
-    expenses: MutableState<List<Expense>>,
-    id: Int,
-    isDialogVisible: MutableState<Boolean>,
+    expense: Expense,
     onEvent: (ExpenseEvent) -> Unit,
     navController: NavController
 ) {
+
+    val isDialogVisible = remember { mutableStateOf(false) }
 
     IconButton(
         modifier = Modifier
@@ -240,9 +278,7 @@ fun DeleteButton(
             .height(50.dp),
 
         onClick = {
-
             isDialogVisible.value = true
-
         },
         colors = IconButtonColors(
             contentColor = UI.colors("red"),
@@ -267,12 +303,10 @@ fun DeleteButton(
     }
 
     DeleteDialog(
-        onEvent = onEvent,
         isDialogVisible = isDialogVisible,
         onDelete = {
 
-            onEvent(ExpenseEvent.DeleteExpense(expense = expenses.value.find { it.id == id }!!))
-            // TODO: onEvent(ExpenseEvent.ClearState)
+            onEvent(ExpenseEvent.DeleteExpense(expense = expense))
 
             navController.popBackStack()
 
@@ -291,7 +325,6 @@ fun DeleteButton(
 @Composable
 fun DeleteDialog(
     isDialogVisible: MutableState<Boolean>,
-    onEvent: (ExpenseEvent) -> Unit,
     onDelete: () -> Unit
 ) {
     if(isDialogVisible.value) {
@@ -302,11 +335,15 @@ fun DeleteDialog(
             content = {
                 Box(
                     modifier = Modifier
-                        .height(160.dp)
-                        .fillMaxWidth()
+                        .fillMaxWidth(0.9f)
+                        .aspectRatio(1.8f)
                         .clip(RoundedCornerShape(20.dp))
-
                         .background(UI.colors("card_background"))
+                        .border(
+                            0.5.dp,
+                            color = UI.colors("hint_text"),
+                            RoundedCornerShape(20.dp)
+                        )
                 ) {
 
                     Column(
