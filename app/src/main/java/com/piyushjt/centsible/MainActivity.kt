@@ -29,9 +29,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -57,8 +54,6 @@ import com.piyushjt.centsible.screens.EditExpenseScreen
 import com.piyushjt.centsible.screens.Stats
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import kotlinx.serialization.Serializable
-import kotlin.math.abs
-import kotlin.math.floor
 
 class MainActivity : ComponentActivity() {
 
@@ -93,7 +88,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            val navFilled = remember { mutableStateOf("add") }
+            val navFilled = remember { mutableStateOf("stats") }
 
             CentsibleTheme {
 
@@ -106,7 +101,7 @@ class MainActivity : ComponentActivity() {
                     startDestination = MainScreen
                 ) {
 
-                    // Main screen (set content)
+                    // Main screen (set content
                     composable<MainScreen> {
 
                         Surface(

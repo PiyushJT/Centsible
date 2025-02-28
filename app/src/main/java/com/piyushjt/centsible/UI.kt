@@ -34,6 +34,7 @@ object UI {
             "lime" to colorResource(id = R.color.lime),
             "blue" to colorResource(id = R.color.blue),
             "trans" to colorResource(id = R.color.trans),
+            "grey" to colorResource(id = R.color.grey),
 
             "green_bg" to colorResource(id = R.color.green_bg),
             "pink_bg" to colorResource(id = R.color.pink_bg),
