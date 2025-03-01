@@ -11,6 +11,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -103,6 +105,44 @@ object Util {
     fun getBottomPadding(): Dp {
         return WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     }
+
+
+    fun getWeekDates(
+        date: Long
+    ): List<Long> {
+        val inputFormatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        val parsedDate = inputFormatter.parse(date.toString()) ?: throw IllegalArgumentException("Invalid date format")
+
+        val calendar = Calendar.getInstance()
+        calendar.time = parsedDate
+        calendar.firstDayOfWeek = Calendar.MONDAY
+
+        // Move to the start of the week (Monday)
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+
+        val outputFormatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        val weekDates = mutableListOf<Long>()
+
+        // Add all 7 days (Monday to Sunday)
+        for (i in 0..6) {
+            weekDates.add(outputFormatter.format(calendar.time).toLong())
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+        }
+
+        return weekDates
+    }
+
+
+    fun dayOfWeek(dateLong: Long): Int {
+        val dateStr = dateLong.toString()
+        val year = dateStr.substring(0, 4).toInt()
+        val month = dateStr.substring(4, 6).toInt()
+        val day = dateStr.substring(6, 8).toInt()
+
+        return LocalDate.of(year, month, day).dayOfWeek.value
+
+    }
+
 
 
     val types = listOf("misc", "food", "shopping", "travel", "ent", "grocery", "everyday", "skill")

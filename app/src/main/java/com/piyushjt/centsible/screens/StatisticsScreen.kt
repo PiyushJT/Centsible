@@ -40,6 +40,7 @@ import com.piyushjt.centsible.MainScreen
 import com.piyushjt.centsible.R
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
+import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 
 
@@ -68,7 +69,10 @@ fun Stats(
 
         ExpensesAverage()
 
-        StatsCard()
+        StatsCard(
+            state = state,
+            onEvent = onEvent
+        )
 
 
     }
@@ -135,14 +139,20 @@ fun ExpensesAverage() {
 
 @Composable
 fun StatsCard(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
 ) {
 
+    val dates = Util.getWeekDates(state.dateForPeriod)
+
+    onEvent(ExpenseEvent.SetAmounts(dates))
+
     val days = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-    val curDay = "Thu"
-    val values = arrayOf(23, 45, 0, 55, 54, 43, 53)
+    val curDay = Util.dayOfWeek(state.dateForPeriod)
+    val values = state.amounts
     var ind = 0;
 
-    val highestVal = values.max()
+    val highestVal = values.maxOrNull() ?: 0f
 
     var heightDp by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
@@ -196,7 +206,7 @@ fun StatsCard(
                             modifier = Modifier
                                 .padding(top = 4.dp),
                             text = days[ind],
-                            color = if (curDay == days[ind])
+                            color = if (curDay == ind+1)
                                     UI.colors("main_text")
                                 else
                                     UI.colors("grey"),

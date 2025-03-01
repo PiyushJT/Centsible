@@ -3,16 +3,14 @@
 package com.piyushjt.centsible
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class ExpenseViewModel(
     // dao
@@ -86,13 +84,6 @@ class ExpenseViewModel(
                     id = data.id
                 )
 
-                Log.d("HEh", data.id.toString())
-                Log.d("HEh", data.title)
-                Log.d("HEh", data.description.toString())
-                Log.d("HEh", data.date.toString())
-                Log.d("HEh", data.amount.toString())
-                Log.d("HEh", data.type)
-
                 viewModelScope.launch {
                     dao.upsertExpense(updateExpense)
                 }
@@ -104,6 +95,56 @@ class ExpenseViewModel(
             is ExpenseEvent.DeleteExpense -> {
                 viewModelScope.launch {
                     dao.deleteExpense(event.expense)
+                }
+            }
+
+
+            // Change period of expenseInPeriod
+            is ExpenseEvent.ChangePeriod -> {
+
+                viewModelScope.launch {
+                    _state.update {
+                        it.copy(
+                            expensesInPeriod = dao.getExpenseInPeriod(event.startDate, event.endDate)
+                        )
+                    }
+                }
+
+                Log.d("Period changed", "new size: ${state.value.expensesInPeriod.size}")
+            }
+
+
+            // Change date for period
+            is ExpenseEvent.ChangeDateForPeriod -> {
+                viewModelScope.launch {
+                    _state.update {
+                        it.copy(
+                            dateForPeriod = event.date
+                        )
+                    }
+                    Log.d("Date changed", "new date: ${state.value.dateForPeriod}")
+                }
+            }
+
+
+            // Set amounts
+            is ExpenseEvent.SetAmounts -> {
+                viewModelScope.launch {
+
+                    val amounts = mutableListOf<Float>()
+
+                    for (date in event.dates) {
+                        amounts.add(dao.getAmount(date))
+                        Log.d("Amount from dao", "amount: ${dao.getAmount(date)}")
+                    }
+
+                    _state.update {
+                        it.copy(
+                            amounts = amounts
+                        )
+                    }
+
+                    Log.d("Amounts set", "new amounts: ${state.value.amounts}")
                 }
             }
 
