@@ -91,7 +91,7 @@ fun ExpensesAverage() {
 
         Column {
             Text(
-                text = "Expenses Average",
+                text = "Average Spending",
                 color = UI.colors("light_text"),
                 fontSize = 14.sp,
                 fontFamily = readexPro
@@ -139,7 +139,7 @@ fun StatsCard(
 
     val days = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     val curDay = "Thu"
-    val values = arrayOf(23, 45, 23, 55, 54, 43, 53)
+    val values = arrayOf(23, 45, 0, 55, 54, 43, 53)
     var ind = 0;
 
     val highestVal = values.max()
