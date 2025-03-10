@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -33,7 +35,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.piyushjt.centsible.Expense
+import com.piyushjt.centsible.ExpenseCard
 import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.MainScreen
@@ -67,9 +71,16 @@ fun Stats(
             fontFamily = readexPro
         )
 
-        ExpensesAverage()
+        ExpensesAverage(
+            state = state
+        )
 
         StatsCard(
+            state = state,
+            onEvent = onEvent
+        )
+
+        ExpensesInPeriod(
             state = state,
             onEvent = onEvent
         )
@@ -82,7 +93,9 @@ fun Stats(
 
 
 @Composable
-fun ExpensesAverage() {
+fun ExpensesAverage(
+    state: ExpenseState
+) {
 
     Row (
         modifier = Modifier
@@ -102,7 +115,7 @@ fun ExpensesAverage() {
             )
 
             Text(
-                text = "₹33,285.00",
+                text = "₹${"%.2f".format(state.amounts.average())}",
                 color = UI.colors("main_text"),
                 fontSize = 30.sp,
                 fontFamily = readexPro
@@ -110,6 +123,8 @@ fun ExpensesAverage() {
 
         }
 
+
+        /*
         Icon(
             modifier = Modifier
                 .padding(start = 10.dp, bottom = 6.dp)
@@ -131,7 +146,9 @@ fun ExpensesAverage() {
             fontFamily = readexPro
         )
 
+        */
     }
+
 
 }
 
@@ -146,6 +163,7 @@ fun StatsCard(
     val dates = Util.getWeekDates(state.dateForPeriod)
 
     onEvent(ExpenseEvent.SetAmounts(dates))
+    onEvent(ExpenseEvent.ChangePeriod(dates.first(), dates.last()))
 
     val days = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     val curDay = Util.dayOfWeek(state.dateForPeriod)
@@ -186,7 +204,7 @@ fun StatsCard(
 
                 for (height in values) {
 
-                    val fraction = height/ highestVal.toFloat()
+                    val fraction = height/ highestVal
 
                     Column(
                         verticalArrangement = Arrangement.Bottom,
@@ -195,7 +213,7 @@ fun StatsCard(
 
                         Box(
                             modifier = Modifier
-                                .defaultMinSize(minHeight = 10.dp)
+                                .defaultMinSize(minHeight = 5.dp)
                                 .width(18.dp)
                                 .height((heightDp - 60.dp) * fraction)
                                 .clip(RoundedCornerShape(26.dp))
@@ -225,6 +243,38 @@ fun StatsCard(
 }
 
 
+@Composable
+fun ExpensesInPeriod(
+    modifier: Modifier = Modifier,
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit,
+    navController: NavController? = null
+) {
+
+    val bottomPadding = 90.dp + Util.getBottomPadding()
+
+
+    Column(
+        modifier = Modifier
+            .padding(top = 24.dp, bottom = bottomPadding)
+            .verticalScroll(rememberScrollState()),
+    ) {
+
+        // All Expenses
+        for (expense in state.expensesInPeriod) {
+
+            ExpenseCard(
+                onEvent = onEvent,
+                expense = expense,
+                navController = navController
+            )
+
+        }
+
+    }
+
+}
+
 
 
 
@@ -244,26 +294,7 @@ private fun StatsScreenPreview() {
 
             MainScreen(
                 state = ExpenseState(
-                    expenses = listOf(
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = "ent",
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = "ent",
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
+                    expensesInPeriod = listOf(
                         Expense(
                             title = "Title",
                             description = "Desc",
@@ -283,6 +314,8 @@ private fun StatsScreenPreview() {
                         )
 
                     ),
+                    dateForPeriod = Util.getCurrentDate(),
+                    amounts = listOf(100f, 200f, 300f, 400f, 500f, 600f, 700f)
                 ),
                 navFilled = navFilled,
                 onEvent = {}
