@@ -56,6 +56,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
@@ -70,6 +71,7 @@ import com.piyushjt.centsible.Util.types
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
 
 
 val newExpense = Expense(
@@ -92,21 +94,18 @@ fun EditExpenseScreen(
     date: Long,
     id: Int,
     navController: NavController,
-    onEvent: (ExpenseEvent) -> Unit,
-    navFilled: MutableState<String>
+    onEvent: (ExpenseEvent) -> Unit
 ) {
 
     newExpense.title = title
     newExpense.description = description
     newExpense.type = type
-    newExpense.amount = amount
+    newExpense.amount = abs(amount)
     newExpense.date = date
     newExpense.id = id
 
 
     val newAmount = remember { mutableFloatStateOf(newExpense.amount) }
-
-    val isExpense = if (newExpense.amount > 0) false else true
 
     Column(
         modifier = Modifier
@@ -116,7 +115,6 @@ fun EditExpenseScreen(
     ) {
 
         EditExpenseHeader(
-            isExpense = isExpense,
             onEvent = onEvent,
             navController = navController
         )
@@ -165,7 +163,6 @@ fun EditExpenseScreen(
         // Update Button
         UpdateButton(
             amount = newAmount,
-            navFilled = navFilled,
             onEvent = onEvent,
             navController = navController
         )
@@ -177,7 +174,6 @@ fun EditExpenseScreen(
 @Composable
 fun EditExpenseHeader(
     modifier: Modifier = Modifier,
-    isExpense: Boolean,
     onEvent: (ExpenseEvent) -> Unit,
     navController: NavController
 ) {
@@ -197,7 +193,7 @@ fun EditExpenseHeader(
 
         // Header
         Text(
-            text = if (isExpense) "Edit Expense" else "Edit Earning",
+            text = "Edit Transaction",
             color = UI.colors("main_text"),
             fontSize = 18.sp,
             fontFamily = readexPro
@@ -853,73 +849,142 @@ fun EditDatePickerUI(
 @Composable
 fun UpdateButton(
     amount: MutableFloatState,
-    navFilled: MutableState<String>,
     onEvent: (ExpenseEvent) -> Unit,
     navController: NavController
 ) {
-
-    val isExpense = if (amount.floatValue > 0f) false else true
 
     val context = LocalContext.current
     var toast: Toast? by remember { mutableStateOf(null) }
 
 
-    // The button
-    TextButton(
-
+    Row(
         modifier = Modifier
             .padding(top = 24.dp)
-            .fillMaxWidth()
-            .height(60.dp),
-
-        onClick = {
-
-
-            // Save the Expense if title and amount are not empty
-            if (!(newExpense.title.isBlank() || newExpense.amount == 0f)) {
-
-                onEvent(
-                    ExpenseEvent.UpdateExpense(newExpense)
-                )
-
-                navController.popBackStack()
-
-            }
-            else{
-
-                // Cancel the existing toast if it's showing
-                toast?.cancel()
-
-                // Show a new toast for invalid input
-                toast = Toast.makeText(context, "Title and Amount cannot be empty", Toast.LENGTH_SHORT)
-                toast?.show()
-
-            }
-
-        },
-
-        shape = RoundedCornerShape(20.dp),
-        colors = ButtonColors(
-
-            containerColor = if (isExpense)
-                UI.colors("red")
-            else
-                UI.colors("lime"),
-
-            contentColor = UI.colors("black"),
-            disabledContainerColor = UI.colors("red"),
-            disabledContentColor = UI.colors("black")
-        )
-
     ) {
 
-        // Text on the button
-        Text(
-            text = if (isExpense) "Update Expense" else "Update Earning",
-            color = UI.colors("black"),
-            fontSize = 20.sp,
-            fontFamily = readexPro
-        )
+        // Update Earning button
+        TextButton(
+
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 8.dp)
+                .height(60.dp),
+
+            onClick = {
+
+
+                // Save the Expense if title and amount are not empty
+                if (!(newExpense.title.isBlank() || newExpense.amount == 0f)) {
+
+                    onEvent(
+                        ExpenseEvent.UpdateExpense(newExpense)
+                    )
+
+                    navController.popBackStack()
+
+                } else {
+
+                    // Cancel the existing toast if it's showing
+                    toast?.cancel()
+
+                    // Show a new toast for invalid input
+                    toast = Toast.makeText(
+                        context,
+                        "Title and Amount cannot be empty",
+                        Toast.LENGTH_SHORT,
+                    )
+                    toast?.show()
+
+                }
+
+            },
+
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonColors(
+
+                containerColor = UI.colors("lime"),
+
+                contentColor = UI.colors("black"),
+                disabledContainerColor = UI.colors("red"),
+                disabledContentColor = UI.colors("black")
+            )
+
+        ) {
+
+            // Text on the button
+            Text(
+                text = "Save Earning",
+                color = UI.colors("black"),
+                fontSize = 18.sp,
+                fontFamily = readexPro,
+                textAlign = TextAlign.Center
+            )
+
+        }
+
+
+        // Update Expense button
+        TextButton(
+
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 8.dp)
+                .height(60.dp),
+
+            onClick = {
+
+
+                // Save the Expense if title and amount are not empty
+                if (!(newExpense.title.isBlank() || newExpense.amount == 0f)) {
+
+                    newExpense.amount = -newExpense.amount
+
+                    onEvent(
+                        ExpenseEvent.UpdateExpense(newExpense)
+                    )
+
+                    navController.popBackStack()
+
+                } else {
+
+                    // Cancel the existing toast if it's showing
+                    toast?.cancel()
+
+                    // Show a new toast for invalid input
+                    toast = Toast.makeText(
+                        context,
+                        "Title and Amount cannot be empty",
+                        Toast.LENGTH_SHORT
+                    )
+                    toast?.show()
+
+                }
+
+            },
+
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonColors(
+
+                containerColor = UI.colors("red"),
+
+                contentColor = UI.colors("black"),
+                disabledContainerColor = UI.colors("red"),
+                disabledContentColor = UI.colors("black")
+            )
+
+        ) {
+
+            // Text on the button
+            Text(
+                text = "Save Expense",
+                color = UI.colors("black"),
+                fontSize = 18.sp,
+                fontFamily = readexPro,
+                textAlign = TextAlign.Center
+            )
+
+        }
+
 
     }
 }

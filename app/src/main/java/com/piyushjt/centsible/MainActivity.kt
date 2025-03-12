@@ -141,8 +141,7 @@ class MainActivity : ComponentActivity() {
                                 date = args.date,
                                 id = args.id,
                                 navController = navController,
-                                onEvent = viewModel::onEvent,
-                                navFilled = navFilled
+                                onEvent = viewModel::onEvent
                             )
 
                         }

@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -645,7 +646,8 @@ fun SaveButton(
                 text = "Save Earning",
                 color = UI.colors("black"),
                 fontSize = 18.sp,
-                fontFamily = readexPro
+                fontFamily = readexPro,
+                textAlign = TextAlign.Center
             )
 
         }
@@ -706,7 +708,8 @@ fun SaveButton(
                 text = "Save Expense",
                 color = UI.colors("black"),
                 fontSize = 18.sp,
-                fontFamily = readexPro
+                fontFamily = readexPro,
+                textAlign = TextAlign.Center
             )
 
         }
