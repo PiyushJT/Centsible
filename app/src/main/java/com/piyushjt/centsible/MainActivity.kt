@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            val navFilled = remember { mutableStateOf("stats") }
+            val navFilled = remember { mutableStateOf("add") }
 
             CentsibleTheme {
 

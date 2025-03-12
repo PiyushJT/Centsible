@@ -90,8 +90,6 @@ fun AddExpense(
 
     val amount = remember { mutableFloatStateOf(expense.amount) }
 
-    val isExpense = if (amount.floatValue > 0) false else true
-
 
     Column(
         modifier = Modifier
@@ -102,7 +100,7 @@ fun AddExpense(
 
         // Header
         Text(
-            text = if (isExpense) "Add an Expense" else "Add an Earning",
+            text = "New Transaction",
             color = UI.colors("main_text"),
             fontSize = 18.sp,
             fontFamily = readexPro
@@ -292,11 +290,11 @@ fun Amount(
         onValueChange = { newValue ->
             // Valid Float Input with two decimal places
 
-            // Allows optional '-' at the start, one decimal point, and up to 2 decimal places
-            val regex = "^-?\\d*(\\.\\d{0,2})?$".toRegex()
+            // Allows only one decimal point, and up to 2 decimal places
+            val regex = "^\\d*(\\.\\d{0,2})?$".toRegex()
 
 
-            if (regex.matches(newValue) && !newValue.contains(" ") && !newValue.contains(",") && !newValue.startsWith("-.")) {
+            if (regex.matches(newValue) && !newValue.contains(" ") && !newValue.contains(",")) {
 
                 value = newValue
 
@@ -585,66 +583,133 @@ fun SaveButton(
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
-    val isExpense = if (amount.floatValue > 0f) false else true
-
     val context = LocalContext.current
     var toast: Toast? by remember { mutableStateOf(null) }
 
 
-    // The button
-    TextButton(
-
+    Row(
         modifier = Modifier
             .padding(top = 24.dp)
-            .fillMaxWidth()
-            .height(60.dp),
-
-        onClick = {
-
-            // Save the Expense if title and amount are not empty
-            if (!(expense.title.isBlank() || expense.amount == 0f)) {
-
-                onEvent(
-                    ExpenseEvent.SaveExpense(expense)
-                )
-                navFilled.value = "home"
-
-            }
-            else{
-
-                // Cancel the existing toast if it's showing
-                toast?.cancel()
-
-                // Show a new toast for invalid input
-                toast = Toast.makeText(context, "Title and Amount cannot be empty", Toast.LENGTH_SHORT)
-                toast?.show()
-
-            }
-
-        },
-
-        shape = RoundedCornerShape(20.dp),
-        colors = ButtonColors(
-
-            containerColor = if (isExpense)
-                UI.colors("red")
-            else
-                UI.colors("lime"),
-
-            contentColor = UI.colors("black"),
-            disabledContainerColor = UI.colors("red"),
-            disabledContentColor = UI.colors("black")
-        )
-
     ) {
+        // Save Earning button
+        TextButton(
 
-        // Text on the button
-        Text(
-            text = if (isExpense) "Save Expense" else "Save Earning",
-            color = UI.colors("black"),
-            fontSize = 20.sp,
-            fontFamily = readexPro
-        )
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 8.dp)
+                .height(60.dp),
+
+            onClick = {
+
+                // Save the Expense if title and amount are not empty
+                if (!(expense.title.isBlank() || expense.amount == 0f)) {
+
+                    onEvent(
+                        ExpenseEvent.SaveExpense(expense)
+                    )
+
+                    navFilled.value = "home"
+
+                } else {
+
+                    // Cancel the existing toast if it's showing
+                    toast?.cancel()
+
+                    // Show a new toast for invalid input
+                    toast =
+                        Toast.makeText(
+                            context,
+                            "Title and Amount cannot be empty",
+                            Toast.LENGTH_SHORT
+                        )
+                    toast?.show()
+
+                }
+
+            },
+
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonColors(
+
+                containerColor = UI.colors("lime"),
+
+                contentColor = UI.colors("black"),
+                disabledContainerColor = UI.colors("red"),
+                disabledContentColor = UI.colors("black")
+            )
+
+        ) {
+
+            // Text on the button
+            Text(
+                text = "Save Earning",
+                color = UI.colors("black"),
+                fontSize = 18.sp,
+                fontFamily = readexPro
+            )
+
+        }
+
+        // Save Expense button
+        TextButton(
+
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 8.dp)
+                .height(60.dp),
+
+            onClick = {
+
+                // Save the Expense if title and amount are not empty
+                if (!(expense.title.isBlank() || expense.amount == 0f)) {
+
+                    expense.amount = -expense.amount
+
+                    onEvent(
+                        ExpenseEvent.SaveExpense(expense)
+                    )
+
+                    navFilled.value = "home"
+
+                } else {
+
+                    // Cancel the existing toast if it's showing
+                    toast?.cancel()
+
+                    // Show a new toast for invalid input
+                    toast =
+                        Toast.makeText(
+                            context,
+                            "Title and Amount cannot be empty",
+                            Toast.LENGTH_SHORT
+                        )
+                    toast?.show()
+
+                }
+
+            },
+
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonColors(
+
+                containerColor = UI.colors("red"),
+
+                contentColor = UI.colors("black"),
+                disabledContainerColor = UI.colors("red"),
+                disabledContentColor = UI.colors("black")
+            )
+
+        ) {
+
+            // Text on the button
+            Text(
+                text = "Save Expense",
+                color = UI.colors("black"),
+                fontSize = 18.sp,
+                fontFamily = readexPro
+            )
+
+        }
 
     }
 }
