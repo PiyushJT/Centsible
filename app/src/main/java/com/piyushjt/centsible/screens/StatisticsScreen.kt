@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,7 +30,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -71,7 +69,7 @@ fun Stats(
             fontFamily = readexPro
         )
 
-        ExpensesAverage(
+        TotalExpense(
             state = state
         )
 
@@ -93,13 +91,13 @@ fun Stats(
 
 
 @Composable
-fun ExpensesAverage(
+fun TotalExpense(
     state: ExpenseState
 ) {
 
     Row (
         modifier = Modifier
-            .padding(top = 34.dp)
+            .padding(top = 24.dp)
             .fillMaxWidth()
             .background(Color.Transparent),
         horizontalArrangement = Arrangement.Start,
@@ -108,14 +106,14 @@ fun ExpensesAverage(
 
         Column {
             Text(
-                text = "Average Spending",
+                text = "Total Expense",
                 color = UI.colors("light_text"),
                 fontSize = 14.sp,
                 fontFamily = readexPro
             )
 
             Text(
-                text = "₹${"%.2f".format(state.amounts.average())}",
+                text = "₹${state.amountsInPeriod.sum()}",
                 color = UI.colors("main_text"),
                 fontSize = 30.sp,
                 fontFamily = readexPro
@@ -167,7 +165,7 @@ fun StatsCard(
 
     val days = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     val curDay = Util.dayOfWeek(state.dateForPeriod)
-    val values = state.amounts
+    val values = state.amountsInPeriod
     var ind = 0;
 
     val highestVal = values.maxOrNull() ?: 0f
@@ -315,7 +313,7 @@ private fun StatsScreenPreview() {
 
                     ),
                     dateForPeriod = Util.getCurrentDate(),
-                    amounts = listOf(100f, 200f, 300f, 400f, 500f, 600f, 700f)
+                    amountsInPeriod = listOf(100f, 200f, 300f, 400f, 500f, 600f, 700f)
                 ),
                 navFilled = navFilled,
                 onEvent = {}

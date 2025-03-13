@@ -140,14 +140,26 @@ class ExpenseViewModel(
 
                     _state.update {
                         it.copy(
-                            amounts = amounts
+                            amountsInPeriod = amounts
                         )
                     }
 
-                    Log.d("Amounts set", "new amounts: ${state.value.amounts}")
+                    Log.d("Amounts set", "new amounts: ${state.value.amountsInPeriod}")
                 }
             }
 
+            is ExpenseEvent.SetTotalAmount -> {
+
+                viewModelScope.launch {
+                    _state.update {
+                        it.copy(
+                            totalAmount = dao.getTotalAmount()
+                        )
+                    }
+
+                    Log.d("Total Amount", "new amount: ${state.value.totalAmount}")
+                }
+            }
         }
     }
 }

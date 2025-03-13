@@ -29,6 +29,7 @@ import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.text.DecimalFormat
 
 
 // All Expenses to be shown in a Nav Item
@@ -44,7 +45,10 @@ fun ALlExpenses(
             .padding(horizontal = 24.dp)
     ) {
 
-        Header()
+        Header(
+            state = state,
+            onEvent = onEvent
+        )
 
         ListOfExpenses(
             onEvent = onEvent,
@@ -93,13 +97,19 @@ fun ListOfExpenses(
 
 // Header for All Expenses
 @Composable
-fun Header() {
+fun Header(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
+) {
 
     Column {
 
         DayDate()
 
-        TotalBalance()
+        TotalBalance(
+            state = state,
+            onEvent = onEvent
+        )
 
     }
 
@@ -135,12 +145,21 @@ fun DayDate() {
 
 // Total Balance in the Header
 @Composable
-fun TotalBalance() {
+fun TotalBalance(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
+) {
 
     Column(
         modifier = Modifier
             .padding(top = 24.dp, bottom = 12.dp)
     ) {
+
+        onEvent(ExpenseEvent.SetTotalAmount)
+
+        // format in Indian system.
+        val formatter = DecimalFormat("#,##,##0.00")
+        val formattedNumber = formatter.format(state.totalAmount)
 
         Text(
             text = "Total Balance",
@@ -151,7 +170,7 @@ fun TotalBalance() {
 
         // Balance
         Text(
-            text = "₹58,21,985.70",
+            text = "₹${formattedNumber}",
             color = UI.colors("lime"),
             fontSize = 34.sp,
             fontFamily = readexPro
@@ -279,6 +298,7 @@ private fun HomeScreenPreview() {
                         )
 
                     ),
+                    totalAmount = 521985f
                 ),
                 navFilled = navFilled,
                 onEvent = {}

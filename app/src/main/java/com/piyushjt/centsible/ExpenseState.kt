@@ -6,7 +6,8 @@ data class ExpenseState(
 
     val expensesInPeriod: List<Expense> = emptyList(),
     val dateForPeriod: Long = Util.getCurrentDate(),
+    val amountsInPeriod: List<Float> = emptyList(),
 
-    val amounts: List<Float> = emptyList()
+    val totalAmount: Float = 0f,
 
 )

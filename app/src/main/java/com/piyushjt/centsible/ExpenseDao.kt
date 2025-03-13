@@ -20,10 +20,13 @@ interface ExpenseDao {
     @Query("SELECT * FROM expense ORDER BY date DESC, id DESC")
     fun getAllExpense() : Flow<List<Expense>>
 
-    @Query("SELECT * FROM expense WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC, id DESC")
+    @Query("SELECT * FROM expense WHERE amount < 0 AND date BETWEEN :startDate AND :endDate ORDER BY date DESC, id DESC")
     suspend fun getExpenseInPeriod(startDate: Long, endDate: Long) : List<Expense>
 
     @Query("SELECT 0 - SUM(amount) FROM expense WHERE date = :date")
     suspend fun getAmount(date: Long) : Float
+
+    @Query("SELECT SUM(amount) FROM expense")
+    suspend fun getTotalAmount() : Float
 
 }
