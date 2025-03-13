@@ -122,9 +122,7 @@ fun AddExpense(
             )
 
             // Date Picker
-            DatePickerUI(
-                onEvent = onEvent
-            )
+            DatePickerUI()
 
         }
 
@@ -465,11 +463,10 @@ fun TypeSelector(
 // Date Picker
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickerUI(
-    onEvent: (ExpenseEvent) -> Unit
-) {
+fun DatePickerUI() {
 
     val date = remember { mutableLongStateOf(Util.getCurrentDate()) }
+    expense.date = date.longValue
 
 
     // Some temp States
