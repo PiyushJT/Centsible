@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -27,6 +28,33 @@ object Util {
         return dateFormat.format(Date()).toLong()
 
     }
+
+
+    fun getPreviousWeekDate(
+        dateForPeriod: Long
+    ): Long {
+
+        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+        val currentDate = LocalDate.parse(dateForPeriod.toString(), formatter)
+        val previousDate = currentDate.minusDays(7)
+
+        return previousDate.format(formatter).toLong()
+
+    }
+
+
+    fun getNextWeekDate(
+        dateForPeriod: Long
+    ): Long {
+
+        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+        val currentDate = LocalDate.parse(dateForPeriod.toString(), formatter)
+        val nextDate = currentDate.plusDays(7)
+
+        return nextDate.format(formatter).toLong()
+
+    }
+
 
 
 

@@ -11,10 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,6 +49,8 @@ import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
 // Statistics Screen
@@ -152,6 +159,61 @@ fun TotalExpense(
 
 
 
+
+@Composable
+fun PeriodChangeButton(
+    state: ExpenseState,
+    next: Boolean,
+    onEvent: (ExpenseEvent) -> Unit
+) {
+
+
+    IconButton(
+        modifier = Modifier
+            .size(40.dp),
+
+        onClick = {
+
+            val dateForPeriod = state.dateForPeriod
+
+            val newDateForPeriod =
+                if (next)
+                    Util.getNextWeekDate(dateForPeriod)
+                else
+                    Util.getPreviousWeekDate(dateForPeriod)
+
+            onEvent(ExpenseEvent.ChangeDateForPeriod(newDateForPeriod))
+
+        },
+
+        colors = IconButtonColors(
+            contentColor = UI.colors("main_text"),
+            disabledContentColor = UI.colors("background"),
+            containerColor = UI.colors("background"),
+            disabledContainerColor = UI.colors("background")
+        )
+
+    ) {
+
+        // Icon
+        Icon(
+            modifier = Modifier
+                .height(30.dp)
+                .width(30.dp),
+
+            painter =  painterResource(
+                id = if (next) R.drawable.forward else R.drawable.back
+            ),
+
+            contentDescription = if (next) "Next Week" else "Previous Week"
+        )
+
+    }
+
+
+}
+
+
 @Composable
 fun StatsCard(
     state: ExpenseState,
@@ -174,23 +236,70 @@ fun StatsCard(
     val density = LocalDensity.current
 
 
-    Box(
+    Column (
         modifier = Modifier
-            .padding(top = 24.dp)
+            .padding(top = 16.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(colorResource(id = R.color.card_background))
-            .aspectRatio(1.374f)
+            .aspectRatio(1.274f)
             .onGloballyPositioned { coordinates ->
                 heightDp = with(density) { coordinates.size.height.toDp() }
             }
 
     ) {
 
+        Row (
+            modifier = Modifier
+                .padding(start = 24.dp, end = 24.dp, top = 12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+
+        ) {
+
+            val week = if (state.dateForPeriod == Util.getCurrentDate())
+                "This Week"
+            else if (state.dateForPeriod == Util.getPreviousWeekDate(Util.getCurrentDate()))
+                "Last Week"
+            else
+                getTextOfWeek(state.dateForPeriod)
+
+
+
+            Text(
+                text = week,
+                color = UI.colors("main_text"),
+                fontSize = 18.sp,
+                fontFamily = readexPro
+            )
+
+            Row (
+                modifier = Modifier
+                    .width(100.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+
+                PeriodChangeButton(
+                    state = state,
+                    next = false,
+                    onEvent = onEvent
+                )
+
+                PeriodChangeButton(
+                    state = state,
+                    next = true,
+                    onEvent = onEvent
+                )
+
+            }
+        }
+
         Box(
             modifier = Modifier
                 .padding(horizontal = 24.dp, vertical = 12.dp)
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
 
             Row(
@@ -211,9 +320,9 @@ fun StatsCard(
 
                         Box(
                             modifier = Modifier
-                                .defaultMinSize(minHeight = 5.dp)
+                                .defaultMinSize(minHeight = 0.dp)
                                 .width(18.dp)
-                                .height((heightDp - 60.dp) * fraction)
+                                .height((heightDp - 110.dp) * fraction)
                                 .clip(RoundedCornerShape(26.dp))
                                 .background(colorResource(id = R.color.main_text))
                         )
@@ -222,10 +331,7 @@ fun StatsCard(
                             modifier = Modifier
                                 .padding(top = 4.dp),
                             text = days[ind],
-                            color = if (curDay == ind+1)
-                                    UI.colors("main_text")
-                                else
-                                    UI.colors("grey"),
+                            color = UI.colors("grey"),
                             fontSize = 10.sp,
                             fontFamily = readexPro
                         )
@@ -243,7 +349,6 @@ fun StatsCard(
 
 @Composable
 fun ExpensesInPeriod(
-    modifier: Modifier = Modifier,
     state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit,
     navController: NavController? = null
@@ -273,6 +378,23 @@ fun ExpensesInPeriod(
 
 }
 
+
+
+fun getTextOfWeek(
+    periodDate: Long
+): String {
+    val firstDate = Util.getWeekDates(periodDate).first()
+    val lastDate = Util.getWeekDates(periodDate).last()
+
+    val fDay = (firstDate % 100).toString().padStart(2, '0') // Extract last two digits (DD)
+    val fM = ((firstDate / 100) % 100).toString().padStart(2, '0') // Extract middle two digits (MM)
+
+    val lDay = (lastDate % 100).toString().padStart(2, '0') // Extract last two digits (DD)
+    val lM = ((lastDate / 100) % 100).toString().padStart(2, '0') // Extract middle two digits (MM)
+
+    return "$fDay/$fM - $lDay/$lM"
+
+}
 
 
 

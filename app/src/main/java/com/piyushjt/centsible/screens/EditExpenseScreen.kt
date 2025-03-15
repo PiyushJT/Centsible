@@ -224,8 +224,6 @@ fun BackButton(
 
         onClick = {
 
-            // TODO: onEvent(ExpenseEvent.ClearState)
-
             navController.popBackStack()
 
         },
