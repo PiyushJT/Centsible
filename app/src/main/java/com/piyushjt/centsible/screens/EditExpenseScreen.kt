@@ -508,7 +508,7 @@ fun EditDescription(
         },
         placeholder = {
             Text(
-                text = "Description",
+                text = "Description (optional)",
                 fontSize = 18.sp,
                 color = UI.colors("hint_text")
             )

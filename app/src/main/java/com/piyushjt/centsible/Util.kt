@@ -148,4 +148,52 @@ object Util {
     val types = listOf("misc", "food", "shopping", "travel", "ent", "grocery", "everyday", "skill")
 
 
+    fun createBackup(
+        state: ExpenseState
+    ) : String {
+
+        var backup = ""
+
+        for(expense in state.expenses){
+
+            backup = "$backup\n${expense.title}__${expense.description}__${expense.type}__${expense.amount}__${expense.date}__${expense.id}"
+
+        }
+
+        return backup
+
+    }
+
+
+    fun saveBackup(
+        backup: String,
+        onEvent: (ExpenseEvent) -> Unit
+    ){
+
+        val rawExpenses = backup.split("\n")
+        val expenses = emptyList<Expense>().toMutableList()
+
+
+        for(value in rawExpenses){
+
+            val expenseValues = value.split("__")
+
+            val expense = Expense(
+                title = expenseValues[0],
+                description = if (expenseValues[1].isEmpty() || expenseValues[1] == "null") "" else expenseValues[1],
+                type = expenseValues[2],
+                amount = expenseValues[3].toFloat(),
+                date = expenseValues[4].toLong(),
+            )
+            expenses.add(expense)
+        }
+
+        for (expense in expenses){
+
+            onEvent(ExpenseEvent.SaveExpense(expense))
+
+        }
+
+    }
+
 }

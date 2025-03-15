@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -69,6 +70,11 @@ import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 
 
 val expense = Expense(
@@ -85,6 +91,7 @@ val expense = Expense(
 @SuppressLint("AutoboxingStateValueProperty")
 @Composable
 fun AddExpense(
+    state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit,
     navFilled: MutableState<String>
 ) {
@@ -142,20 +149,25 @@ fun AddExpense(
 
         // Save Button
         SaveButton(
-            amount = amount,
             expense = expense,
             navFilled = navFilled,
             onEvent = onEvent
         )
 
+        /*
+
+        Backup(
+            state = state,
+            onEvent = onEvent
+        )
+
+        */
     }
 }
 
 
 @Composable
-fun Title(
-    modifier: Modifier = Modifier
-) {
+fun Title() {
 
     var value by remember { mutableStateOf("") }
 
@@ -206,9 +218,7 @@ fun Title(
 
 
 @Composable
-fun Description(
-    modifier: Modifier = Modifier
-) {
+fun Description() {
 
     var value by remember { mutableStateOf("") }
 
@@ -238,7 +248,7 @@ fun Description(
         },
         placeholder = {
             Text(
-                text = "Description",
+                text = "Description (optional)",
                 fontSize = 18.sp,
                 color = UI.colors("hint_text")
             )
@@ -260,8 +270,7 @@ fun Description(
 
 @Composable
 fun Amount(
-    amount: MutableFloatState,
-    modifier: Modifier = Modifier
+    amount: MutableFloatState
 ) {
 
     var value by remember { mutableStateOf("") }
@@ -575,7 +584,6 @@ fun DatePickerUI() {
 // Save / Update Button
 @Composable
 fun SaveButton(
-    amount: MutableFloatState,
     expense: Expense,
     navFilled: MutableState<String>,
     onEvent: (ExpenseEvent) -> Unit
@@ -703,6 +711,103 @@ fun SaveButton(
             // Text on the button
             Text(
                 text = "Save Expense",
+                color = UI.colors("black"),
+                fontSize = 18.sp,
+                fontFamily = readexPro,
+                textAlign = TextAlign.Center
+            )
+
+        }
+
+    }
+}
+
+
+
+
+@Composable
+fun Backup(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
+) {
+
+    val clipboardManager = LocalClipboardManager.current
+
+
+    Row(
+        modifier = Modifier
+            .padding(top = 24.dp)
+    ) {
+
+        // Create Backup button
+        TextButton(
+
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 8.dp)
+                .height(60.dp),
+
+            onClick = {
+                val backup = Util.createBackup(
+                    state = state
+                )
+
+                clipboardManager.setText(AnnotatedString(backup))
+            },
+
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonColors(
+
+                containerColor = UI.colors("lime"),
+
+                contentColor = UI.colors("black"),
+                disabledContainerColor = UI.colors("red"),
+                disabledContentColor = UI.colors("black")
+            )
+
+        ) {
+
+            // Text on the button
+            Text(
+                text = "Create Backup",
+                color = UI.colors("black"),
+                fontSize = 18.sp,
+                fontFamily = readexPro,
+                textAlign = TextAlign.Center
+            )
+
+        }
+
+        // Save Backup button
+        TextButton(
+
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 8.dp)
+                .height(60.dp),
+
+            onClick = {
+                Util.saveBackup(
+                    backup = clipboardManager.getText()?.text ?: "",
+                    onEvent = onEvent
+                )
+            },
+
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonColors(
+
+                containerColor = UI.colors("red"),
+
+                contentColor = UI.colors("black"),
+                disabledContainerColor = UI.colors("red"),
+                disabledContentColor = UI.colors("black")
+            )
+
+        ) {
+
+            // Text on the button
+            Text(
+                text = "Save Backup",
                 color = UI.colors("black"),
                 fontSize = 18.sp,
                 fontFamily = readexPro,
