@@ -273,6 +273,9 @@ fun Amount(
     amount: MutableFloatState
 ) {
 
+    val context = LocalContext.current
+    var toast: Toast? by remember { mutableStateOf(null) }
+
     var value by remember { mutableStateOf("") }
 
     TextField(
@@ -296,28 +299,51 @@ fun Amount(
         ),
         shape = RoundedCornerShape(20.dp),
         onValueChange = { newValue ->
-            // Valid Float Input with two decimal places
 
-            // Allows only one decimal point, and up to 2 decimal places
-            val regex = "^\\d*(\\.\\d{0,2})?$".toRegex()
+            if (
+                (newValue.length > 8
+                        &&
+                        !newValue.contains("."))
+                ||
+                (newValue.length > 9
+                        &&
+                        newValue.contains("."))
+            ) {
+
+                // Cancel the existing toast if it's showing
+                toast?.cancel()
+
+                // Show a new toast for invalid input
+                toast = Toast.makeText(
+                    context,
+                    "This app doesn't support such big values",
+                    Toast.LENGTH_LONG,
+                )
+                toast?.show()
+
+            }
+            else {
+                // Allows only one decimal point, and up to 2 decimal places
+                val regex = "^\\d*(\\.\\d{0,2})?$".toRegex()
 
 
-            if (regex.matches(newValue) && !newValue.contains(" ") && !newValue.contains(",")) {
+                if (regex.matches(newValue) && !newValue.contains(" ") && !newValue.contains(",")) {
 
-                value = newValue
+                    value = newValue
 
-                value = if (newValue in arrayOf("", " ", "."))
-                    ""
-                else
-                    newValue
+                    value = if (newValue in arrayOf("", " ", "."))
+                        ""
+                    else
+                        newValue
 
-                expense.amount = if (value != "-" && value.isNotEmpty() && value != "-.")
-                    value.toFloat()
-                else
-                    0f
+                    expense.amount = if (value != "-" && value.isNotEmpty() && value != "-.")
+                        value.toFloat()
+                    else
+                        0f
 
-                amount.floatValue = expense.amount
+                    amount.floatValue = expense.amount
 
+                }
             }
 
         },

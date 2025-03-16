@@ -162,7 +162,6 @@ fun EditExpenseScreen(
 
         // Update Button
         UpdateButton(
-            amount = newAmount,
             onEvent = onEvent,
             navController = navController
         )
@@ -187,7 +186,6 @@ fun EditExpenseHeader(
     ) {
 
         BackButton(
-            onEvent = onEvent,
             navController = navController
         )
 
@@ -213,7 +211,6 @@ fun EditExpenseHeader(
 // Back button
 @Composable
 fun BackButton(
-    onEvent: (ExpenseEvent) -> Unit,
     navController: NavController
 ) {
 
@@ -420,7 +417,6 @@ fun DeleteDialog(
 
 @Composable
 fun EditTitle(
-    modifier: Modifier = Modifier,
     title: String
 ) {
 
@@ -474,7 +470,6 @@ fun EditTitle(
 
 @Composable
 fun EditDescription(
-    modifier: Modifier = Modifier,
     description: String
 ) {
 
@@ -528,11 +523,14 @@ fun EditDescription(
 
 @Composable
 fun EditAmount(
-    newAmount: MutableFloatState,
-    modifier: Modifier = Modifier
+    newAmount: MutableFloatState
 ) {
 
-    var value by remember { mutableStateOf(newAmount.floatValue.toString()) }
+    val context = LocalContext.current
+    var toast: Toast? by remember { mutableStateOf(null) }
+
+    var value by remember { mutableStateOf(Util.removeScientificNotation(newAmount.floatValue)) }
+
 
     TextField(
         value = value,
@@ -555,28 +553,53 @@ fun EditAmount(
         ),
         shape = RoundedCornerShape(20.dp),
         onValueChange = { newValue ->
-            // Valid Float Input with two decimal places
 
-            // Allows optional '-' at the start, one decimal point, and up to 2 decimal places
-            val regex = "^-?\\d*(\\.\\d{0,2})?$".toRegex()
+            if(
+                (newValue.length > 8
+                &&
+                !newValue.contains("."))
+                ||
+                (newValue.length > 9
+                &&
+                newValue.contains("."))
+            ) {
 
+                // Cancel the existing toast if it's showing
+                toast?.cancel()
 
-            if (regex.matches(newValue) && !newValue.contains(" ") && !newValue.contains(",") && !newValue.startsWith("-.")) {
+                // Show a new toast for invalid input
+                toast = Toast.makeText(
+                    context,
+                    "This app doesn't support such big values",
+                    Toast.LENGTH_LONG,
+                )
+                toast?.show()
 
-                value = newValue
+            }
+            else {
+                // Allows optional '-' at the start, one decimal point, and up to 2 decimal places
+                val regex = "^-?\\d*(\\.\\d{0,2})?$".toRegex()
 
-                value = if (newValue in arrayOf("", " ", "."))
-                    ""
-                else
-                    newValue
+                if (regex.matches(newValue) && !newValue.contains(" ") && !newValue.contains(",") && !newValue.startsWith(
+                        "-."
+                    )
+                ) {
 
-                newExpense.amount = if (value != "-" && value.isNotEmpty() && value != "-.")
-                    value.toFloat()
-                else
-                    0f
+                    value = newValue
 
-                newAmount.floatValue = newExpense.amount
+                    value = if (newValue in arrayOf("", " ", "."))
+                        ""
+                    else
+                        newValue
 
+                    newExpense.amount = if (value != "-" && value.isNotEmpty() && value != "-.")
+                        value.toFloat()
+                    else
+                        0f
+
+                    newAmount.floatValue = newExpense.amount
+
+                }
             }
 
         },
@@ -846,7 +869,6 @@ fun EditDatePickerUI(
 // Save / Update Button
 @Composable
 fun UpdateButton(
-    amount: MutableFloatState,
     onEvent: (ExpenseEvent) -> Unit,
     navController: NavController
 ) {

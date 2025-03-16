@@ -148,6 +148,31 @@ class ExpenseViewModel(
                 }
             }
 
+
+            // Set Last amounts
+            is ExpenseEvent.SetLastAmounts -> {
+                viewModelScope.launch {
+
+                    val amounts = mutableListOf<Float>()
+
+                    for (date in event.dates) {
+                        amounts.add(dao.getAmount(date))
+                        Log.d("Amount from dao", "amount: ${dao.getAmount(date)}")
+                    }
+
+                    _state.update {
+                        it.copy(
+                            amountsInLastPeriod = amounts
+                        )
+                    }
+
+                    Log.d("Last Amounts set", "new amounts: ${state.value.amountsInLastPeriod}")
+                }
+            }
+
+
+
+
             is ExpenseEvent.SetTotalAmount -> {
 
                 viewModelScope.launch {

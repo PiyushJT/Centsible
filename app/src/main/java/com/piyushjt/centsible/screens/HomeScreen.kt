@@ -157,10 +157,6 @@ fun TotalBalance(
 
         onEvent(ExpenseEvent.SetTotalAmount)
 
-        // format in Indian system.
-        val formatter = DecimalFormat("#,##,##0.00")
-        val formattedNumber = formatter.format(state.totalAmount)
-
         Text(
             text = "Total Balance",
             color = UI.colors("light_text"),
@@ -170,7 +166,7 @@ fun TotalBalance(
 
         // Balance
         Text(
-            text = "₹${formattedNumber}",
+            text = Util.formatInIndianSystem(state.totalAmount),
             color = UI.colors("lime"),
             fontSize = 34.sp,
             fontFamily = readexPro

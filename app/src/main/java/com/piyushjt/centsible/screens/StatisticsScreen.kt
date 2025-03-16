@@ -49,8 +49,10 @@ import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
+import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
 
 
 // Statistics Screen
@@ -102,13 +104,23 @@ fun TotalExpense(
     state: ExpenseState
 ) {
 
-    Row (
+    val amount = state.amountsInPeriod.sum()
+    val lastAmount = state.amountsInLastPeriod.sum()
+
+    val percentageChange =
+        if (lastAmount == 0f)
+            100
+        else
+            ((amount - lastAmount) / lastAmount * 100).toInt()
+
+
+    Column (
         modifier = Modifier
             .padding(top = 24.dp)
             .fillMaxWidth()
             .background(Color.Transparent),
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.Bottom
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Bottom
     ) {
 
         Column {
@@ -118,42 +130,50 @@ fun TotalExpense(
                 fontSize = 14.sp,
                 fontFamily = readexPro
             )
+        }
+
+        Row (
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.Start
+        ) {
 
             Text(
-                text = "₹${state.amountsInPeriod.sum()}",
+                text = Util.formatInIndianSystem(amount),
                 color = UI.colors("main_text"),
                 fontSize = 30.sp,
                 fontFamily = readexPro
             )
 
+
+            Icon(
+                modifier = Modifier
+                    .padding(start = 10.dp, bottom = 6.dp)
+                    .height(22.dp)
+                    .width(22.dp),
+
+                tint = UI.colors("main_text"),
+                painter = painterResource(
+                    id =
+                    if (percentageChange > 0)
+                        R.drawable.increased
+                    else
+                        R.drawable.decreased
+                ),
+
+                contentDescription = "Decreased"
+            )
+
+            Text(
+                modifier = Modifier
+                    .padding(start = 5.dp, bottom = 3.dp),
+                text = "${abs(percentageChange)}%",
+                color = UI.colors("main_text"),
+                fontSize = 18.sp,
+                fontFamily = readexPro
+            )
+
         }
-
-
-        /*
-        Icon(
-            modifier = Modifier
-                .padding(start = 10.dp, bottom = 6.dp)
-                .height(18.dp)
-                .width(18.dp),
-
-            tint = UI.colors("main_text"),
-            painter = painterResource(id = R.drawable.decreased),
-
-            contentDescription = "Decreased"
-        )
-
-        Text(
-            modifier = Modifier
-                .padding(start = 5.dp, bottom = 3.dp),
-            text = "20%",
-            color = UI.colors("main_text"),
-            fontSize = 20.sp,
-            fontFamily = readexPro
-        )
-
-        */
     }
-
 
 }
 
@@ -221,12 +241,16 @@ fun StatsCard(
 ) {
 
     val dates = Util.getWeekDates(state.dateForPeriod)
+    val previousWeekDates = Util.getWeekDates(
+        Util.getPreviousWeekDate(state.dateForPeriod)
+    )
 
     onEvent(ExpenseEvent.SetAmounts(dates))
+    onEvent(ExpenseEvent.SetLastAmounts(previousWeekDates))
+
     onEvent(ExpenseEvent.ChangePeriod(dates.first(), dates.last()))
 
     val days = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-    val curDay = Util.dayOfWeek(state.dateForPeriod)
     val values = state.amountsInPeriod
     var ind = 0;
 
@@ -435,7 +459,8 @@ private fun StatsScreenPreview() {
 
                     ),
                     dateForPeriod = Util.getCurrentDate(),
-                    amountsInPeriod = listOf(100f, 200f, 300f, 400f, 500f, 600f, 700f)
+                    amountsInPeriod = listOf(100f, 200f, 300f, 400f, 500f, 600f, 700f),
+                    amountsInLastPeriod = listOf(10f, 20f, 30f, 40f, 50f, 60f, 70f)
                 ),
                 navFilled = navFilled,
                 onEvent = {}

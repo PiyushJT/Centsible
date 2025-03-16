@@ -1,5 +1,6 @@
 package com.piyushjt.centsible
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
@@ -10,6 +11,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -222,6 +224,23 @@ object Util {
 
         }
 
+    }
+
+    fun formatInIndianSystem(amount: Float): String {
+
+        // format in Indian system.
+        val formatter = DecimalFormat("#,##,##0.00")
+        return "₹${formatter.format(amount)}"
+
+    }
+
+    @SuppressLint("DefaultLocale")
+    fun removeScientificNotation(amount: Float): String {
+        return if (amount.toString().contains("E")) {
+            String.format("%.10f", amount).trimEnd('0').trimEnd('.')
+        } else {
+            amount.toString()
+        }
     }
 
 }
