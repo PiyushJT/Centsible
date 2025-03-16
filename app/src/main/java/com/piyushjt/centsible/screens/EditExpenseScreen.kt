@@ -1,7 +1,5 @@
 package com.piyushjt.centsible.screens
 
-import android.util.Log
-import android.widget.RemoteViews
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -20,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -51,10 +50,19 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -114,17 +122,28 @@ fun EditExpenseScreen(
         horizontalAlignment = CenterHorizontally
     ) {
 
+
+        val focusRequester = remember { FocusRequester() }
+        val focusManager = LocalFocusManager.current
+
+        val typeBoxExpanded = remember { mutableStateOf(false) }
+
+
         EditExpenseHeader(
             onEvent = onEvent,
             navController = navController
         )
 
         EditTitle(
-            title = title
+            title = title,
+            focusRequester = focusRequester,
+            focusManager = focusManager
         )
 
         EditDescription(
-            description = description?: ""
+            description = description?: "",
+            focusRequester = focusRequester,
+            focusManager = focusManager
         )
 
         Row(
@@ -134,12 +153,14 @@ fun EditExpenseScreen(
         ) {
 
             EditAmount(
-                newAmount = newAmount
+                newAmount = newAmount,
+                focusRequester = focusRequester,
+                focusManager = focusManager,
+                typeBoxExpanded = typeBoxExpanded
             )
 
             // Date Picker
             EditDatePickerUI(
-                onEvent = onEvent,
                 date = date
             )
 
@@ -155,7 +176,7 @@ fun EditExpenseScreen(
 
             EditTypeSelector(
                 modifier = Modifier,
-                type = type
+                isExpanded = typeBoxExpanded
             )
 
         }
@@ -172,7 +193,6 @@ fun EditExpenseScreen(
 
 @Composable
 fun EditExpenseHeader(
-    modifier: Modifier = Modifier,
     onEvent: (ExpenseEvent) -> Unit,
     navController: NavController
 ) {
@@ -417,7 +437,9 @@ fun DeleteDialog(
 
 @Composable
 fun EditTitle(
-    title: String
+    title: String,
+    focusRequester: FocusRequester,
+    focusManager: FocusManager
 ) {
 
     var value by remember { mutableStateOf(title) }
@@ -462,6 +484,28 @@ fun EditTitle(
                 color = UI.colors("hint_text"),
                 RoundedCornerShape(20.dp)
             )
+            .onKeyEvent { event ->
+                when (event.key) {
+                    Key.DirectionUp -> {
+                        focusManager.clearFocus()
+                        true
+                    }
+                    Key.DirectionDown -> {
+                        focusManager.moveFocus(FocusDirection.Down)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            .focusRequester(focusRequester),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next
+        ),
+        keyboardActions = KeyboardActions(
+            onNext = {
+                focusManager.moveFocus(FocusDirection.Down)
+            }
+        )
     )
 
 }
@@ -470,7 +514,9 @@ fun EditTitle(
 
 @Composable
 fun EditDescription(
-    description: String
+    description: String,
+    focusRequester: FocusRequester,
+    focusManager: FocusManager
 ) {
 
     var value by remember { mutableStateOf(description) }
@@ -515,6 +561,28 @@ fun EditDescription(
                 color = UI.colors("hint_text"),
                 RoundedCornerShape(20.dp)
             )
+            .onKeyEvent { event ->
+                when (event.key) {
+                    Key.DirectionUp -> {
+                        focusManager.moveFocus(FocusDirection.Up)
+                        true
+                    }
+                    Key.DirectionDown -> {
+                        focusManager.moveFocus(FocusDirection.Down)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            .focusRequester(focusRequester),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next
+        ),
+        keyboardActions = KeyboardActions(
+            onNext = {
+                focusManager.moveFocus(FocusDirection.Down)
+            }
+        )
     )
 
 }
@@ -523,7 +591,10 @@ fun EditDescription(
 
 @Composable
 fun EditAmount(
-    newAmount: MutableFloatState
+    newAmount: MutableFloatState,
+    focusRequester: FocusRequester,
+    focusManager: FocusManager,
+    typeBoxExpanded: MutableState<Boolean>
 ) {
 
     val context = LocalContext.current
@@ -611,10 +682,6 @@ fun EditAmount(
             )
         },
 
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number
-        ),
-
         singleLine = true,
         modifier = Modifier
             .fillMaxWidth(0.4f)
@@ -624,6 +691,31 @@ fun EditAmount(
                 color = UI.colors("hint_text"),
                 RoundedCornerShape(20.dp)
             )
+            .onKeyEvent { event ->
+                when (event.key) {
+                    Key.DirectionUp -> {
+                        focusManager.moveFocus(FocusDirection.Up)
+                        true
+                    }
+                    Key.DirectionDown -> {
+                        focusManager.clearFocus()
+                        typeBoxExpanded.value = true
+                        true
+                    }
+                    else -> false
+                }
+            }
+            .focusRequester(focusRequester),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Next
+        ),
+        keyboardActions = KeyboardActions(
+            onNext = {
+                focusManager.clearFocus()
+                typeBoxExpanded.value = true
+            }
+        )
     )
 
 }
@@ -634,13 +726,11 @@ fun EditAmount(
 @Composable
 fun EditTypeSelector(
     modifier: Modifier,
-    type: String
+    isExpanded: MutableState<Boolean>
 ) {
 
     // Background color
     val bgColor = Util.getRandomColor()
-
-    var expand by remember { mutableStateOf(false) }
 
 
     Box(
@@ -662,7 +752,7 @@ fun EditTypeSelector(
                 .clip(RoundedCornerShape(20.dp))
                 .background(color = UI.colors("card_background"))
                 .clickable {
-                    expand = true
+                    isExpanded.value = true
                 }
         ) {
 
@@ -695,10 +785,10 @@ fun EditTypeSelector(
                 .width(80.dp)
                 .fillMaxHeight(0.4f),
 
-            expanded = expand,
+            expanded = isExpanded.value,
 
             onDismissRequest = {
-                expand = false
+                isExpanded.value = false
             },
 
             properties = PopupProperties(
@@ -721,7 +811,7 @@ fun EditTypeSelector(
 
                     onClick = {
                         newExpense.type = item
-                        expand = false
+                        isExpanded.value = false
                     },
 
                     text = {
@@ -756,7 +846,6 @@ fun EditTypeSelector(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditDatePickerUI(
-    onEvent: (ExpenseEvent) -> Unit,
     date: Long
 ) {
 

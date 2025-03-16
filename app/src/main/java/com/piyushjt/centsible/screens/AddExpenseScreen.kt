@@ -1,7 +1,6 @@
 package com.piyushjt.centsible.screens
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -20,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -48,10 +48,20 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -64,17 +74,12 @@ import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.MainScreen
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
-import com.piyushjt.centsible.Util.types
 import com.piyushjt.centsible.Util
+import com.piyushjt.centsible.Util.types
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import androidx.compose.foundation.clickable
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
 
 
 val expense = Expense(
@@ -91,7 +96,6 @@ val expense = Expense(
 @SuppressLint("AutoboxingStateValueProperty")
 @Composable
 fun AddExpense(
-    state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit,
     navFilled: MutableState<String>
 ) {
@@ -114,9 +118,21 @@ fun AddExpense(
             fontFamily = readexPro
         )
 
-        Title()
 
-        Description()
+        val focusRequester = remember { FocusRequester() }
+        val focusManager = LocalFocusManager.current
+
+        val typeBoxExpanded = remember { mutableStateOf(false) }
+
+        Title(
+            focusRequester = focusRequester,
+            focusManager = focusManager
+        )
+
+        Description(
+            focusRequester = focusRequester,
+            focusManager = focusManager
+        )
 
         Row(
             modifier = Modifier
@@ -125,7 +141,10 @@ fun AddExpense(
         ) {
 
             Amount(
-                amount = amount
+                amount = amount,
+                focusRequester = focusRequester,
+                focusManager = focusManager,
+                typeBoxExpanded = typeBoxExpanded
             )
 
             // Date Picker
@@ -142,7 +161,8 @@ fun AddExpense(
         ) {
 
             TypeSelector(
-                modifier = Modifier
+                modifier = Modifier,
+                isExpanded = typeBoxExpanded
             )
 
         }
@@ -167,7 +187,10 @@ fun AddExpense(
 
 
 @Composable
-fun Title() {
+fun Title(
+    focusRequester: FocusRequester,
+    focusManager: FocusManager
+) {
 
     var value by remember { mutableStateOf("") }
 
@@ -211,6 +234,28 @@ fun Title() {
                 color = UI.colors("hint_text"),
                 RoundedCornerShape(20.dp)
             )
+            .onKeyEvent { event ->
+                when (event.key) {
+                    Key.DirectionUp -> {
+                        focusManager.clearFocus()
+                        true
+                    }
+                    Key.DirectionDown -> {
+                        focusManager.moveFocus(FocusDirection.Down)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            .focusRequester(focusRequester),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next
+        ),
+        keyboardActions = KeyboardActions(
+            onNext = {
+                focusManager.moveFocus(FocusDirection.Down)
+            }
+        )
     )
 
 }
@@ -218,7 +263,10 @@ fun Title() {
 
 
 @Composable
-fun Description() {
+fun Description(
+    focusRequester: FocusRequester,
+    focusManager: FocusManager
+) {
 
     var value by remember { mutableStateOf("") }
 
@@ -262,6 +310,28 @@ fun Description() {
                 color = UI.colors("hint_text"),
                 RoundedCornerShape(20.dp)
             )
+            .onKeyEvent { event ->
+                when (event.key) {
+                    Key.DirectionUp -> {
+                        focusManager.moveFocus(FocusDirection.Up)
+                        true
+                    }
+                    Key.DirectionDown -> {
+                        focusManager.moveFocus(FocusDirection.Down)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            .focusRequester(focusRequester),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next
+        ),
+        keyboardActions = KeyboardActions(
+            onNext = {
+                focusManager.moveFocus(FocusDirection.Down)
+            }
+        )
     )
 
 }
@@ -270,7 +340,10 @@ fun Description() {
 
 @Composable
 fun Amount(
-    amount: MutableFloatState
+    amount: MutableFloatState,
+    focusRequester: FocusRequester,
+    focusManager: FocusManager,
+    typeBoxExpanded: MutableState<Boolean>
 ) {
 
     val context = LocalContext.current
@@ -355,10 +428,6 @@ fun Amount(
             )
         },
 
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number
-        ),
-
         singleLine = true,
         modifier = Modifier
             .fillMaxWidth(0.4f)
@@ -368,6 +437,31 @@ fun Amount(
                 color = UI.colors("hint_text"),
                 RoundedCornerShape(20.dp)
             )
+            .onKeyEvent { event ->
+                when (event.key) {
+                    Key.DirectionUp -> {
+                        focusManager.moveFocus(FocusDirection.Up)
+                        true
+                    }
+                    Key.DirectionDown -> {
+                        focusManager.clearFocus()
+                        typeBoxExpanded.value = true
+                        true
+                    }
+                    else -> false
+                }
+            }
+            .focusRequester(focusRequester),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Next
+        ),
+        keyboardActions = KeyboardActions(
+            onNext = {
+                focusManager.clearFocus()
+                typeBoxExpanded.value = true
+            }
+        )
     )
 
 }
@@ -377,13 +471,12 @@ fun Amount(
 
 @Composable
 fun TypeSelector(
-    modifier: Modifier
+    modifier: Modifier,
+    isExpanded: MutableState<Boolean>
 ) {
 
     // Background color
     val bgColor = Util.getRandomColor()
-
-    var expand by remember { mutableStateOf(false) }
 
 
     Box(
@@ -405,7 +498,7 @@ fun TypeSelector(
                 .clip(RoundedCornerShape(20.dp))
                 .background(color = UI.colors("card_background"))
                 .clickable {
-                    expand = true
+                    isExpanded.value = true
                 }
         ) {
 
@@ -438,10 +531,10 @@ fun TypeSelector(
                 .width(80.dp)
                 .fillMaxHeight(0.4f),
 
-            expanded = expand,
+            expanded = isExpanded.value,
 
             onDismissRequest = {
-                expand = false
+                isExpanded.value = false
             },
 
             properties = PopupProperties(
@@ -464,7 +557,7 @@ fun TypeSelector(
 
                     onClick = {
                         expense.type = item
-                        expand = false
+                        isExpanded.value = false
                     },
 
                     text = {
