@@ -49,9 +49,6 @@ import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
-import java.text.DecimalFormat
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 
 
@@ -151,7 +148,11 @@ fun TotalExpense(
                     .height(22.dp)
                     .width(22.dp),
 
-                tint = UI.colors("main_text"),
+                tint =
+                if (percentageChange > 0)
+                    UI.colors("red")
+                else
+                    UI.colors("lime"),
                 painter = painterResource(
                     id =
                     if (percentageChange > 0)

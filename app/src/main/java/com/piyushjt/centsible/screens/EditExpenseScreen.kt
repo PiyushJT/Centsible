@@ -1024,7 +1024,7 @@ fun UpdateButton(
             Text(
                 text = "Save Earning",
                 color = UI.colors("black"),
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 fontFamily = readexPro,
                 textAlign = TextAlign.Center
             )
@@ -1087,7 +1087,7 @@ fun UpdateButton(
             Text(
                 text = "Save Expense",
                 color = UI.colors("black"),
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 fontFamily = readexPro,
                 textAlign = TextAlign.Center
             )

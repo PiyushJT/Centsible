@@ -85,7 +85,7 @@ import java.time.format.DateTimeFormatter
 val expense = Expense(
     title = "",
     description = "",
-    type = "ent",
+    type = "misc",
     amount = 0f,
     date = Util.getCurrentDate(),
     id = -1,
@@ -769,7 +769,7 @@ fun SaveButton(
             Text(
                 text = "Save Earning",
                 color = UI.colors("black"),
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 fontFamily = readexPro,
                 textAlign = TextAlign.Center
             )
@@ -831,7 +831,7 @@ fun SaveButton(
             Text(
                 text = "Save Expense",
                 color = UI.colors("black"),
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 fontFamily = readexPro,
                 textAlign = TextAlign.Center
             )
