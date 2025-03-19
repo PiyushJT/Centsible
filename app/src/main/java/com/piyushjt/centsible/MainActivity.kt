@@ -209,9 +209,7 @@ fun MainScreen(
         // Bottom Navigation bar
         NavBar(
             navFilled = navFilled,
-            modifier = Modifier.align(Alignment.BottomCenter),
-            onEvent = onEvent,
-            enabled = true
+            modifier = Modifier.align(Alignment.BottomCenter)
         )
 
     }
@@ -243,8 +241,7 @@ fun Heading(
 @Composable
 fun ExpenseCard(
     expense: Expense,
-    navController: NavController?,
-    onEvent: (ExpenseEvent) -> Unit
+    navController: NavController?
 ) {
 
     val bgColor = Util.getRandomColor()
@@ -302,7 +299,9 @@ fun ExpenseCard(
 
                     // Logo
                     Image(
-                        painter = Util.image(expense.type),
+                        painter = Util.image(
+                            Util.getTypeByString(expense.type)
+                        ),
                         contentDescription = expense.type,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -391,8 +390,7 @@ fun ExpenseCard(
 fun NavBarButton(
     navFilled: MutableState<String>,
     buttonLogo: String,
-    filled: String,
-    onEvent: (ExpenseEvent) -> Unit
+    filled: String
 ) {
 
 
@@ -451,9 +449,7 @@ fun NavBarButton(
 @Composable
 fun NavBar(
     navFilled: MutableState<String>,
-    modifier: Modifier = Modifier,
-    onEvent: (ExpenseEvent) -> Unit,
-    enabled: Boolean
+    modifier: Modifier = Modifier
 ) {
 
     Column(
@@ -475,24 +471,21 @@ fun NavBar(
             NavBarButton(
                 navFilled = navFilled,
                 buttonLogo = "home",
-                filled = navFilled.value,
-                onEvent = onEvent
+                filled = navFilled.value
             )
 
             // Statistics (Graph)
             NavBarButton(
                 navFilled = navFilled,
                 buttonLogo = "stats",
-                filled = navFilled.value,
-                onEvent = onEvent
+                filled = navFilled.value
             )
 
             // Add Expense
             NavBarButton(
                 navFilled = navFilled,
                 buttonLogo = "add",
-                filled = navFilled.value,
-                onEvent = onEvent
+                filled = navFilled.value
             )
 
         }

@@ -87,18 +87,17 @@ object Util {
 
     // Image and Background Color
     @Composable
-    fun image(type: String) : Painter{
+    fun image(expenseType: Types) : Painter{
 
-        return when (type) {
-            "misc" -> painterResource(id = R.drawable.misc)
-            "food" -> painterResource(id = R.drawable.food)
-            "shopping" -> painterResource(id = R.drawable.shopping_cart)
-            "travel" -> painterResource(id = R.drawable.travel)
-            "ent" -> painterResource(id = R.drawable.ent_netflix)
-            "grocery" -> painterResource(id = R.drawable.grocery)
-            "everyday" -> painterResource(id = R.drawable.everyday)
-            "skill" -> painterResource(id = R.drawable.skill)
-            else -> painterResource(id = R.drawable.shopping_cart)
+        return when (expenseType) {
+            Types.MISC -> painterResource(id = R.drawable.misc)
+            Types.FOOD -> painterResource(id = R.drawable.food)
+            Types.SHOPPING -> painterResource(id = R.drawable.shopping_cart)
+            Types.TRAVEL -> painterResource(id = R.drawable.travel)
+            Types.ENT -> painterResource(id = R.drawable.ent_netflix)
+            Types.GROCERIES -> painterResource(id = R.drawable.grocery)
+            Types.EVERYDAY -> painterResource(id = R.drawable.everyday)
+            Types.SKILL -> painterResource(id = R.drawable.skill)
         }
 
     }
@@ -154,7 +153,7 @@ object Util {
         val weekDates = mutableListOf<Long>()
 
         // Add all 7 days (Monday to Sunday)
-        for (i in 0..6) {
+        (0..6).forEach { i ->
             weekDates.add(outputFormatter.format(calendar.time).toLong())
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
@@ -175,7 +174,7 @@ object Util {
 
 
 
-    val types = listOf("misc", "food", "shopping", "travel", "ent", "grocery", "everyday", "skill")
+    val types = Types.entries.toList()
 
 
     fun createBackup(
@@ -241,6 +240,24 @@ object Util {
         } else {
             amount.toString()
         }
+    }
+
+
+
+    fun getTypeByString(type: String): Types {
+
+        return when(type){
+            "misc" -> Types.MISC
+            "food" -> Types.FOOD
+            "shopping" -> Types.SHOPPING
+            "travel" -> Types.TRAVEL
+            "ent" -> Types.ENT
+            "grocery" -> Types.GROCERIES
+            "everyday" -> Types.EVERYDAY
+            "skill" -> Types.SKILL
+            else -> Types.MISC
+        }
+
     }
 
 }

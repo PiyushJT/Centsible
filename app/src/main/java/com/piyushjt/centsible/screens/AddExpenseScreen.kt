@@ -62,6 +62,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,6 +73,7 @@ import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.MainScreen
+import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util
@@ -85,7 +87,7 @@ import java.time.format.DateTimeFormatter
 val expense = Expense(
     title = "",
     description = "",
-    type = "misc",
+    type = Types.MISC.type,
     amount = 0f,
     date = Util.getCurrentDate(),
     id = -1,
@@ -249,6 +251,7 @@ fun Title(
             }
             .focusRequester(focusRequester),
         keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Sentences,
             imeAction = ImeAction.Next
         ),
         keyboardActions = KeyboardActions(
@@ -325,6 +328,7 @@ fun Description(
             }
             .focusRequester(focusRequester),
         keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Sentences,
             imeAction = ImeAction.Next
         ),
         keyboardActions = KeyboardActions(
@@ -513,7 +517,9 @@ fun TypeSelector(
 
                 // Logo
                 Image(
-                    painter = Util.image(expense.type),
+                    painter = Util.image(
+                        Util.getTypeByString(expense.type)
+                    ),
                     contentDescription = expense.type,
                     modifier = Modifier
                         .aspectRatio(1f)
@@ -556,7 +562,7 @@ fun TypeSelector(
                 DropdownMenuItem(
 
                     onClick = {
-                        expense.type = item
+                        expense.type = item.type
                         isExpanded.value = false
                     },
 
@@ -573,7 +579,7 @@ fun TypeSelector(
                             // Logo
                             Image(
                                 painter = Util.image(item),
-                                contentDescription = item,
+                                contentDescription = item.type,
                                 modifier = Modifier
                                     .aspectRatio(1f)
                                     .padding(10.dp)
@@ -960,7 +966,7 @@ private fun AddScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.MISC.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -969,7 +975,7 @@ private fun AddScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.MISC.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -978,7 +984,7 @@ private fun AddScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.MISC.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -987,7 +993,7 @@ private fun AddScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.MISC.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -996,7 +1002,7 @@ private fun AddScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.MISC.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -1005,7 +1011,7 @@ private fun AddScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.MISC.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -1014,7 +1020,7 @@ private fun AddScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.MISC.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -1023,7 +1029,7 @@ private fun AddScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.MISC.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -1032,7 +1038,7 @@ private fun AddScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.MISC.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -1041,7 +1047,7 @@ private fun AddScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.MISC.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -1050,7 +1056,7 @@ private fun AddScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.MISC.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1

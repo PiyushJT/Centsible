@@ -63,6 +63,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -72,6 +73,7 @@ import androidx.navigation.NavController
 import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.R
+import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util
@@ -85,7 +87,7 @@ import kotlin.math.abs
 val newExpense = Expense(
     title = "",
     description = "",
-    type = "ent",
+    type = Types.MISC.type,
     amount = 0f,
     date = Util.getCurrentDate(),
     id = -1
@@ -499,6 +501,7 @@ fun EditTitle(
             }
             .focusRequester(focusRequester),
         keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Sentences,
             imeAction = ImeAction.Next
         ),
         keyboardActions = KeyboardActions(
@@ -576,6 +579,7 @@ fun EditDescription(
             }
             .focusRequester(focusRequester),
         keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Sentences,
             imeAction = ImeAction.Next
         ),
         keyboardActions = KeyboardActions(
@@ -767,7 +771,9 @@ fun EditTypeSelector(
 
                 // Logo
                 Image(
-                    painter = Util.image(newExpense.type),
+                    painter = Util.image(
+                        Util.getTypeByString(newExpense.type)
+                    ),
                     contentDescription = newExpense.type,
                     modifier = Modifier
                         .aspectRatio(1f)
@@ -810,7 +816,7 @@ fun EditTypeSelector(
                 DropdownMenuItem(
 
                     onClick = {
-                        newExpense.type = item
+                        newExpense.type = item.type
                         isExpanded.value = false
                     },
 
@@ -827,7 +833,7 @@ fun EditTypeSelector(
                             // Logo
                             Image(
                                 painter = Util.image(item),
-                                contentDescription = item,
+                                contentDescription = item.type,
                                 modifier = Modifier
                                     .aspectRatio(1f)
                                     .padding(10.dp)

@@ -22,6 +22,7 @@ import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.Heading
 import com.piyushjt.centsible.MainScreen
+import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util
@@ -29,7 +30,6 @@ import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.text.DecimalFormat
 
 
 // All Expenses to be shown in a Nav Item
@@ -51,7 +51,6 @@ fun ALlExpenses(
         )
 
         ListOfExpenses(
-            onEvent = onEvent,
             state = state,
             navController = navController
         )
@@ -62,7 +61,6 @@ fun ALlExpenses(
 // List of All Expenses
 @Composable
 fun ListOfExpenses(
-    onEvent: (ExpenseEvent) -> Unit,
     state: ExpenseState,
     navController: NavController?
 ) {
@@ -83,7 +81,6 @@ fun ListOfExpenses(
         for (expense in state.expenses) {
 
             ExpenseCard(
-                onEvent = onEvent,
                 expense = expense,
                 navController = navController
             )
@@ -197,7 +194,7 @@ private fun HomeScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -206,7 +203,7 @@ private fun HomeScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -215,7 +212,7 @@ private fun HomeScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -224,7 +221,7 @@ private fun HomeScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -233,7 +230,7 @@ private fun HomeScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -242,7 +239,7 @@ private fun HomeScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -251,7 +248,7 @@ private fun HomeScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -260,7 +257,7 @@ private fun HomeScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -269,7 +266,7 @@ private fun HomeScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -278,7 +275,7 @@ private fun HomeScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -287,7 +284,7 @@ private fun HomeScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1

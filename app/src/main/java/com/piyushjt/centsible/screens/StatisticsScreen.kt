@@ -45,6 +45,7 @@ import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.MainScreen
 import com.piyushjt.centsible.R
+import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util
@@ -85,8 +86,7 @@ fun Stats(
         )
 
         ExpensesInPeriod(
-            state = state,
-            onEvent = onEvent
+            state = state
         )
 
 
@@ -253,7 +253,7 @@ fun StatsCard(
 
     val days = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     val values = state.amountsInPeriod
-    var ind = 0;
+    var ind = 0
 
     val highestVal = values.maxOrNull() ?: 0f
 
@@ -375,7 +375,6 @@ fun StatsCard(
 @Composable
 fun ExpensesInPeriod(
     state: ExpenseState,
-    onEvent: (ExpenseEvent) -> Unit,
     navController: NavController? = null
 ) {
 
@@ -392,7 +391,6 @@ fun ExpensesInPeriod(
         for (expense in state.expensesInPeriod) {
 
             ExpenseCard(
-                onEvent = onEvent,
                 expense = expense,
                 navController = navController
             )
@@ -443,7 +441,7 @@ private fun StatsScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
@@ -452,7 +450,7 @@ private fun StatsScreenPreview() {
                         Expense(
                             title = "Title",
                             description = "Desc",
-                            type = "ent",
+                            type = Types.ENT.type,
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
