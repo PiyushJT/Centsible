@@ -82,6 +82,7 @@ import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import androidx.activity.compose.BackHandler
 
 
 val expense = Expense(
@@ -101,6 +102,10 @@ fun AddExpense(
     onEvent: (ExpenseEvent) -> Unit,
     navFilled: MutableState<String>
 ) {
+
+    BackHandler {
+        navFilled.value = "home"
+    }
 
     val amount = remember { mutableFloatStateOf(expense.amount) }
 

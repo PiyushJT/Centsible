@@ -195,7 +195,8 @@ fun MainScreen(
 
             "stats" -> Stats(
                 onEvent = onEvent,
-                state = state
+                state = state,
+                navFilled = navFilled
             )
 
             else -> AddExpense(
