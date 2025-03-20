@@ -11,6 +11,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.piyushjt.centsible.screens.expense
+import com.piyushjt.centsible.screens.newExpense
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -92,12 +94,15 @@ object Util {
         return when (expenseType) {
             Types.MISC -> painterResource(id = R.drawable.misc)
             Types.FOOD -> painterResource(id = R.drawable.food)
-            Types.SHOPPING -> painterResource(id = R.drawable.shopping_cart)
+            Types.GROCERIES -> painterResource(id = R.drawable.grocery)
             Types.TRAVEL -> painterResource(id = R.drawable.travel)
             Types.ENT -> painterResource(id = R.drawable.ent_netflix)
-            Types.GROCERIES -> painterResource(id = R.drawable.grocery)
-            Types.EVERYDAY -> painterResource(id = R.drawable.everyday)
+            Types.SHOPPING -> painterResource(id = R.drawable.shopping_cart)
             Types.SKILL -> painterResource(id = R.drawable.skill)
+            Types.BILL -> painterResource(id = R.drawable.bill)
+            Types.EMI -> painterResource(id = R.drawable.emi)
+            Types.MEDICINE -> painterResource(id = R.drawable.medicine)
+            Types.INVESTMENT -> painterResource(id = R.drawable.invest)
         }
 
     }
@@ -249,15 +254,30 @@ object Util {
         return when(type){
             "misc" -> Types.MISC
             "food" -> Types.FOOD
-            "shopping" -> Types.SHOPPING
+            "grocery" -> Types.GROCERIES
             "travel" -> Types.TRAVEL
             "ent" -> Types.ENT
-            "grocery" -> Types.GROCERIES
-            "everyday" -> Types.EVERYDAY
+            "shopping" -> Types.SHOPPING
             "skill" -> Types.SKILL
+            "bills" -> Types.BILL
+            "emi" -> Types.EMI
+            "medicine" -> Types.MEDICINE
+            "investment" -> Types.INVESTMENT
             else -> Types.MISC
         }
 
+    }
+
+
+
+    fun clearExpenseData() {
+
+        expense.title = ""
+        expense.description = ""
+        expense.type = "misc"
+        expense.amount = 0f
+        expense.date = getCurrentDate()
+        expense.id = -1
     }
 
 }

@@ -744,6 +744,8 @@ fun SaveButton(
                         ExpenseEvent.SaveExpense(expense)
                     )
 
+                    Util.clearExpenseData()
+
                     navFilled.value = "home"
 
                 } else {
@@ -805,6 +807,8 @@ fun SaveButton(
                     onEvent(
                         ExpenseEvent.SaveExpense(expense)
                     )
+
+                    Util.clearExpenseData()
 
                     navFilled.value = "home"
 
