@@ -2,6 +2,7 @@ package com.piyushjt.centsible.screens
 
 import android.annotation.SuppressLint
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -82,7 +83,6 @@ import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import androidx.activity.compose.BackHandler
 
 
 val expense = Expense(
@@ -119,7 +119,7 @@ fun AddExpense(
 
         // Header
         Text(
-            text = "New Transaction",
+            text = UI.strings("new_transaction"),
             color = UI.colors("main_text"),
             fontSize = 18.sp,
             fontFamily = readexPro
@@ -227,7 +227,7 @@ fun Title(
         },
         placeholder = {
             Text(
-                text = "Title",
+                text = UI.strings("title"),
                 fontSize = 24.sp,
                 color = UI.colors("hint_text")
             )
@@ -247,10 +247,12 @@ fun Title(
                         focusManager.clearFocus()
                         true
                     }
+
                     Key.DirectionDown -> {
                         focusManager.moveFocus(FocusDirection.Down)
                         true
                     }
+
                     else -> false
                 }
             }
@@ -304,7 +306,7 @@ fun Description(
         },
         placeholder = {
             Text(
-                text = "Description (optional)",
+                text = UI.strings("description"),
                 fontSize = 18.sp,
                 color = UI.colors("hint_text")
             )
@@ -324,10 +326,12 @@ fun Description(
                         focusManager.moveFocus(FocusDirection.Up)
                         true
                     }
+
                     Key.DirectionDown -> {
                         focusManager.moveFocus(FocusDirection.Down)
                         true
                     }
+
                     else -> false
                 }
             }
@@ -359,6 +363,8 @@ fun Amount(
     var toast: Toast? by remember { mutableStateOf(null) }
 
     var value by remember { mutableStateOf("") }
+
+    val bigValues = UI.strings("big_values")
 
     TextField(
         value = value,
@@ -398,7 +404,7 @@ fun Amount(
                 // Show a new toast for invalid input
                 toast = Toast.makeText(
                     context,
-                    "This app doesn't support such big values",
+                    bigValues,
                     Toast.LENGTH_LONG,
                 )
                 toast?.show()
@@ -431,7 +437,7 @@ fun Amount(
         },
         placeholder = {
             Text(
-                text = "Amount",
+                text = UI.strings("amount"),
                 fontSize = 16.sp,
                 color = UI.colors("hint_text")
             )
@@ -452,11 +458,13 @@ fun Amount(
                         focusManager.moveFocus(FocusDirection.Up)
                         true
                     }
+
                     Key.DirectionDown -> {
                         focusManager.clearFocus()
                         typeBoxExpanded.value = true
                         true
                     }
+
                     else -> false
                 }
             }
@@ -682,7 +690,7 @@ fun DatePickerUI() {
 
                     }
                 ) {
-                    Text("Select")
+                    Text(UI.strings("select"))
                 }
 
             },
@@ -697,7 +705,7 @@ fun DatePickerUI() {
                     }
 
                 ) {
-                    Text("Cancel")
+                    Text(UI.strings("cancel"))
                 }
             }
 
@@ -722,6 +730,7 @@ fun SaveButton(
     val context = LocalContext.current
     var toast: Toast? by remember { mutableStateOf(null) }
 
+    val emptyValue = UI.strings("empty_value")
 
     Row(
         modifier = Modifier
@@ -757,7 +766,7 @@ fun SaveButton(
                     toast =
                         Toast.makeText(
                             context,
-                            "Title and Amount cannot be empty",
+                            emptyValue,
                             Toast.LENGTH_SHORT
                         )
                     toast?.show()
@@ -780,7 +789,7 @@ fun SaveButton(
 
             // Text on the button
             Text(
-                text = "Save Earning",
+                text = UI.strings("save_earning"),
                 color = UI.colors("black"),
                 fontSize = 16.sp,
                 fontFamily = readexPro,
@@ -821,7 +830,7 @@ fun SaveButton(
                     toast =
                         Toast.makeText(
                             context,
-                            "Title and Amount cannot be empty",
+                            emptyValue,
                             Toast.LENGTH_SHORT
                         )
                     toast?.show()
@@ -844,7 +853,7 @@ fun SaveButton(
 
             // Text on the button
             Text(
-                text = "Save Expense",
+                text = UI.strings("save_expense"),
                 color = UI.colors("black"),
                 fontSize = 16.sp,
                 fontFamily = readexPro,
@@ -903,7 +912,7 @@ fun Backup(
 
             // Text on the button
             Text(
-                text = "Create Backup",
+                text = UI.strings("create_backup"),
                 color = UI.colors("black"),
                 fontSize = 18.sp,
                 fontFamily = readexPro,
@@ -941,7 +950,7 @@ fun Backup(
 
             // Text on the button
             Text(
-                text = "Save Backup",
+                text = UI.strings("restore_backup"),
                 color = UI.colors("black"),
                 fontSize = 18.sp,
                 fontFamily = readexPro,

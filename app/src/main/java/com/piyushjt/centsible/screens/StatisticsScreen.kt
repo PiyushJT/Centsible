@@ -77,7 +77,7 @@ fun Stats(
 
         // Header
         Text(
-            text = "Statistics",
+            text = UI.strings("statistics"),
             color = UI.colors("main_text"),
             fontSize = 18.sp,
             fontFamily = readexPro
@@ -129,7 +129,7 @@ fun TotalExpense(
 
         Column {
             Text(
-                text = "Total Expense",
+                text = UI.strings("total_expense"),
                 color = UI.colors("light_text"),
                 fontSize = 14.sp,
                 fontFamily = readexPro
@@ -168,7 +168,11 @@ fun TotalExpense(
                         R.drawable.decreased
                 ),
 
-                contentDescription = "Decreased"
+                contentDescription =
+                    if (percentageChange > 0)
+                        UI.strings("increased")
+                    else
+                        UI.strings("decreased")
             )
 
             Text(
@@ -233,7 +237,12 @@ fun PeriodChangeButton(
                 id = if (next) R.drawable.forward else R.drawable.back
             ),
 
-            contentDescription = if (next) "Next Week" else "Previous Week"
+            contentDescription =
+                if (next)
+                    UI.strings("next_week")
+                else
+                    UI.strings("previous_week")
+
         )
 
     }
@@ -290,12 +299,13 @@ fun StatsCard(
 
         ) {
 
-            val week = if (state.dateForPeriod == Util.getCurrentDate())
-                "This Week"
-            else if (state.dateForPeriod == Util.getPreviousWeekDate(Util.getCurrentDate()))
-                "Last Week"
-            else
-                getTextOfWeek(state.dateForPeriod)
+            val week =
+                if (state.dateForPeriod == Util.getCurrentDate())
+                    UI.strings("this_week")
+                else if (state.dateForPeriod == Util.getPreviousWeekDate(Util.getCurrentDate()))
+                    UI.strings("last_week")
+                else
+                    getTextOfWeek(state.dateForPeriod)
 
 
 

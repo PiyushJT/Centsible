@@ -12,7 +12,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.piyushjt.centsible.screens.expense
-import com.piyushjt.centsible.screens.newExpense
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.LocalDate

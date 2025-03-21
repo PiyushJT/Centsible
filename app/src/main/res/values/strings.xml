@@ -1,3 +1,39 @@
 <resources>
     <string name="app_name">Centsible</string>
+
+
+    <string name="new_transaction">New Transaction</string>
+    <string name="title">Title</string>
+    <string name="description">Description (optional)</string>
+    <string name="not_support_big_values">This app doesn\'t support such big values</string>
+    <string name="amount">Amount</string>
+    <string name="select">Select</string>
+    <string name="cancel">Cancel</string>
+    <string name="empty_value">Title and Amount cannot be empty</string>
+    <string name="save_earning">Save Earning</string>
+    <string name="save_expense">Save Expense</string>
+    <string name="create_backup">Create Backup</string>
+    <string name="restore_backup">Restore Backup</string>
+
+
+    <string name="edit_transaction">Edit Transaction</string>
+    <string name="back">Back</string>
+    <string name="delete_expense">Delete Expense</string>
+    <string name="confirm_delete">Confirm Delete?</string>
+    <string name="delete">Delete</string>
+
+
+    <string name="recent_transactions">Recent Transactions</string>
+    <string name="total_balance">Total Balance</string>
+
+
+    <string name="statistics">Statistics</string>
+    <string name="total_expense">Total Expense</string>
+    <string name="decreased">Decreased</string>
+    <string name="increased">Increased</string>
+    <string name="next_week">Next Week</string>
+    <string name="previous_week">Previous Week</string>
+    <string name="this_week">This Week</string>
+    <string name="last_week">Last Week</string>
+
 </resources>

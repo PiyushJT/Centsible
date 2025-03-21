@@ -213,7 +213,7 @@ fun EditExpenseHeader(
 
         // Header
         Text(
-            text = "Edit Transaction",
+            text = UI.strings("edit_transaction"),
             color = UI.colors("main_text"),
             fontSize = 18.sp,
             fontFamily = readexPro
@@ -264,7 +264,7 @@ fun BackButton(
 
             painter =  painterResource(id = R.drawable.back),
 
-            contentDescription = "Back"
+            contentDescription = UI.strings("back")
         )
 
     }
@@ -310,7 +310,7 @@ fun DeleteButton(
 
             painter =  painterResource(id = R.drawable.delete),
 
-            contentDescription = "Delete Expense"
+            contentDescription = UI.strings("delete_expense")
         )
 
     }
@@ -367,7 +367,7 @@ fun DeleteDialog(
                     ) {
 
                         Text(
-                            text = "Confirm Delete?",
+                            text = UI.strings("confirm_delete"),
                             color = UI.colors("text"),
                             fontSize = 26.sp,
                             fontFamily = readexPro
@@ -397,7 +397,7 @@ fun DeleteDialog(
 
                             ) {
                                 Text(
-                                    text = "Cancel",
+                                    text = UI.strings("cancel"),
                                     color = UI.colors("text"),
                                     fontSize = 20.sp,
                                     fontFamily = readexPro
@@ -416,7 +416,7 @@ fun DeleteDialog(
 
                             ) {
                                 Text(
-                                    text = "Delete",
+                                    text = UI.strings("delete"),
                                     color = UI.colors("black"),
                                     fontSize = 20.sp,
                                     fontFamily = readexPro
@@ -472,7 +472,7 @@ fun EditTitle(
         },
         placeholder = {
             Text(
-                text = "Title",
+                text = UI.strings("title"),
                 fontSize = 24.sp,
                 color = UI.colors("hint_text")
             )
@@ -492,10 +492,12 @@ fun EditTitle(
                         focusManager.clearFocus()
                         true
                     }
+
                     Key.DirectionDown -> {
                         focusManager.moveFocus(FocusDirection.Down)
                         true
                     }
+
                     else -> false
                 }
             }
@@ -550,7 +552,7 @@ fun EditDescription(
         },
         placeholder = {
             Text(
-                text = "Description (optional)",
+                text = UI.strings("description"),
                 fontSize = 18.sp,
                 color = UI.colors("hint_text")
             )
@@ -570,10 +572,12 @@ fun EditDescription(
                         focusManager.moveFocus(FocusDirection.Up)
                         true
                     }
+
                     Key.DirectionDown -> {
                         focusManager.moveFocus(FocusDirection.Down)
                         true
                     }
+
                     else -> false
                 }
             }
@@ -606,6 +610,7 @@ fun EditAmount(
 
     var value by remember { mutableStateOf(Util.removeScientificNotation(newAmount.floatValue)) }
 
+    val bigValues = UI.strings("big_values")
 
     TextField(
         value = value,
@@ -645,7 +650,7 @@ fun EditAmount(
                 // Show a new toast for invalid input
                 toast = Toast.makeText(
                     context,
-                    "This app doesn't support such big values",
+                    bigValues,
                     Toast.LENGTH_LONG,
                 )
                 toast?.show()
@@ -680,7 +685,7 @@ fun EditAmount(
         },
         placeholder = {
             Text(
-                text = "Amount",
+                text = UI.strings("amount"),
                 fontSize = 16.sp,
                 color = UI.colors("hint_text")
             )
@@ -701,11 +706,13 @@ fun EditAmount(
                         focusManager.moveFocus(FocusDirection.Up)
                         true
                     }
+
                     Key.DirectionDown -> {
                         focusManager.clearFocus()
                         typeBoxExpanded.value = true
                         true
                     }
+
                     else -> false
                 }
             }
@@ -932,7 +939,7 @@ fun EditDatePickerUI(
 
                     }
                 ) {
-                    Text("Select")
+                    Text(UI.strings("select"))
                 }
 
             },
@@ -947,7 +954,7 @@ fun EditDatePickerUI(
                     }
 
                 ) {
-                    Text("Cancel")
+                    Text(UI.strings("cancel"))
                 }
             }
 
@@ -970,6 +977,8 @@ fun UpdateButton(
 
     val context = LocalContext.current
     var toast: Toast? by remember { mutableStateOf(null) }
+
+    val emptyValue = UI.strings("empty_value")
 
 
     Row(
@@ -1005,7 +1014,7 @@ fun UpdateButton(
                     // Show a new toast for invalid input
                     toast = Toast.makeText(
                         context,
-                        "Title and Amount cannot be empty",
+                        emptyValue,
                         Toast.LENGTH_SHORT,
                     )
                     toast?.show()
@@ -1028,7 +1037,7 @@ fun UpdateButton(
 
             // Text on the button
             Text(
-                text = "Save Earning",
+                text = UI.strings("save_earning"),
                 color = UI.colors("black"),
                 fontSize = 16.sp,
                 fontFamily = readexPro,
@@ -1068,7 +1077,7 @@ fun UpdateButton(
                     // Show a new toast for invalid input
                     toast = Toast.makeText(
                         context,
-                        "Title and Amount cannot be empty",
+                        emptyValue,
                         Toast.LENGTH_SHORT
                     )
                     toast?.show()
@@ -1091,7 +1100,7 @@ fun UpdateButton(
 
             // Text on the button
             Text(
-                text = "Save Expense",
+                text = UI.strings("save_expense"),
                 color = UI.colors("black"),
                 fontSize = 16.sp,
                 fontFamily = readexPro,

@@ -3,6 +3,7 @@ package com.piyushjt.centsible
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +45,53 @@ object UI {
 
 
         return colors[color] ?: Color.Transparent
+
+    }
+
+    @Composable
+    fun strings(string: String): String {
+
+        val strings = mapOf(
+            "new_transaction" to stringResource(id = R.string.new_transaction),
+            "title" to stringResource(id = R.string.title),
+            "description" to stringResource(id = R.string.description),
+            "big_values" to stringResource(id = R.string.not_support_big_values),
+            "amount" to stringResource(id = R.string.amount),
+            "select" to stringResource(id = R.string.select),
+            "cancel" to stringResource(id = R.string.cancel),
+            "empty_value" to stringResource(id = R.string.empty_value),
+            "save_earning" to stringResource(id = R.string.save_earning),
+            "save_expense" to stringResource(id = R.string.save_expense),
+            "create_backup" to stringResource(id = R.string.create_backup),
+            "restore_backup" to stringResource(id = R.string.restore_backup),
+
+
+            "edit_transaction" to stringResource(id = R.string.edit_transaction),
+            "back" to stringResource(id = R.string.back),
+            "delete_expense" to stringResource(id = R.string.delete_expense),
+            "confirm_delete" to stringResource(id = R.string.confirm_delete),
+            "confirm_delete" to stringResource(id = R.string.confirm_delete),
+            "delete" to stringResource(id = R.string.delete),
+
+
+            "recent_transactions" to stringResource(id = R.string.recent_transactions),
+            "total_balance" to stringResource(id = R.string.total_balance),
+
+
+            "statistics" to stringResource(id = R.string.statistics),
+            "total_expense" to stringResource(id = R.string.total_expense),
+            "decreased" to stringResource(id = R.string.decreased),
+            "increased" to stringResource(id = R.string.increased),
+            "total_expense" to stringResource(id = R.string.total_expense),
+            "next_week" to stringResource(id = R.string.next_week),
+            "previous_week" to stringResource(id = R.string.previous_week),
+            "this_week" to stringResource(id = R.string.this_week),
+            "last_week" to stringResource(id = R.string.last_week),
+
+
+        )
+
+        return strings[string] ?: ""
 
     }
 

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+    <string name="new_transaction">नया खर्च/कमाई</string>
+    <string name="title">शीर्षक</string>
+    <string name="description">विवरण (वैकल्पिक)</string>
+    <string name="not_support_big_values">यह ऐप इतने बड़े मूल्यों के लिए नहीं बना</string>
+    <string name="amount">राशि</string>
+    <string name="select">चुनें</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="empty_value">शीर्षक और राशि खाली नहीं हो सकते</string>
+    <string name="save_earning">कमाई सहेजें</string>
+    <string name="save_expense">खर्च सहेजें</string>
+    <string name="create_backup">बैकअप बनाएं</string>
+    <string name="restore_backup">बैकअप पुनर्स्थापित करें</string>
+
+    <string name="edit_transaction">खर्च/कमाई संपादित करें</string>
+    <string name="back">वापस जाओ</string>
+    <string name="delete_expense">खर्च हटाएं</string>
+    <string name="confirm_delete">हटाने की पुष्टि करें?</string>
+    <string name="delete">हटाएं</string>
+
+    <string name="recent_transactions">पुराने खर्च/कमाई</string>
+    <string name="total_balance">कुल शेष राशि</string>
+
+    <string name="statistics">सांख्यिकी</string>
+    <string name="total_expense">कुल खर्च</string>
+    <string name="decreased">घट गया</string>
+    <string name="increased">बढ़ गया</string>
+    <string name="next_week">अगला सप्ताह</string>
+    <string name="previous_week">पिछला सप्ताह</string>
+    <string name="this_week">इस सप्ताह</string>
+    <string name="last_week">पिछला सप्ताह</string>
+
+</resources>

@@ -74,7 +74,7 @@ fun ListOfExpenses(
     ) {
 
         // Heading as above Composable
-        Heading(text = "Recent Transactions")
+        Heading(text = UI.strings("recent_transactions"))
 
 
         // All Expenses
@@ -155,7 +155,7 @@ fun TotalBalance(
         onEvent(ExpenseEvent.SetTotalAmount)
 
         Text(
-            text = "Total Balance",
+            text = UI.strings("total_balance"),
             color = UI.colors("light_text"),
             fontSize = 18.sp,
             fontFamily = readexPro
