@@ -51,6 +51,7 @@ import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.screens.ALlExpenses
 import com.piyushjt.centsible.screens.AddExpense
 import com.piyushjt.centsible.screens.EditExpenseScreen
+import com.piyushjt.centsible.screens.Settings
 import com.piyushjt.centsible.screens.Stats
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import kotlinx.serialization.Serializable
@@ -199,10 +200,13 @@ fun MainScreen(
                 navFilled = navFilled
             )
 
-            else -> AddExpense(
+            "add" -> AddExpense(
                 navFilled = navFilled,
                 onEvent = onEvent
             )
+
+            else -> Settings()
+
 
         }
 
@@ -410,11 +414,17 @@ fun NavBarButton(
             else
                 painterResource(id = R.drawable.stats)
 
-        else
+        else if(buttonLogo == "add")
             if(buttonLogo == filled)
                 painterResource(id = R.drawable.add_filled)
             else
                 painterResource(id = R.drawable.add)
+
+        else
+            if(buttonLogo == filled)
+                painterResource(id = R.drawable.set_filled)
+            else
+                painterResource(id = R.drawable.set)
 
 
     IconButton(
@@ -486,6 +496,13 @@ fun NavBar(
             NavBarButton(
                 navFilled = navFilled,
                 buttonLogo = "add",
+                filled = navFilled.value
+            )
+
+            // Add Expense
+            NavBarButton(
+                navFilled = navFilled,
+                buttonLogo = "set",
                 filled = navFilled.value
             )
 

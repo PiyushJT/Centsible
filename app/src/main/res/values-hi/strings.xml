@@ -2,6 +2,12 @@
 <resources>
 
 
+
+    <string name="privacy_policy">प्राइवेसी पालिसी</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="ext_link_icon">बाहरी लिंक आइकन</string>
+
+
     <string name="new_transaction">नया खर्च/कमाई</string>
     <string name="title">शीर्षक</string>
     <string name="description">विवरण (वैकल्पिक)</string>

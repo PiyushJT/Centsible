@@ -52,6 +52,14 @@ object UI {
     fun strings(string: String): String {
 
         val strings = mapOf(
+
+            "privacy_policy_uri" to stringResource(id = R.string.privacy_policy_uri),
+
+
+            "privacy_policy" to stringResource(id = R.string.privacy_policy),
+            "settings" to stringResource(id = R.string.settings),
+            "ext_link_icon" to stringResource(id = R.string.ext_link_icon),
+
             "new_transaction" to stringResource(id = R.string.new_transaction),
             "title" to stringResource(id = R.string.title),
             "description" to stringResource(id = R.string.description),

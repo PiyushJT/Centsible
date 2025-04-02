@@ -1,6 +1,12 @@
 <resources>
-    <string name="app_name">Centsible</string>
+    <string name="app_name" translatable="false">Centsible</string>
 
+    <string name="privacy_policy_uri" translatable="false">https://sites.google.com/view/centsible-privacy-policy</string>
+
+
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="settings">Settings</string>
+    <string name="ext_link_icon">external link icon</string>
 
     <string name="new_transaction">New Transaction</string>
     <string name="title">Title</string>
