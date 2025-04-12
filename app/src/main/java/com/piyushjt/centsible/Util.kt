@@ -1,16 +1,39 @@
 package com.piyushjt.centsible
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.CenterVertically
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.screens.expense
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -278,5 +301,151 @@ object Util {
         expense.date = getCurrentDate()
         expense.id = -1
     }
+
+
+
+    // Confirmation Dialog
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun DialogBox(
+        isDialogVisible: MutableState<Boolean>,
+        title: String,
+        message: String = "",
+        posBtnText: String,
+        negBtnText: String,
+        onPosBtnClick: () -> Unit,
+        onNegBtnClick: () -> Unit = {  },
+        isPosBtnPositive: Boolean = false
+    ) {
+        if(isDialogVisible.value) {
+
+            val aspectRatio =
+                if (message.isEmpty())
+                    1.8f
+                else
+                    1.2f
+
+            BasicAlertDialog(
+                onDismissRequest = {
+                    isDialogVisible.value = false
+                },
+                content = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+//                            .aspectRatio(aspectRatio)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(UI.colors("card_background"))
+                            .border(
+                                0.5.dp,
+                                color = UI.colors("hint_text"),
+                                RoundedCornerShape(20.dp)
+                            )
+                    ) {
+
+                        Column(
+                            modifier = Modifier
+                                .padding(vertical = 24.dp),
+                            horizontalAlignment = CenterHorizontally,
+                            verticalArrangement = Arrangement.SpaceAround
+                        ) {
+
+                            Text(
+                                modifier = Modifier
+                                    .padding(vertical = 10.dp),
+                                text = title,
+                                color = UI.colors("text"),
+                                fontSize = 26.sp,
+                                fontFamily = readexPro
+                            )
+
+                            Text(
+                                modifier = Modifier
+                                    .padding(vertical = 10.dp)
+                                    .fillMaxWidth(0.8f),
+                                text = message,
+                                color =
+                                    if (isPosBtnPositive)
+                                        UI.colors("main_text")
+                                    else
+                                        UI.colors("red"),
+                                fontSize = 18.sp,
+                                fontFamily = readexPro,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp),
+                                verticalAlignment = CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+
+                                TextButton(
+                                    modifier = Modifier
+                                        .padding(horizontal = 10.dp)
+                                        .clip(RoundedCornerShape(15.dp))
+                                        .background(UI.colors("trans"))
+                                        .border(
+                                            1.dp,
+                                            UI.colors("text"),
+                                            RoundedCornerShape(15.dp)
+                                        )
+                                        .padding(horizontal = 5.dp),
+                                    onClick = {
+                                        onNegBtnClick()
+                                        isDialogVisible.value = false
+                                    }
+
+                                ) {
+                                    Text(
+                                        text = negBtnText,
+                                        color = UI.colors("text"),
+                                        fontSize = 20.sp,
+                                        fontFamily = readexPro
+                                    )
+                                }
+
+
+
+                                TextButton(
+                                    modifier = Modifier
+                                        .padding(horizontal = 10.dp)
+                                        .clip(RoundedCornerShape(15.dp))
+                                        .background(
+                                            if (isPosBtnPositive)
+                                                UI.colors("lime")
+                                            else
+                                                UI.colors("red")
+                                        )
+                                        .padding(horizontal = 5.dp),
+                                    onClick = {
+                                        onPosBtnClick()
+                                        isDialogVisible.value = false
+                                    }
+
+                                ) {
+                                    Text(
+                                        text = posBtnText,
+                                        color = UI.colors("black"),
+                                        fontSize = 20.sp,
+                                        fontFamily = readexPro
+                                    )
+                                }
+
+
+                            }
+
+                        }
+
+                    }
+                }
+            )
+        }
+    }
+
+
+
 
 }

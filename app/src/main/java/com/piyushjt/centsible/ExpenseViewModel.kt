@@ -185,6 +185,16 @@ class ExpenseViewModel(
                     Log.d("Total Amount", "new amount: ${state.value.totalAmount}")
                 }
             }
+
+
+            is ExpenseEvent.DeleteAllExpenses -> {
+                viewModelScope.launch {
+                    for (expense in state.value.expenses) {
+                        dao.deleteExpense(expense)
+                    }
+                }
+            }
+
         }
     }
 }

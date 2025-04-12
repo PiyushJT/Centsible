@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.DatePicker
@@ -77,6 +75,7 @@ import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util
+import com.piyushjt.centsible.Util.DialogBox
 import com.piyushjt.centsible.Util.types
 import java.time.Instant
 import java.time.ZoneId
@@ -315,126 +314,21 @@ fun DeleteButton(
 
     }
 
-    DeleteDialog(
+    DialogBox(
         isDialogVisible = isDialogVisible,
-        onDelete = {
+        title = UI.strings("confirm_delete"),
+        posBtnText = UI.strings("delete"),
+        negBtnText = UI.strings("cancel"),
+        onPosBtnClick = {
 
             onEvent(ExpenseEvent.DeleteExpense(expense = expense))
 
             navController.popBackStack()
 
-            isDialogVisible.value = false
-
         }
     )
 
 }
-
-
-
-
-// Confirmation Dialog
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DeleteDialog(
-    isDialogVisible: MutableState<Boolean>,
-    onDelete: () -> Unit
-) {
-    if(isDialogVisible.value) {
-        BasicAlertDialog(
-            onDismissRequest = {
-                isDialogVisible.value = false
-            },
-            content = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .aspectRatio(1.8f)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(UI.colors("card_background"))
-                        .border(
-                            0.5.dp,
-                            color = UI.colors("hint_text"),
-                            RoundedCornerShape(20.dp)
-                        )
-                ) {
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        horizontalAlignment = CenterHorizontally,
-                        verticalArrangement = Arrangement.SpaceAround
-                    ) {
-
-                        Text(
-                            text = UI.strings("confirm_delete"),
-                            color = UI.colors("text"),
-                            fontSize = 26.sp,
-                            fontFamily = readexPro
-                        )
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-
-                            TextButton(
-                                modifier = Modifier
-                                    .padding(horizontal = 10.dp)
-                                    .clip(RoundedCornerShape(15.dp))
-                                    .background(UI.colors("trans"))
-                                    .border(
-                                        1.dp,
-                                        UI.colors("text"),
-                                        RoundedCornerShape(15.dp)
-                                    )
-                                    .padding(horizontal = 5.dp),
-                                onClick = {
-                                    isDialogVisible.value = false
-                                }
-
-                            ) {
-                                Text(
-                                    text = UI.strings("cancel"),
-                                    color = UI.colors("text"),
-                                    fontSize = 20.sp,
-                                    fontFamily = readexPro
-                                )
-                            }
-
-
-
-                            TextButton(
-                                modifier = Modifier
-                                    .padding(horizontal = 10.dp)
-                                    .clip(RoundedCornerShape(15.dp))
-                                    .background(UI.colors("red"))
-                                    .padding(horizontal = 5.dp),
-                                onClick = onDelete
-
-                            ) {
-                                Text(
-                                    text = UI.strings("delete"),
-                                    color = UI.colors("black"),
-                                    fontSize = 20.sp,
-                                    fontFamily = readexPro
-                                )
-                            }
-
-
-                        }
-
-                    }
-
-                }
-            }
-        )
-    }
-}
-
-
 
 
 @Composable

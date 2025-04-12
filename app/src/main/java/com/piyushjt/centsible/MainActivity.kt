@@ -205,7 +205,10 @@ fun MainScreen(
                 onEvent = onEvent
             )
 
-            else -> Settings()
+            else -> Settings(
+                state = state,
+                onEvent = onEvent
+            )
 
 
         }

@@ -11,4 +11,6 @@ sealed interface ExpenseEvent {
     data class SetLastAmounts(val dates: List<Long>): ExpenseEvent
     object SetTotalAmount: ExpenseEvent
 
+    object DeleteAllExpenses: ExpenseEvent
+
 }

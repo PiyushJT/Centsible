@@ -57,10 +57,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -181,14 +179,6 @@ fun AddExpense(
             onEvent = onEvent
         )
 
-        /*
-
-        Backup(
-            state = state,
-            onEvent = onEvent
-        )
-
-        */
     }
 }
 
@@ -856,103 +846,6 @@ fun SaveButton(
                 text = UI.strings("save_expense"),
                 color = UI.colors("black"),
                 fontSize = 16.sp,
-                fontFamily = readexPro,
-                textAlign = TextAlign.Center
-            )
-
-        }
-
-    }
-}
-
-
-
-
-@Composable
-fun Backup(
-    state: ExpenseState,
-    onEvent: (ExpenseEvent) -> Unit
-) {
-
-    val clipboardManager = LocalClipboardManager.current
-
-
-    Row(
-        modifier = Modifier
-            .padding(top = 24.dp)
-    ) {
-
-        // Create Backup button
-        TextButton(
-
-            modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp)
-                .height(60.dp),
-
-            onClick = {
-                val backup = Util.createBackup(
-                    state = state
-                )
-
-                clipboardManager.setText(AnnotatedString(backup))
-            },
-
-            shape = RoundedCornerShape(20.dp),
-            colors = ButtonColors(
-
-                containerColor = UI.colors("lime"),
-
-                contentColor = UI.colors("black"),
-                disabledContainerColor = UI.colors("red"),
-                disabledContentColor = UI.colors("black")
-            )
-
-        ) {
-
-            // Text on the button
-            Text(
-                text = UI.strings("create_backup"),
-                color = UI.colors("black"),
-                fontSize = 18.sp,
-                fontFamily = readexPro,
-                textAlign = TextAlign.Center
-            )
-
-        }
-
-        // Save Backup button
-        TextButton(
-
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 8.dp)
-                .height(60.dp),
-
-            onClick = {
-                Util.saveBackup(
-                    backup = clipboardManager.getText()?.text ?: "",
-                    onEvent = onEvent
-                )
-            },
-
-            shape = RoundedCornerShape(20.dp),
-            colors = ButtonColors(
-
-                containerColor = UI.colors("red"),
-
-                contentColor = UI.colors("black"),
-                disabledContainerColor = UI.colors("red"),
-                disabledContentColor = UI.colors("black")
-            )
-
-        ) {
-
-            // Text on the button
-            Text(
-                text = UI.strings("restore_backup"),
-                color = UI.colors("black"),
-                fontSize = 18.sp,
                 fontFamily = readexPro,
                 textAlign = TextAlign.Center
             )
