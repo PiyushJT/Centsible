@@ -1,6 +1,7 @@
 package com.piyushjt.centsible.screens
 
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,15 +18,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,6 +45,7 @@ import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI.DividerLine
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util.DialogBox
+import com.piyushjt.centsible.Util.getAllData
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 
 
@@ -72,6 +78,7 @@ fun Settings(
             )
 
             DataManager(
+                state = state,
                 onEvent = onEvent
             )
 
@@ -134,6 +141,7 @@ fun PrivacyPolicy() {
 
 @Composable
 fun DataManager(
+    state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
@@ -147,12 +155,13 @@ fun DataManager(
 
     ) {
 
-        ExportData()
+        ExportData(
+            state = state
+        )
         DividerLine()
 
         ImportData()
         DividerLine()
-
 
         DeleteAllData(
             onEvent = onEvent
@@ -214,13 +223,34 @@ fun DeleteAllData(
 
 
 @Composable
-fun ExportData() {
+fun ExportData(
+    state: ExpenseState
+) {
+
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+    var toast: Toast? by remember { mutableStateOf(null) }
+
+    val dataSaved = "Data saved to Clipboard."
+//        val dataSaved = ("data_saved")
 
     Row(
+
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
-            .clickable { },
+            .clickable {
+
+                val data = getAllData(state = state)
+
+                clipboardManager.setText(AnnotatedString(data))
+
+                toast?.cancel()
+                toast = Toast.makeText(context, dataSaved, Toast.LENGTH_LONG)
+                toast?.show()
+
+
+            },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {

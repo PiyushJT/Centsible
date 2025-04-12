@@ -1,6 +1,8 @@
 package com.piyushjt.centsible
 
 import android.annotation.SuppressLint
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +23,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -42,7 +48,9 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 
 object Util {
 
@@ -204,24 +212,21 @@ object Util {
     val types = Types.entries.toList()
 
 
-    fun createBackup(
-        state: ExpenseState
-    ) : String {
+    fun getAllData(state: ExpenseState): String {
 
-        var backup = ""
+        val backup = StringBuilder()
 
-        for(expense in state.expenses){
+        for (expense in state.expenses) {
 
-            backup = "$backup\n${expense.title}__${expense.description}__${expense.type}__${expense.amount}__${expense.date}__${expense.id}"
+            backup.append("${expense.title}~`~${expense.description}~`~${expense.type}~`~${expense.amount}~`~${expense.date}~`~${expense.id}\n")
 
         }
-
-        return backup
-
+        return backup.trimEnd('\n').toString()
     }
 
 
-    fun saveBackup(
+
+    fun saveData(
         backup: String,
         onEvent: (ExpenseEvent) -> Unit
     ){
@@ -232,7 +237,7 @@ object Util {
 
         for(value in rawExpenses){
 
-            val expenseValues = value.split("__")
+            val expenseValues = value.split("~`~")
 
             val expense = Expense(
                 title = expenseValues[0],
