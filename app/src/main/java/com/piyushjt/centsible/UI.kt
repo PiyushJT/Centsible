@@ -57,18 +57,19 @@ object UI {
 
     }
 
+
     @Composable
     fun strings(string: String): String {
 
         val strings = mapOf(
 
+            // URIs
             "privacy_policy_uri" to stringResource(id = R.string.privacy_policy_uri),
+            "license_uri" to stringResource(id = R.string.license_uri),
+            "github_uri" to stringResource(id = R.string.github_uri),
 
 
-            "privacy_policy" to stringResource(id = R.string.privacy_policy),
-            "settings" to stringResource(id = R.string.settings),
-            "ext_link_icon" to stringResource(id = R.string.ext_link_icon),
-
+            // Add Expense Screen
             "new_transaction" to stringResource(id = R.string.new_transaction),
             "title" to stringResource(id = R.string.title),
             "description" to stringResource(id = R.string.description),
@@ -79,10 +80,9 @@ object UI {
             "empty_value" to stringResource(id = R.string.empty_value),
             "save_earning" to stringResource(id = R.string.save_earning),
             "save_expense" to stringResource(id = R.string.save_expense),
-            "create_backup" to stringResource(id = R.string.create_backup),
-            "restore_backup" to stringResource(id = R.string.restore_backup),
 
 
+            // Edit Expense Screen
             "edit_transaction" to stringResource(id = R.string.edit_transaction),
             "back" to stringResource(id = R.string.back),
             "delete_expense" to stringResource(id = R.string.delete_expense),
@@ -90,10 +90,12 @@ object UI {
             "delete" to stringResource(id = R.string.delete),
 
 
+            // Main Screen
             "recent_transactions" to stringResource(id = R.string.recent_transactions),
             "total_balance" to stringResource(id = R.string.total_balance),
 
 
+            // Statistics Screen
             "statistics" to stringResource(id = R.string.statistics),
             "total_expense" to stringResource(id = R.string.total_expense),
             "decreased" to stringResource(id = R.string.decreased),
@@ -104,6 +106,20 @@ object UI {
             "this_week" to stringResource(id = R.string.this_week),
             "last_week" to stringResource(id = R.string.last_week),
 
+
+            // Settings Screen
+            "settings" to stringResource(id = R.string.settings),
+            "export_data" to stringResource(id = R.string.export_data),
+            "import_data" to stringResource(id = R.string.import_data),
+            "delete_all_data" to stringResource(id = R.string.delete_all_data),
+            "upload_file" to stringResource(id = R.string.upload_file),
+            "data_import_successful" to stringResource(id = R.string.data_import_successful),
+            "file_not_supported" to stringResource(id = R.string.file_not_supported),
+            "delete_all_data_message" to stringResource(id = R.string.delete_all_data_message),
+            "privacy_policy" to stringResource(id = R.string.privacy_policy),
+            "ext_link_icon" to stringResource(id = R.string.ext_link_icon),
+            "open_source_license" to stringResource(id = R.string.open_source_license),
+            "github_repo" to stringResource(id = R.string.github_repo),
 
         )
 
@@ -131,6 +147,7 @@ object UI {
         }
 
     }
+
 
     // Custom font
     val readexPro = FontFamily(

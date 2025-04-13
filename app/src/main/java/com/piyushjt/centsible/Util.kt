@@ -45,6 +45,9 @@ import java.util.Locale
 
 object Util {
 
+    // Expense Types
+    val types = Types.entries.toList()
+
 
     // Current Date
     fun getCurrentDate(): Long {
@@ -55,6 +58,7 @@ object Util {
     }
 
 
+    // Gives date from previous week (same dayOfWeek)
     fun getPreviousWeekDate(
         dateForPeriod: Long
     ): Long {
@@ -68,6 +72,7 @@ object Util {
     }
 
 
+    // Gives date from next week (same dayOfWeek)
     fun getNextWeekDate(
         dateForPeriod: Long
     ): Long {
@@ -79,8 +84,6 @@ object Util {
         return nextDate.format(formatter).toLong()
 
     }
-
-
 
 
     // Date Formatter
@@ -107,8 +110,7 @@ object Util {
     }
 
 
-
-    // Image and Background Color
+    // Image by expense type
     @Composable
     fun image(expenseType: Types) : Painter{
 
@@ -129,7 +131,7 @@ object Util {
     }
 
 
-
+    // Gives random color
     @Composable
     fun getRandomColor() : Color {
 
@@ -148,6 +150,7 @@ object Util {
     }
 
 
+    // Gives Device Height in dp
     @Composable
     fun getDeviceHeightInDp(): Dp {
         val configuration = LocalConfiguration.current
@@ -156,15 +159,18 @@ object Util {
     }
 
 
+    // Gives Bottom Padding
     @Composable
     fun getBottomPadding(): Dp {
         return WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     }
 
 
+    // Gives dates of week
     fun getWeekDates(
         date: Long
     ): List<Long> {
+
         val inputFormatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
         val parsedDate = inputFormatter.parse(date.toString()) ?: throw IllegalArgumentException("Invalid date format")
 
@@ -188,6 +194,7 @@ object Util {
     }
 
 
+    // Gives day of week
     fun dayOfWeek(dateLong: Long): Int {
         val dateStr = dateLong.toString()
         val year = dateStr.substring(0, 4).toInt()
@@ -199,42 +206,7 @@ object Util {
     }
 
 
-
-    val types = Types.entries.toList()
-
-
-
-    fun saveData(
-        backup: String,
-        onEvent: (ExpenseEvent) -> Unit
-    ){
-
-        val rawExpenses = backup.split("\n")
-        val expenses = emptyList<Expense>().toMutableList()
-
-
-        for(value in rawExpenses){
-
-            val expenseValues = value.split("~`~")
-
-            val expense = Expense(
-                title = expenseValues[0],
-                description = if (expenseValues[1].isEmpty() || expenseValues[1] == "null") "" else expenseValues[1],
-                type = expenseValues[2],
-                amount = expenseValues[3].toFloat(),
-                date = expenseValues[4].toLong(),
-            )
-            expenses.add(expense)
-        }
-
-        for (expense in expenses){
-
-            onEvent(ExpenseEvent.SaveExpense(expense))
-
-        }
-
-    }
-
+    // Formats any amount in Indian Currency System
     fun formatInIndianSystem(amount: Float): String {
 
         // format in Indian system.
@@ -243,17 +215,20 @@ object Util {
 
     }
 
+
+    // Removes scientific notation from amount
     @SuppressLint("DefaultLocale")
     fun removeScientificNotation(amount: Float): String {
-        return if (amount.toString().contains("E")) {
+
+        return if (amount.toString().contains("E"))
             String.format("%.10f", amount).trimEnd('0').trimEnd('.')
-        } else {
+        else
             amount.toString()
-        }
+
     }
 
 
-
+    // Gives type by string
     fun getTypeByString(type: String): Types {
 
         return when(type){
@@ -273,8 +248,7 @@ object Util {
 
     }
 
-
-
+    // Clears expense data
     fun clearExpenseData() {
 
         expense.title = ""
@@ -284,7 +258,6 @@ object Util {
         expense.date = getCurrentDate()
         expense.id = -1
     }
-
 
 
     // Confirmation Dialog
@@ -300,23 +273,19 @@ object Util {
         onNegBtnClick: () -> Unit = {  },
         isPosBtnPositive: Boolean = false
     ) {
-        if(isDialogVisible.value) {
 
-            val aspectRatio =
-                if (message.isEmpty())
-                    1.8f
-                else
-                    1.2f
+        if(isDialogVisible.value) {
 
             BasicAlertDialog(
                 onDismissRequest = {
                     isDialogVisible.value = false
                 },
+
+                // Content
                 content = {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(0.9f)
-//                            .aspectRatio(aspectRatio)
                             .clip(RoundedCornerShape(20.dp))
                             .background(UI.colors("card_background"))
                             .border(
@@ -333,6 +302,7 @@ object Util {
                             verticalArrangement = Arrangement.SpaceAround
                         ) {
 
+                            // Dialog title
                             Text(
                                 modifier = Modifier
                                     .padding(vertical = 10.dp),
@@ -342,6 +312,8 @@ object Util {
                                 fontFamily = readexPro
                             )
 
+
+                            // Dialog message
                             Text(
                                 modifier = Modifier
                                     .padding(vertical = 10.dp)
@@ -357,6 +329,7 @@ object Util {
                                 textAlign = TextAlign.Center
                             )
 
+                            // Dialog buttons
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -365,6 +338,7 @@ object Util {
                                 horizontalArrangement = Arrangement.Center
                             ) {
 
+                                // Negative button
                                 TextButton(
                                     modifier = Modifier
                                         .padding(horizontal = 10.dp)
@@ -380,7 +354,6 @@ object Util {
                                         onNegBtnClick()
                                         isDialogVisible.value = false
                                     }
-
                                 ) {
                                     Text(
                                         text = negBtnText,
@@ -390,8 +363,7 @@ object Util {
                                     )
                                 }
 
-
-
+                                // Positive button
                                 TextButton(
                                     modifier = Modifier
                                         .padding(horizontal = 10.dp)
@@ -407,7 +379,6 @@ object Util {
                                         onPosBtnClick()
                                         isDialogVisible.value = false
                                     }
-
                                 ) {
                                     Text(
                                         text = posBtnText,
@@ -417,9 +388,7 @@ object Util {
                                     )
                                 }
 
-
                             }
-
                         }
 
                     }
@@ -429,12 +398,14 @@ object Util {
     }
 
 
+    // Converts JSON string to list of expenses
     fun parseExpensesFromJson(json: String): List<Expense> {
+
         val gson = Gson()
         val type = object : TypeToken<List<Expense>>() {}.type
         return gson.fromJson(json, type)
-    }
 
+    }
 
 
 }

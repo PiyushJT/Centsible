@@ -176,8 +176,7 @@ class ExpenseViewModel(
             }
 
 
-
-
+            // Set total amount
             is ExpenseEvent.SetTotalAmount -> {
 
                 viewModelScope.launch {
@@ -192,16 +191,11 @@ class ExpenseViewModel(
             }
 
 
-            is ExpenseEvent.DeleteAllExpenses -> {
-                viewModelScope.launch {
-                    for (expense in state.value.expenses) {
-                        dao.deleteExpense(expense)
-                    }
-                }
-            }
-
+            // Export data
             is ExpenseEvent.ExportData -> {
                 viewModelScope.launch {
+
+                    // Expenses to be exported
                     val expenses = state.value.expenses
 
                     try {
@@ -209,8 +203,8 @@ class ExpenseViewModel(
                         val fileName = "expenses.centsible"
 
                         val json = Gson().toJson(expenses)
-
                         val resolver = event.context.contentResolver
+
 
                         val contentValues = ContentValues().apply {
                             put(MediaStore.Downloads.DISPLAY_NAME, fileName)
@@ -218,8 +212,10 @@ class ExpenseViewModel(
                             put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
                         }
 
+
                         val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
                             ?: throw Exception("Failed to create file in Downloads")
+
 
                         resolver.openOutputStream(uri)?.use { outputStream ->
                             outputStream.write(json.toByteArray())
@@ -229,26 +225,33 @@ class ExpenseViewModel(
                         Log.d("Export", "Data exported successfully to $uri")
 
 
-
-                        val dataSaved = "File Saved to Downloads folder."
-                        // val dataSaved = ("data_saved")
-
-
+                        val dataSaved = R.string.data_saved_to_downloads
                         Toast.makeText(event.context, dataSaved, Toast.LENGTH_LONG).show()
 
                     }
                     catch (e: Exception) {
+
                         Log.e("Export", "Failed to export: ${e.message}", e)
 
 
-                        val dataNotSaved = "Failed to save data."
-                        // val dataNotSaved = ("data_not_saved")
-
+                        val dataNotSaved = R.string.failed_to_save_data
                         Toast.makeText(event.context, dataNotSaved, Toast.LENGTH_SHORT).show()
                     }
 
-
                 }
+            }
+
+
+            // Delete all expenses
+            is ExpenseEvent.DeleteAllExpenses -> {
+                viewModelScope.launch {
+
+                    // Delete all expenses
+                    for (expense in state.value.expenses) {
+                        dao.deleteExpense(expense)
+                    }
+                }
+                Log.d("Delete All Expenses", "All expenses deleted")
             }
 
         }

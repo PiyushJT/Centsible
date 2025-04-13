@@ -206,7 +206,6 @@ fun MainScreen(
             )
 
             else -> Settings(
-                state = state,
                 onEvent = onEvent
             )
 

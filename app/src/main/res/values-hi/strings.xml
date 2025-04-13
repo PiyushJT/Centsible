@@ -3,11 +3,6 @@
 
 
 
-    <string name="privacy_policy">प्राइवेसी पालिसी</string>
-    <string name="settings">सेटिंग्स</string>
-    <string name="ext_link_icon">बाहरी लिंक आइकन</string>
-
-
     <string name="new_transaction">नया खर्च/कमाई</string>
     <string name="title">शीर्षक</string>
     <string name="description">विवरण (वैकल्पिक)</string>
@@ -18,8 +13,7 @@
     <string name="empty_value">शीर्षक और राशि खाली नहीं हो सकते</string>
     <string name="save_earning">कमाई सहेजें</string>
     <string name="save_expense">खर्च सहेजें</string>
-    <string name="create_backup">बैकअप बनाएं</string>
-    <string name="restore_backup">बैकअप पुनर्स्थापित करें</string>
+
 
     <string name="edit_transaction">खर्च/कमाई संपादित करें</string>
     <string name="back">वापस जाओ</string>
@@ -27,8 +21,10 @@
     <string name="confirm_delete">हटाने की पुष्टि करें?</string>
     <string name="delete">हटाएं</string>
 
+
     <string name="recent_transactions">पुराने खर्च/कमाई</string>
     <string name="total_balance">कुल शेष राशि</string>
+
 
     <string name="statistics">सांख्यिकी</string>
     <string name="total_expense">कुल खर्च</string>
@@ -38,5 +34,24 @@
     <string name="previous_week">पिछला सप्ताह</string>
     <string name="this_week">इस सप्ताह</string>
     <string name="last_week">पिछला सप्ताह</string>
+
+
+    <string name="settings">सेटिंग्स</string>
+    <string name="export_data">डेटा एक्सपोर्ट करें</string>
+    <string name="import_data">डेटा इम्पोर्ट करें</string>
+    <string name="delete_all_data">सभी डेटा मिटा दो</string>
+    <string name="upload_file">.centsible फ़ाइल अपलोड करें</string>
+    <string name="data_import_successful">डेटा सफलतापूर्वक इम्पोर्ट हो गया</string>
+    <string name="file_not_supported">अपलोड की गई फ़ाइल समर्थित नहीं है</string>
+    <string name="delete_all_data_message">इससे ऐप में संग्रहीत सभी डेटा स्थायी रूप से नष्ट हो जाएंगे।</string>
+    <string name="privacy_policy">प्राइवेसी पालिसी</string>
+    <string name="ext_link_icon">बाहरी लिंक आइकन</string>
+    <string name="open_source_license">ओपन-सोर्स लाइसेंस</string>
+    <string name="github_repo">गिटहब रिपोजिटरी</string>
+
+
+    <string name="data_saved_to_downloads">डेटा डाउनलोड फ़ोल्डर में सेव हो गया हे</string>
+    <string name="failed_to_save_data">डेटा सेव नहीं हो पाया</string>
+
 
 </resources>

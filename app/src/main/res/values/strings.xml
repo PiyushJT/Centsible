@@ -1,13 +1,13 @@
 <resources>
     <string name="app_name" translatable="false">Centsible</string>
 
+    // URIs
     <string name="privacy_policy_uri" translatable="false">https://sites.google.com/view/centsible-privacy-policy</string>
+    <string name="license_uri" translatable="false">https://sites.google.com/view/centsible-privacy-policy/license</string>
+    <string name="github_uri" translatable="false">https://github.com/PiyushJT/Centsible</string>
 
 
-    <string name="privacy_policy">Privacy Policy</string>
-    <string name="settings">Settings</string>
-    <string name="ext_link_icon">external link icon</string>
-
+    // Add Expense Screen
     <string name="new_transaction">New Transaction</string>
     <string name="title">Title</string>
     <string name="description">Description (optional)</string>
@@ -18,10 +18,9 @@
     <string name="empty_value">Title and Amount cannot be empty</string>
     <string name="save_earning">Save Earning</string>
     <string name="save_expense">Save Expense</string>
-    <string name="create_backup">Create Backup</string>
-    <string name="restore_backup">Restore Backup</string>
 
 
+    // Edit Expense Screen
     <string name="edit_transaction">Edit Transaction</string>
     <string name="back">Back</string>
     <string name="delete_expense">Delete Expense</string>
@@ -29,10 +28,12 @@
     <string name="delete">Delete</string>
 
 
+    // Main Screen
     <string name="recent_transactions">Recent Transactions</string>
     <string name="total_balance">Total Balance</string>
 
 
+    // Statistics Screen
     <string name="statistics">Statistics</string>
     <string name="total_expense">Total Expense</string>
     <string name="decreased">Decreased</string>
@@ -41,5 +42,26 @@
     <string name="previous_week">Previous Week</string>
     <string name="this_week">This Week</string>
     <string name="last_week">Last Week</string>
+
+
+    // Settings Screen
+    <string name="settings">Settings</string>
+    <string name="export_data">Export data</string>
+    <string name="import_data">Import data</string>
+    <string name="delete_all_data">Delete all Data</string>
+    <string name="upload_file">Upload .centsible file</string>
+    <string name="data_import_successful">Data Imported Successfully</string>
+    <string name="file_not_supported">Uploaded file is not supported</string>
+    <string name="delete_all_data_message">This will PERMANENTLY delete all the expenses stored in the app.</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="ext_link_icon">external link icon</string>
+    <string name="open_source_license">Open-Source License</string>
+    <string name="github_repo">Github Repo.</string>
+
+
+    // View Model
+    <string name="data_saved_to_downloads">Data saved to Downloads Folder</string>
+    <string name="failed_to_save_data">Failed to save data.</string>
+
 
 </resources>

@@ -17,38 +17,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.piyushjt.centsible.UI
 import androidx.core.net.toUri
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.MainScreen
 import com.piyushjt.centsible.R
 import com.piyushjt.centsible.Types
+import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.DividerLine
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util.DialogBox
@@ -58,7 +49,6 @@ import com.piyushjt.centsible.ui.theme.CentsibleTheme
 
 @Composable
 fun Settings(
-    state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
@@ -85,12 +75,10 @@ fun Settings(
             )
 
             DataManager(
-                state = state,
                 onEvent = onEvent
             )
 
-
-            PrivacyPolicy()
+            PolicyAndLicense()
 
 
         }
@@ -98,61 +86,13 @@ fun Settings(
 }
 
 
-@Composable
-fun PrivacyPolicy() {
-
-    val context = LocalContext.current
-
-    val uri = UI.strings("privacy_policy_uri")
-
-    Row(
-        modifier = Modifier
-            .padding(top = 24.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(UI.colors("card_background"))
-            .height(60.dp)
-            .clickable {
-                val intent = Intent(Intent.ACTION_VIEW, uri.toUri())
-                context.startActivity(intent)
-            },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
-
-    ) {
-        Text(
-            modifier = Modifier.padding(start = 24.dp),
-            text = UI.strings("privacy_policy"),
-            color = UI.colors("main_text"),
-            fontSize = 16.sp,
-            fontFamily = readexPro
-        )
-
-        Icon(
-            modifier = Modifier
-                .padding(start = 12.dp)
-                .height(20.dp)
-                .width(20.dp),
-            painter = painterResource(id = R.drawable.ext_link),
-            tint = UI.colors("main_text"),
-            contentDescription = UI.strings("ext_link_icon")
-
-        )
-    }
-
-}
-
-
-
-
 
 @Composable
 fun DataManager(
-    state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
-
+    // ALl Data Managing items
     Column(
         modifier = Modifier
             .padding(top = 24.dp)
@@ -162,25 +102,140 @@ fun DataManager(
 
     ) {
 
+        // Save Copy of Data in a file
         ExportData(
             onEvent = onEvent
         )
         DividerLine()
 
+        // Import Data from a file
         ImportData(
             onEvent = onEvent
         )
         DividerLine()
 
+        // Delete All Data
         DeleteAllData(
             onEvent = onEvent
         )
 
+    }
+
+}
+
+
+@Composable
+fun ExportData(
+    onEvent: (ExpenseEvent) -> Unit
+) {
+
+    val context = LocalContext.current
+
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .clickable {
+                // Exporting the data
+                onEvent(ExpenseEvent.ExportData(context))
+            },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+
+        Text(
+            modifier = Modifier.padding(start = 24.dp),
+            text = UI.strings("export_data"),
+            color = UI.colors("main_text"),
+            fontSize = 16.sp,
+            fontFamily = readexPro
+        )
 
     }
 
+}
 
 
+@Composable
+fun ImportData(
+    onEvent: (ExpenseEvent) -> Unit
+) {
+
+    // Some String Values
+    val dataImportSuccessful = UI.strings("data_import_successful")
+    val fileNotSupported = UI.strings("file_not_supported")
+
+    val context = LocalContext.current
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+
+        onResult = { uri: Uri? ->
+
+            uri?.let {
+                context.contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+
+                // Read file as text
+                val jsonText = context.contentResolver.openInputStream(it)?.bufferedReader()?.use { reader ->
+                    reader.readText()
+                }
+
+                jsonText?.let {
+
+                    try {
+                        // Parses into Expense Object's list
+                        val expenses = parseExpensesFromJson(it)
+
+                        // Saving the expenses
+                        for (expense in expenses) {
+                            onEvent(ExpenseEvent.SaveExpense(expense))
+                        }
+
+                        Toast.makeText(context, dataImportSuccessful, Toast.LENGTH_SHORT).show()
+
+                    }
+                    catch (e: Exception) {
+                        // Handling parsing errors
+                        Log.e("Parse", "File not Supported: ${e.message}", e)
+                        Toast.makeText(context, fileNotSupported, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .clickable {
+                launcher.launch(arrayOf("*/*"))
+            },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+
+        Text(
+            modifier = Modifier.padding(start = 24.dp),
+            text = UI.strings("import_data"),
+            color = UI.colors("main_text"),
+            fontSize = 16.sp,
+            fontFamily = readexPro
+        )
+
+        Text(
+            modifier = Modifier.padding(start = 6.dp),
+            text = UI.strings("upload_file"),
+            color = UI.colors("hint_main_text"),
+            fontSize = 14.sp,
+            fontFamily = readexPro
+        )
+
+    }
 
 }
 
@@ -206,8 +261,7 @@ fun DeleteAllData(
 
         Text(
             modifier = Modifier.padding(start = 24.dp),
-//                text = UI.strings("delete_all_data"),
-            text = "Delete all data",
+            text = UI.strings("delete_all_data"),
             color = UI.colors("red"),
             fontSize = 16.sp,
             fontFamily = readexPro
@@ -216,12 +270,11 @@ fun DeleteAllData(
     }
 
 
+    // Confirmation Dialog
     DialogBox(
         isDialogVisible = isDialogVisible,
-//        title = UI.strings("delete_all_data"),
-        title = "Delete All Data",
-//        message = UI.strings("delete_all_data_message"),
-        message = "This will PERMANENTLY delete all the expenses stored in the app.",
+        title = UI.strings("delete_all_data"),
+        message = UI.strings("delete_all_data_message"),
         posBtnText = UI.strings("delete"),
         negBtnText = UI.strings("cancel"),
         onPosBtnClick = {
@@ -233,35 +286,27 @@ fun DeleteAllData(
 }
 
 
+
 @Composable
-fun ExportData(
-    onEvent: (ExpenseEvent) -> Unit
-) {
+fun PolicyAndLicense() {
 
-    val context = LocalContext.current
-
-    Row(
-
+    // Privacy Policy and License
+    Column(
         modifier = Modifier
+            .padding(top = 24.dp)
             .fillMaxWidth()
-            .height(60.dp)
-            .clickable {
+            .clip(RoundedCornerShape(20.dp))
+            .background(UI.colors("card_background"))
 
-                onEvent(ExpenseEvent.ExportData(context))
-
-            },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
     ) {
 
-        Text(
-            modifier = Modifier.padding(start = 24.dp),
-//                text = UI.strings("export_data"),
-            text = "Export data",
-            color = UI.colors("main_text"),
-            fontSize = 16.sp,
-            fontFamily = readexPro
-        )
+        PrivacyPolicy()
+        DividerLine()
+
+        License()
+        DividerLine()
+
+        GithubSourceCode()
 
     }
 
@@ -269,79 +314,134 @@ fun ExportData(
 
 
 @Composable
-fun ImportData(
-    onEvent: (ExpenseEvent) -> Unit
-) {
+fun PrivacyPolicy() {
 
+    val uri = UI.strings("privacy_policy_uri")
     val context = LocalContext.current
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument(),
-        onResult = { uri: Uri? ->
-            uri?.let {
-                context.contentResolver.takePersistableUriPermission(
-                    it,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-                )
-
-                // Read file as text
-                val jsonText = context.contentResolver.openInputStream(it)?.bufferedReader()?.use { reader ->
-                    reader.readText()
-                }
-
-                jsonText?.let {
-                    try {
-                        val expenses = parseExpensesFromJson(it)
-
-
-                        for (expense in expenses) {
-                            onEvent(ExpenseEvent.SaveExpense(expense))
-                        }
-
-                        Toast.makeText(context, "Data imported successfully", Toast.LENGTH_SHORT).show()
-
-                    } catch (e: Exception) {
-                        Log.e("Expense", "Error parsing JSON", e)
-                        Toast.makeText(context, "Error parsing JSON", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        }
-    )
-
-    Row(
+    Row (
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
             .clickable {
-                launcher.launch(arrayOf("*/*"))
+
+                // Open link in external browser
+                val intent = Intent(Intent.ACTION_VIEW, uri.toUri())
+                context.startActivity(intent)
+
             },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
-    ) {
+    ){
 
         Text(
             modifier = Modifier.padding(start = 24.dp),
-//                text = UI.strings("import_data"),
-            text = "Import data",
+            text = UI.strings("privacy_policy"),
             color = UI.colors("main_text"),
             fontSize = 16.sp,
             fontFamily = readexPro
         )
 
-        Text(
-            modifier = Modifier.padding(start = 6.dp),
-//                text = UI.strings("import_data_desc"),
-            text = "Upload .centsible file",
-            color = UI.colors("hint_main_text"),
-            fontSize = 14.sp,
-            fontFamily = readexPro
-        )
+        Icon(
+            modifier = Modifier
+                .padding(start = 12.dp)
+                .height(20.dp)
+                .width(20.dp),
+            painter = painterResource(id = R.drawable.ext_link),
+            tint = UI.colors("main_text"),
+            contentDescription = UI.strings("ext_link_icon")
 
+        )
     }
 
 }
 
+
+@Composable
+fun License() {
+
+    val uri = UI.strings("license_uri")
+    val context = LocalContext.current
+
+    Row (
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .clickable {
+
+                // Open link in external browser
+                val intent = Intent(Intent.ACTION_VIEW, uri.toUri())
+                context.startActivity(intent)
+
+            },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ){
+
+        Text(
+            modifier = Modifier.padding(start = 24.dp),
+            text = UI.strings("open_source_license"),
+            color = UI.colors("main_text"),
+            fontSize = 16.sp,
+            fontFamily = readexPro
+        )
+
+        Icon(
+            modifier = Modifier
+                .padding(start = 12.dp)
+                .height(20.dp)
+                .width(20.dp),
+            painter = painterResource(id = R.drawable.ext_link),
+            tint = UI.colors("main_text"),
+            contentDescription = UI.strings("ext_link_icon")
+
+        )
+    }
+}
+
+
+@Composable
+fun GithubSourceCode() {
+
+    val uri = UI.strings("github_uri")
+    val context = LocalContext.current
+
+    Row (
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .clickable {
+
+                // Open link in external browser
+                val intent = Intent(Intent.ACTION_VIEW, uri.toUri())
+                context.startActivity(intent)
+
+            },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ){
+
+        Text(
+            modifier = Modifier.padding(start = 24.dp),
+            text = UI.strings("github_repo"),
+            color = UI.colors("main_text"),
+            fontSize = 16.sp,
+            fontFamily = readexPro
+        )
+
+        Icon(
+            modifier = Modifier
+                .padding(start = 12.dp)
+                .height(20.dp)
+                .width(20.dp),
+            painter = painterResource(id = R.drawable.ext_link),
+            tint = UI.colors("main_text"),
+            contentDescription = UI.strings("ext_link_icon")
+
+        )
+    }
+
+}
 
 
 
