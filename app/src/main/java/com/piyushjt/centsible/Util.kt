@@ -1,8 +1,6 @@
 package com.piyushjt.centsible
 
 import android.annotation.SuppressLint
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -11,8 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
@@ -23,10 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -39,6 +31,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.screens.expense
 import java.text.DecimalFormat
@@ -48,9 +42,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
 
 object Util {
 
@@ -210,19 +201,6 @@ object Util {
 
 
     val types = Types.entries.toList()
-
-
-    fun getAllData(state: ExpenseState): String {
-
-        val backup = StringBuilder()
-
-        for (expense in state.expenses) {
-
-            backup.append("${expense.title}~`~${expense.description}~`~${expense.type}~`~${expense.amount}~`~${expense.date}~`~${expense.id}\n")
-
-        }
-        return backup.trimEnd('\n').toString()
-    }
 
 
 
@@ -450,6 +428,12 @@ object Util {
         }
     }
 
+
+    fun parseExpensesFromJson(json: String): List<Expense> {
+        val gson = Gson()
+        val type = object : TypeToken<List<Expense>>() {}.type
+        return gson.fromJson(json, type)
+    }
 
 
 

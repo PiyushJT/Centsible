@@ -1,5 +1,7 @@
 package com.piyushjt.centsible
 
+import android.content.Context
+
 sealed interface ExpenseEvent {
 
     data class SaveExpense(val expense: Expense) : ExpenseEvent
@@ -12,5 +14,6 @@ sealed interface ExpenseEvent {
     object SetTotalAmount: ExpenseEvent
 
     object DeleteAllExpenses: ExpenseEvent
+    data class ExportData(val context: Context): ExpenseEvent
 
 }

@@ -1,7 +1,11 @@
 package com.piyushjt.centsible.screens
 
 import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -36,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.piyushjt.centsible.UI
 import androidx.core.net.toUri
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
@@ -45,7 +52,7 @@ import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI.DividerLine
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util.DialogBox
-import com.piyushjt.centsible.Util.getAllData
+import com.piyushjt.centsible.Util.parseExpensesFromJson
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 
 
@@ -156,11 +163,13 @@ fun DataManager(
     ) {
 
         ExportData(
-            state = state
+            onEvent = onEvent
         )
         DividerLine()
 
-        ImportData()
+        ImportData(
+            onEvent = onEvent
+        )
         DividerLine()
 
         DeleteAllData(
@@ -181,6 +190,7 @@ fun DeleteAllData(
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
+    val context = LocalContext.current
     val isDialogVisible = remember { mutableStateOf(false) }
 
     Row (
@@ -197,7 +207,7 @@ fun DeleteAllData(
         Text(
             modifier = Modifier.padding(start = 24.dp),
 //                text = UI.strings("delete_all_data"),
-            text = "Delete All Data",
+            text = "Delete all data",
             color = UI.colors("red"),
             fontSize = 16.sp,
             fontFamily = readexPro
@@ -215,6 +225,7 @@ fun DeleteAllData(
         posBtnText = UI.strings("delete"),
         negBtnText = UI.strings("cancel"),
         onPosBtnClick = {
+            onEvent(ExpenseEvent.ExportData(context))
             onEvent(ExpenseEvent.DeleteAllExpenses)
         }
     )
@@ -224,15 +235,10 @@ fun DeleteAllData(
 
 @Composable
 fun ExportData(
-    state: ExpenseState
+    onEvent: (ExpenseEvent) -> Unit
 ) {
 
-    val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
-    var toast: Toast? by remember { mutableStateOf(null) }
-
-    val dataSaved = "Data saved to Clipboard."
-//        val dataSaved = ("data_saved")
 
     Row(
 
@@ -241,14 +247,7 @@ fun ExportData(
             .height(60.dp)
             .clickable {
 
-                val data = getAllData(state = state)
-
-                clipboardManager.setText(AnnotatedString(data))
-
-                toast?.cancel()
-                toast = Toast.makeText(context, dataSaved, Toast.LENGTH_LONG)
-                toast?.show()
-
+                onEvent(ExpenseEvent.ExportData(context))
 
             },
         verticalAlignment = Alignment.CenterVertically,
@@ -258,7 +257,7 @@ fun ExportData(
         Text(
             modifier = Modifier.padding(start = 24.dp),
 //                text = UI.strings("export_data"),
-            text = "Export Data",
+            text = "Export data",
             color = UI.colors("main_text"),
             fontSize = 16.sp,
             fontFamily = readexPro
@@ -270,13 +269,53 @@ fun ExportData(
 
 
 @Composable
-fun ImportData() {
+fun ImportData(
+    onEvent: (ExpenseEvent) -> Unit
+) {
+
+    val context = LocalContext.current
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri: Uri? ->
+            uri?.let {
+                context.contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+
+                // Read file as text
+                val jsonText = context.contentResolver.openInputStream(it)?.bufferedReader()?.use { reader ->
+                    reader.readText()
+                }
+
+                jsonText?.let {
+                    try {
+                        val expenses = parseExpensesFromJson(it)
+
+
+                        for (expense in expenses) {
+                            onEvent(ExpenseEvent.SaveExpense(expense))
+                        }
+
+                        Toast.makeText(context, "Data imported successfully", Toast.LENGTH_SHORT).show()
+
+                    } catch (e: Exception) {
+                        Log.e("Expense", "Error parsing JSON", e)
+                        Toast.makeText(context, "Error parsing JSON", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    )
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
-            .clickable { },
+            .clickable {
+                launcher.launch(arrayOf("*/*"))
+            },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
@@ -284,15 +323,27 @@ fun ImportData() {
         Text(
             modifier = Modifier.padding(start = 24.dp),
 //                text = UI.strings("import_data"),
-            text = "Import Data",
+            text = "Import data",
             color = UI.colors("main_text"),
             fontSize = 16.sp,
+            fontFamily = readexPro
+        )
+
+        Text(
+            modifier = Modifier.padding(start = 6.dp),
+//                text = UI.strings("import_data_desc"),
+            text = "Upload .centsible file",
+            color = UI.colors("hint_main_text"),
+            fontSize = 14.sp,
             fontFamily = readexPro
         )
 
     }
 
 }
+
+
+
 
 
 

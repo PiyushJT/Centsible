@@ -2,9 +2,14 @@
 
 package com.piyushjt.centsible
 
+import android.content.ContentValues
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -68,7 +73,7 @@ class ExpenseViewModel(
             }
 
 
-            // Delete an Expense
+            // Update an Expense
             is ExpenseEvent.UpdateExpense -> {
 
 
@@ -192,6 +197,57 @@ class ExpenseViewModel(
                     for (expense in state.value.expenses) {
                         dao.deleteExpense(expense)
                     }
+                }
+            }
+
+            is ExpenseEvent.ExportData -> {
+                viewModelScope.launch {
+                    val expenses = state.value.expenses
+
+                    try {
+
+                        val fileName = "expenses.centsible"
+
+                        val json = Gson().toJson(expenses)
+
+                        val resolver = event.context.contentResolver
+
+                        val contentValues = ContentValues().apply {
+                            put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                            put(MediaStore.Downloads.MIME_TYPE, "application/octet-stream")
+                            put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                        }
+
+                        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                            ?: throw Exception("Failed to create file in Downloads")
+
+                        resolver.openOutputStream(uri)?.use { outputStream ->
+                            outputStream.write(json.toByteArray())
+                            outputStream.flush()
+                        }
+
+                        Log.d("Export", "Data exported successfully to $uri")
+
+
+
+                        val dataSaved = "File Saved to Downloads folder."
+                        // val dataSaved = ("data_saved")
+
+
+                        Toast.makeText(event.context, dataSaved, Toast.LENGTH_LONG).show()
+
+                    }
+                    catch (e: Exception) {
+                        Log.e("Export", "Failed to export: ${e.message}", e)
+
+
+                        val dataNotSaved = "Failed to save data."
+                        // val dataNotSaved = ("data_not_saved")
+
+                        Toast.makeText(event.context, dataNotSaved, Toast.LENGTH_SHORT).show()
+                    }
+
+
                 }
             }
 
