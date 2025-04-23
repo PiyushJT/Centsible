@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Prevent obfuscation/shrinking of Expense class and its fields
+-keep class com.piyushjt.centsible.Expense { *; }
+-keep class com.piyushjt.centsible.Types { *; }

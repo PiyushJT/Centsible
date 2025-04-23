@@ -31,10 +31,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.screens.expense
+import org.json.JSONArray
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -401,11 +400,32 @@ object Util {
     // Converts JSON string to list of expenses
     fun parseExpensesFromJson(json: String): List<Expense> {
 
-        val gson = Gson()
-        val type = object : TypeToken<List<Expense>>() {}.type
-        return gson.fromJson(json, type)
+        // Base Expense list
+        val expenseList = mutableListOf<Expense>()
+
+        //
+        val jsonArray = JSONArray(json)
+
+        for (i in 0 until jsonArray.length()) {
+            val obj = jsonArray.getJSONObject(i)
+
+            // Expense Object .. using this because of minified enabled and caused severe bug in last update.
+            val expense = Expense(
+                title = obj.optString("title"),
+                description = obj.optString("description"),
+                type = obj.optString("type"),
+                amount = obj.optDouble("amount").toFloat(),
+                date = obj.optLong("date"),
+                id = obj.optInt("id")
+            )
+
+            // Adding object to list
+            expenseList.add(expense)
+
+        }
+
+        return expenseList
 
     }
-
 
 }
