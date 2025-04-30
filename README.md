@@ -7,8 +7,7 @@ Centsible is an Android application designed to help users track their everyday 
 
 <p align="center">
 
-
-  <a href="https://play.google.com/store/apps/details?id=com.piyush.centsible">
+  <a href="https://play.google.com/store/apps/details?id=com.piyushjt.centsible">
     <img src="https://raw.githubusercontent.com/PiyushJT/Centsible/main/readme_res/play_dwnld.png" height="80"/>
   </a>
 
