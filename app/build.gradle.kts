@@ -7,15 +7,14 @@ plugins {
 
 android {
     namespace = "com.piyushjt.centsible"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.piyushjt.centsible"
         minSdk = 29
-        //noinspection OldTargetApi
-        targetSdk = 34
-        versionCode = 302
-        versionName = "3.02"
+        targetSdk = 36
+        versionCode = 400
+        versionName = "4.00"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
