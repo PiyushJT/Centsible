@@ -24,12 +24,14 @@ class ExpenseViewModel(
 ) : ViewModel() {
 
     private val _expenses = dao.getAllExpense()
+    private val _totalAmount = dao.getTotalAmountFlow()
     private val _state = MutableStateFlow(ExpenseState())
 
 
-    val state = combine(_state, _expenses) { state, expenses ->
+    val state = combine(_state, _expenses, _totalAmount) { state, expenses, totalAmount ->
         state.copy(
-            expenses = expenses
+            expenses = expenses,
+            totalAmount = totalAmount ?: 0f
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ExpenseState())
 
@@ -132,15 +134,28 @@ class ExpenseViewModel(
             }
 
 
+            // Change period type
+            is ExpenseEvent.ChangePeriodType -> {
+                _state.update {
+                    it.copy(
+                        periodType = event.periodType
+                    )
+                }
+            }
+
+
             // Set amounts
             is ExpenseEvent.SetAmounts -> {
                 viewModelScope.launch {
 
-                    val amounts = mutableListOf<Float>()
+                    val startDate = event.dates.first()
+                    val endDate = event.dates.last()
 
-                    for (date in event.dates) {
-                        amounts.add(dao.getAmount(date))
-                        Log.d("Amount from dao", "amount: ${dao.getAmount(date)}")
+                    val dateAmounts = dao.getAmountsInRange(startDate, endDate)
+                    val amountMap = dateAmounts.associate { it.date to it.amount }
+
+                    val amounts = event.dates.map { date ->
+                        amountMap[date] ?: 0f
                     }
 
                     _state.update {
@@ -158,11 +173,14 @@ class ExpenseViewModel(
             is ExpenseEvent.SetLastAmounts -> {
                 viewModelScope.launch {
 
-                    val amounts = mutableListOf<Float>()
+                    val startDate = event.dates.first()
+                    val endDate = event.dates.last()
 
-                    for (date in event.dates) {
-                        amounts.add(dao.getAmount(date))
-                        Log.d("Amount from dao", "amount: ${dao.getAmount(date)}")
+                    val dateAmounts = dao.getAmountsInRange(startDate, endDate)
+                    val amountMap = dateAmounts.associate { it.date to it.amount }
+
+                    val amounts = event.dates.map { date ->
+                        amountMap[date] ?: 0f
                     }
 
                     _state.update {
@@ -175,20 +193,6 @@ class ExpenseViewModel(
                 }
             }
 
-
-            // Set total amount
-            is ExpenseEvent.SetTotalAmount -> {
-
-                viewModelScope.launch {
-                    _state.update {
-                        it.copy(
-                            totalAmount = dao.getTotalAmount()
-                        )
-                    }
-
-                    Log.d("Total Amount", "new amount: ${state.value.totalAmount}")
-                }
-            }
 
 
             // Export data
@@ -252,6 +256,10 @@ class ExpenseViewModel(
                     }
                 }
                 Log.d("Delete All Expenses", "All expenses deleted")
+            }
+
+            else -> {
+
             }
 
         }

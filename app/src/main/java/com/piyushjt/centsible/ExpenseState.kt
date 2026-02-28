@@ -1,5 +1,9 @@
 package com.piyushjt.centsible
 
+enum class PeriodType {
+    WEEKLY, MONTHLY
+}
+
 data class ExpenseState(
 
     val expenses: List<Expense> = emptyList(),
@@ -10,5 +14,7 @@ data class ExpenseState(
     val amountsInLastPeriod: List<Float> = emptyList(),
 
     val totalAmount: Float = 0f,
+
+    val periodType: PeriodType = PeriodType.WEEKLY
 
 )

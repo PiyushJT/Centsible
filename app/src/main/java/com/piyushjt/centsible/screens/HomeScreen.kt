@@ -4,8 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,15 +21,11 @@ import com.piyushjt.centsible.ExpenseCard
 import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
 import com.piyushjt.centsible.Heading
-import com.piyushjt.centsible.MainScreen
 import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 
 // All Expenses to be shown in a Nav Item
@@ -37,18 +33,20 @@ import java.util.Locale
 fun ALlExpenses(
     onEvent: (ExpenseEvent) -> Unit,
     state: ExpenseState,
-    navController: NavController?
+    navController: NavController
 ) {
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .padding(horizontal = 24.dp)
     ) {
 
-        Header(
-            state = state,
-            onEvent = onEvent
-        )
+        item {
+            TotalBalance(
+                state = state,
+                onEvent = onEvent
+            )
+        }
 
         ListOfExpenses(
             state = state,
@@ -59,80 +57,23 @@ fun ALlExpenses(
 
 
 // List of All Expenses
-@Composable
-fun ListOfExpenses(
+fun androidx.compose.foundation.lazy.LazyListScope.ListOfExpenses(
     state: ExpenseState,
-    navController: NavController?
+    navController: NavController
 ) {
 
-    val bottomPadding = 90.dp + Util.getBottomPadding()
-
-    Column(
-        modifier = Modifier
-            .padding(bottom = bottomPadding)
-            .verticalScroll(rememberScrollState()),
-    ) {
-
-        // Heading as above Composable
+    // Heading as above Composable
+    item {
         Heading(text = UI.strings("recent_transactions"))
-
-
-        // All Expenses
-        for (expense in state.expenses) {
-
-            ExpenseCard(
-                expense = expense,
-                navController = navController
-            )
-
-        }
-
     }
 
-}
 
+    // All Expenses
+    items(state.expenses) { expense ->
 
-// Header for All Expenses
-@Composable
-fun Header(
-    state: ExpenseState,
-    onEvent: (ExpenseEvent) -> Unit
-) {
-
-    Column {
-
-        DayDate()
-
-        TotalBalance(
-            state = state,
-            onEvent = onEvent
-        )
-
-    }
-
-}
-
-
-// Day & Date at the Top in header
-@Composable
-fun DayDate() {
-
-    Column {
-
-        // Day
-        Text(
-            text = SimpleDateFormat("EEEE,", Locale.getDefault()).format(Date()),
-            color = UI.colors("light_text"),
-            fontSize = 14.sp,
-            fontFamily = readexPro
-        )
-
-        // Date
-        Text(
-            text = SimpleDateFormat("dd MMMM", Locale.getDefault()).format(Date()),
-            color = UI.colors("main_text"),
-            fontSize = 18.sp,
-            fontFamily = readexPro
+        ExpenseCard(
+            expense = expense,
+            navController = navController
         )
 
     }
@@ -152,8 +93,6 @@ fun TotalBalance(
             .padding(top = 24.dp, bottom = 12.dp)
     ) {
 
-        onEvent(ExpenseEvent.SetTotalAmount)
-
         Text(
             text = UI.strings("total_balance"),
             color = UI.colors("light_text"),
@@ -164,7 +103,11 @@ fun TotalBalance(
         // Balance
         Text(
             text = Util.formatInIndianSystem(state.totalAmount),
-            color = UI.colors("lime"),
+            color =
+                if (state.totalAmount >= 0)
+                    UI.colors("lime")
+                else
+                    UI.colors("red"),
             fontSize = 34.sp,
             fontFamily = readexPro
         )
@@ -187,7 +130,7 @@ private fun HomeScreenPreview() {
 
             val navFilled = remember { mutableStateOf("home") }
 
-            MainScreen(
+            ALlExpenses(
                 state = ExpenseState(
                     expenses = listOf(
 
@@ -198,103 +141,12 @@ private fun HomeScreenPreview() {
                             amount = -100.0f,
                             date = 20241231L,
                             id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.ENT.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.ENT.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.ENT.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.ENT.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.ENT.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.ENT.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.ENT.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.ENT.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.ENT.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.ENT.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
                         )
-
                     ),
                     totalAmount = 521985f
                 ),
-                navFilled = navFilled,
-                onEvent = {}
+                onEvent = {},
+                navController = androidx.navigation.compose.rememberNavController()
             )
         }
 

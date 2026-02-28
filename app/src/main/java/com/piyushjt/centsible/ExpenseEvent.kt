@@ -13,6 +13,8 @@ sealed interface ExpenseEvent {
     data class SetLastAmounts(val dates: List<Long>): ExpenseEvent
     object SetTotalAmount: ExpenseEvent
 
+    data class ChangePeriodType(val periodType: PeriodType): ExpenseEvent
+
     data class ExportData(val context: Context): ExpenseEvent
     object DeleteAllExpenses: ExpenseEvent
 

@@ -19,9 +19,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.DatePicker
@@ -68,10 +70,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
+import androidx.navigation.NavController
 import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
-import com.piyushjt.centsible.ExpenseState
-import com.piyushjt.centsible.MainScreen
 import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
@@ -98,11 +99,11 @@ val expense = Expense(
 @Composable
 fun AddExpense(
     onEvent: (ExpenseEvent) -> Unit,
-    navFilled: MutableState<String>
+    navController: NavController
 ) {
 
     BackHandler {
-        navFilled.value = "home"
+        navController.popBackStack()
     }
 
     val amount = remember { mutableFloatStateOf(expense.amount) }
@@ -111,7 +112,8 @@ fun AddExpense(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = CenterHorizontally
     ) {
 
@@ -175,7 +177,7 @@ fun AddExpense(
         // Save Button
         SaveButton(
             expense = expense,
-            navFilled = navFilled,
+            navController = navController,
             onEvent = onEvent
         )
 
@@ -713,7 +715,7 @@ fun DatePickerUI() {
 @Composable
 fun SaveButton(
     expense: Expense,
-    navFilled: MutableState<String>,
+    navController: NavController,
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
@@ -745,7 +747,7 @@ fun SaveButton(
 
                     Util.clearExpenseData()
 
-                    navFilled.value = "home"
+                    navController.popBackStack()
 
                 } else {
 
@@ -809,7 +811,7 @@ fun SaveButton(
 
                     Util.clearExpenseData()
 
-                    navFilled.value = "home"
+                    navController.popBackStack()
 
                 } else {
 
@@ -868,115 +870,9 @@ private fun AddScreenPreview() {
                 .padding(top = 42.dp)
         ) {
 
-            val navFilled = remember { mutableStateOf("add") }
-
-            MainScreen(
-                state = ExpenseState(
-                    expenses = listOf(
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.MISC.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.MISC.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.MISC.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.MISC.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.MISC.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.MISC.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.MISC.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.MISC.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.MISC.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.MISC.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        ),
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.MISC.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        )
-
-                    ),
-                ),
-                navFilled = navFilled,
+            AddExpense(
                 onEvent = {},
+                navController = androidx.navigation.compose.rememberNavController()
             )
         }
 

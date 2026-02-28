@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -33,12 +35,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
-import com.piyushjt.centsible.Expense
+import androidx.navigation.NavController
 import com.piyushjt.centsible.ExpenseEvent
-import com.piyushjt.centsible.ExpenseState
-import com.piyushjt.centsible.MainScreen
 import com.piyushjt.centsible.R
-import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.DividerLine
 import com.piyushjt.centsible.UI.readexPro
@@ -57,6 +56,7 @@ fun Settings(
             .fillMaxSize()
             .background(UI.colors("background"))
             .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState())
 
     ){
 
@@ -459,24 +459,8 @@ private fun SettingsScreenPreview() {
                 .padding(top = 42.dp)
         ) {
 
-            val navFilled = remember { mutableStateOf("set") }
-
-            MainScreen(
-                state = ExpenseState(
-                    expenses = listOf(
-
-                        Expense(
-                            title = "Title",
-                            description = "Desc",
-                            type = Types.MISC.type,
-                            amount = -100.0f,
-                            date = 20241231L,
-                            id = 1
-                        )
-                    ),
-                ),
-                navFilled = navFilled,
-                onEvent = {},
+            Settings(
+                onEvent = {}
             )
         }
 

@@ -27,6 +27,14 @@ interface ExpenseDao {
     suspend fun getAmount(date: Long) : Float
 
     @Query("SELECT SUM(amount) FROM expense")
-    suspend fun getTotalAmount() : Float
+    fun getTotalAmountFlow() : Flow<Float?>
+
+    @Query("SELECT date, 0 - SUM(amount) as amount FROM expense WHERE date BETWEEN :startDate AND :endDate AND amount < 0 GROUP BY date")
+    suspend fun getAmountsInRange(startDate: Long, endDate: Long) : List<DateAmount>
 
 }
+
+data class DateAmount(
+    val date: Long,
+    val amount: Float
+)

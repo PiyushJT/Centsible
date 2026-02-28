@@ -1,11 +1,13 @@
 package com.piyushjt.centsible.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
@@ -37,6 +40,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,14 +49,18 @@ import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseCard
 import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.ExpenseState
-import com.piyushjt.centsible.MainScreen
+import com.piyushjt.centsible.PeriodType
 import com.piyushjt.centsible.R
 import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
 import com.piyushjt.centsible.Util
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 
 
 // Statistics Screen
@@ -60,11 +68,11 @@ import kotlin.math.abs
 fun Stats(
     state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit,
-    navFilled: MutableState<String>
+    navController: NavController
 ) {
 
     BackHandler {
-        navFilled.value = "home"
+        navController.popBackStack()
     }
 
 
@@ -77,30 +85,95 @@ fun Stats(
 
         // Header
         Text(
+            modifier = Modifier
+                .padding(bottom = 12.dp),
             text = UI.strings("statistics"),
             color = UI.colors("main_text"),
             fontSize = 18.sp,
             fontFamily = readexPro
         )
 
-        TotalExpense(
-            state = state
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = CenterHorizontally
+        ) {
 
-        StatsCard(
-            state = state,
-            onEvent = onEvent
-        )
+            TotalExpense(
+                state = state
+            )
 
-        ExpensesInPeriod(
-            state = state
-        )
+            StatsCard(
+                state = state,
+                onEvent = onEvent
+            )
 
+            PeriodSelector(
+                state = state,
+                onEvent = onEvent
+            )
 
+            ExpensesInPeriod(
+                state = state,
+                navController = navController
+            )
+
+        }
     }
-
-
 }
+
+
+@Composable
+fun PeriodSelector(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .padding(top = 24.dp)
+            .fillMaxWidth(0.9f)
+            .height(48.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(colorResource(id = R.color.card_background))
+            .padding(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val modifiers = Modifier
+            .weight(1f)
+            .fillMaxSize()
+            .clip(RoundedCornerShape(20.dp))
+
+        Box(
+            modifier = modifiers
+                .background(if (state.periodType == PeriodType.WEEKLY) colorResource(id = R.color.main_text) else Color.Transparent)
+                .clickable { onEvent(ExpenseEvent.ChangePeriodType(PeriodType.WEEKLY)) },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Weekly",
+                color = if (state.periodType == PeriodType.WEEKLY) UI.colors("background") else UI.colors("light_text"),
+                fontSize = 14.sp,
+                fontFamily = readexPro
+            )
+        }
+
+        Box(
+            modifier = modifiers
+                .background(if (state.periodType == PeriodType.MONTHLY) colorResource(id = R.color.main_text) else Color.Transparent)
+                .clickable { onEvent(ExpenseEvent.ChangePeriodType(PeriodType.MONTHLY)) },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Monthly",
+                color = if (state.periodType == PeriodType.MONTHLY) UI.colors("background") else UI.colors("light_text"),
+                fontSize = 14.sp,
+                fontFamily = readexPro
+            )
+        }
+    }
+}
+
 
 
 @Composable
@@ -120,7 +193,7 @@ fun TotalExpense(
 
     Column (
         modifier = Modifier
-            .padding(top = 24.dp)
+            .padding(top = 12.dp)
             .fillMaxWidth()
             .background(Color.Transparent),
         horizontalAlignment = Alignment.Start,
@@ -148,47 +221,9 @@ fun TotalExpense(
                 fontFamily = readexPro
             )
 
-
-            Icon(
-                modifier = Modifier
-                    .padding(start = 10.dp, bottom = 6.dp)
-                    .height(22.dp)
-                    .width(22.dp),
-
-                tint =
-                if (percentageChange > 0)
-                    UI.colors("red")
-                else
-                    UI.colors("lime"),
-                painter = painterResource(
-                    id =
-                    if (percentageChange > 0)
-                        R.drawable.increased
-                    else
-                        R.drawable.decreased
-                ),
-
-                contentDescription =
-                    if (percentageChange > 0)
-                        UI.strings("increased")
-                    else
-                        UI.strings("decreased")
-            )
-
-            Text(
-                modifier = Modifier
-                    .padding(start = 5.dp, bottom = 3.dp),
-                text = "${abs(percentageChange)}%",
-                color = UI.colors("main_text"),
-                fontSize = 18.sp,
-                fontFamily = readexPro
-            )
-
         }
     }
-
 }
-
 
 
 
@@ -209,10 +244,17 @@ fun PeriodChangeButton(
             val dateForPeriod = state.dateForPeriod
 
             val newDateForPeriod =
-                if (next)
-                    Util.getNextWeekDate(dateForPeriod)
-                else
-                    Util.getPreviousWeekDate(dateForPeriod)
+                if (state.periodType == PeriodType.WEEKLY) {
+                    if (next)
+                        Util.getNextWeekDate(dateForPeriod)
+                    else
+                        Util.getPreviousWeekDate(dateForPeriod)
+                } else {
+                    if (next)
+                        Util.getNextMonthDate(dateForPeriod)
+                    else
+                        Util.getPreviousMonthDate(dateForPeriod)
+                }
 
             onEvent(ExpenseEvent.ChangeDateForPeriod(newDateForPeriod))
 
@@ -257,17 +299,21 @@ fun StatsCard(
     onEvent: (ExpenseEvent) -> Unit
 ) {
 
-    val dates = Util.getWeekDates(state.dateForPeriod)
-    val previousWeekDates = Util.getWeekDates(
-        Util.getPreviousWeekDate(state.dateForPeriod)
-    )
+    val dates = if (state.periodType == PeriodType.WEEKLY)
+        Util.getWeekDates(state.dateForPeriod)
+    else
+        Util.getMonthDates(state.dateForPeriod)
+
+    val previousPeriodDates = if (state.periodType == PeriodType.WEEKLY)
+        Util.getWeekDates(Util.getPreviousWeekDate(state.dateForPeriod))
+    else
+        Util.getMonthDates(Util.getPreviousMonthDate(state.dateForPeriod))
 
     onEvent(ExpenseEvent.SetAmounts(dates))
-    onEvent(ExpenseEvent.SetLastAmounts(previousWeekDates))
+    onEvent(ExpenseEvent.SetLastAmounts(previousPeriodDates))
 
     onEvent(ExpenseEvent.ChangePeriod(dates.first(), dates.last()))
 
-    val days = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     val values = state.amountsInPeriod
     var ind = 0
 
@@ -299,18 +345,24 @@ fun StatsCard(
 
         ) {
 
-            val week =
+            val label = if (state.periodType == PeriodType.WEEKLY) {
                 if (state.dateForPeriod == Util.getCurrentDate())
                     UI.strings("this_week")
                 else if (state.dateForPeriod == Util.getPreviousWeekDate(Util.getCurrentDate()))
                     UI.strings("last_week")
                 else
                     getTextOfWeek(state.dateForPeriod)
+            } else {
+                val inputFormatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+                val date = inputFormatter.parse(state.dateForPeriod.toString())
+                val outputFormatter = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+                outputFormatter.format(date ?: Date())
+            }
 
 
 
             Text(
-                text = week,
+                text = label,
                 color = UI.colors("main_text"),
                 fontSize = 18.sp,
                 fontFamily = readexPro
@@ -363,20 +415,25 @@ fun StatsCard(
                         Box(
                             modifier = Modifier
                                 .defaultMinSize(minHeight = 0.dp)
-                                .width(18.dp)
+                                .width(if (state.periodType == PeriodType.WEEKLY) 18.dp else 6.dp)
                                 .height((heightDp - 110.dp) * fraction)
                                 .clip(RoundedCornerShape(26.dp))
                                 .background(colorResource(id = R.color.main_text))
                         )
 
-                        Text(
-                            modifier = Modifier
-                                .padding(top = 4.dp),
-                            text = days[ind],
-                            color = UI.colors("grey"),
-                            fontSize = 10.sp,
-                            fontFamily = readexPro
-                        )
+                        if (state.periodType == PeriodType.WEEKLY) {
+                            val days = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+                            if (ind < days.size) {
+                                Text(
+                                    modifier = Modifier
+                                        .padding(top = 4.dp),
+                                    text = days[ind],
+                                    color = UI.colors("grey"),
+                                    fontSize = 10.sp,
+                                    fontFamily = readexPro
+                                )
+                            }
+                        }
                         ind++
                     }
                 }
@@ -392,31 +449,150 @@ fun StatsCard(
 @Composable
 fun ExpensesInPeriod(
     state: ExpenseState,
-    navController: NavController? = null
+    navController: NavController
 ) {
 
-    val bottomPadding = 90.dp + Util.getBottomPadding()
+    var selectedCategory by remember { mutableStateOf<Types?>(null) }
+
+    val categorizedExpenses = remember(state.expensesInPeriod) {
+        state.expensesInPeriod
+            .groupBy { it.type }
+            .map { (type, expenses) ->
+                CategorySummary(
+                    type = Util.getTypeByString(type),
+                    totalAmount = expenses.sumOf { it.amount.toDouble() }.toFloat(),
+                    transactionCount = expenses.size
+                )
+            }
+            .sortedByDescending { it.totalAmount.absoluteValue }
+    }
 
 
     Column(
         modifier = Modifier
-            .padding(top = 24.dp, bottom = bottomPadding)
-            .verticalScroll(rememberScrollState()),
+            .padding(top = 24.dp)
     ) {
 
-        // All Expenses
-        for (expense in state.expensesInPeriod) {
-
-            ExpenseCard(
-                expense = expense,
-                navController = navController
+        if (categorizedExpenses.isNotEmpty()) {
+            Text(
+                text = "Categories",
+                color = UI.colors("heading_text"),
+                fontSize = 18.sp,
+                fontFamily = readexPro,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
+            for (category in categorizedExpenses) {
+                if (selectedCategory == null || selectedCategory == category.type) {
+                    CategoryCard(
+                        category = category,
+                        onClick = {
+                            selectedCategory = if (selectedCategory == category.type) null else category.type
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = if (selectedCategory == null) "All Expenses" else "${selectedCategory?.type} Expenses",
+                color = UI.colors("heading_text"),
+                fontSize = 18.sp,
+                fontFamily = readexPro,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            // All Expenses
+            for (expense in state.expensesInPeriod) {
+                if (selectedCategory == null || expense.type == selectedCategory?.type) {
+                    ExpenseCard(
+                        expense = expense,
+                        navController = navController
+                    )
+                }
+            }
+        }
+
+        else  {
+            Text(
+                text = "No Expenses",
+                color = UI.colors("heading_text"),
+                fontSize = 18.sp,
+                fontFamily = readexPro,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
         }
 
     }
 
 }
+
+
+@Composable
+fun CategoryCard(
+    category: CategorySummary,
+    onClick: () -> Unit
+) {
+    val bgColor = Util.getRandomColor()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(UI.colors("card_background"))
+            .clickable { onClick() }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(bgColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = Util.image(category.type),
+                    contentDescription = category.type.type,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Column(modifier = Modifier.padding(start = 16.dp)) {
+                Text(
+                    text = category.type.type.replaceFirstChar { it.uppercase() },
+                    color = UI.colors("text"),
+                    fontSize = 16.sp,
+                    fontFamily = readexPro
+                )
+                Text(
+                    text = "${category.transactionCount} transactions",
+                    color = UI.colors("light_text"),
+                    fontSize = 12.sp,
+                    fontFamily = readexPro
+                )
+            }
+        }
+
+        Text(
+            text = "-₹%.2f".format(abs(category.totalAmount)),
+            color = UI.colors("text"),
+            fontSize = 16.sp,
+            fontFamily = readexPro
+        )
+    }
+}
+
+
+data class CategorySummary(
+    val type: Types,
+    val totalAmount: Float,
+    val transactionCount: Int
+)
 
 
 
@@ -447,12 +623,9 @@ private fun StatsScreenPreview() {
             modifier = Modifier
                 .background(UI.colors("background"))
                 .fillMaxSize()
-                .padding(top = 42.dp)
         ) {
 
-            val navFilled = remember { mutableStateOf("stats") }
-
-            MainScreen(
+            Stats(
                 state = ExpenseState(
                     expensesInPeriod = listOf(
                         Expense(
@@ -478,8 +651,8 @@ private fun StatsScreenPreview() {
                     amountsInPeriod = listOf(100f, 200f, 300f, 400f, 500f, 600f, 700f),
                     amountsInLastPeriod = listOf(10f, 20f, 30f, 40f, 50f, 60f, 70f)
                 ),
-                navFilled = navFilled,
-                onEvent = {}
+                onEvent = {},
+                navController = androidx.navigation.compose.rememberNavController()
             )
         }
 

@@ -21,15 +21,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -42,8 +43,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.room.Room
@@ -81,73 +85,24 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Edge to Edge -> No Status Bar
         enableEdgeToEdge()
-
-        // Removing action bar if visible
         actionBar?.hide()
 
         setContent {
-
-            val navFilled = remember { mutableStateOf("add") }
-
             CentsibleTheme {
-
                 val state by viewModel.state.collectAsState()
-
                 val navController = rememberNavController()
 
-                NavHost(
-                    navController = navController,
-                    startDestination = MainScreen
+                Surface(
+                    modifier = Modifier
+                        .background(UI.colors("background"))
+                        .fillMaxSize()
                 ) {
-
-                    // Main screen (set content
-                    composable<MainScreen> {
-
-                        Surface(
-                            modifier = Modifier
-                                .background(UI.colors("background"))
-                                .fillMaxSize()
-                                .padding(top = 42.dp)
-                        ) {
-
-                            MainScreen(
-                                state = state,
-                                navFilled = navFilled,
-                                onEvent = viewModel::onEvent,
-                                navController = navController
-                            )
-
-                        }
-
-                    }
-
-                    // Edit Expense Screen
-                    composable<EditExpenseScreen> {
-                        val args = it.toRoute<EditExpenseScreen>()
-
-                        Surface(
-                            modifier = Modifier
-                                .background(UI.colors("background"))
-                                .fillMaxSize()
-                                .padding(top = 42.dp)
-                        ) {
-
-                            EditExpenseScreen(
-                                title = args.title,
-                                description = args.description,
-                                type = args.type,
-                                amount = args.amount,
-                                date = args.date,
-                                id = args.id,
-                                navController = navController,
-                                onEvent = viewModel::onEvent
-                            )
-
-                        }
-
-                    }
+                    CentsibleApp(
+                        state = state,
+                        onEvent = viewModel::onEvent,
+                        navController = navController
+                    )
                 }
             }
         }
@@ -155,12 +110,89 @@ class MainActivity : ComponentActivity() {
 }
 
 
+@Composable
+fun CentsibleApp(
+    state: ExpenseState,
+    onEvent: (ExpenseEvent) -> Unit,
+    navController: androidx.navigation.NavHostController
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        NavHost(
+            navController = navController,
+            startDestination = Statistics,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 42.dp, bottom = 80.dp + Util.getBottomPadding())
+        ) {
+            composable<Home> {
+                ALlExpenses(
+                    onEvent = onEvent,
+                    state = state,
+                    navController = navController
+                )
+            }
+
+            composable<Statistics> {
+                Stats(
+                    onEvent = onEvent,
+                    state = state,
+                    navController = navController
+                )
+            }
+
+            composable<Add> {
+                AddExpense(
+                    onEvent = onEvent,
+                    navController = navController
+                )
+            }
+
+            composable<Settings> {
+                Settings(
+                    onEvent = onEvent
+                )
+            }
+
+            composable<EditExpense> {
+                val args = it.toRoute<EditExpense>()
+                EditExpenseScreen(
+                    title = args.title,
+                    description = args.description,
+                    type = args.type,
+                    amount = args.amount,
+                    date = args.date,
+                    id = args.id,
+                    navController = navController,
+                    onEvent = onEvent
+                )
+            }
+        }
+
+        NavBar(
+            navController = navController,
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+        )
+    }
+}
+
+
 
 @Serializable
-object MainScreen
+object Home
 
 @Serializable
-data class EditExpenseScreen(
+object Statistics
+
+@Serializable
+object Add
+
+@Serializable
+object Settings
+
+@Serializable
+data class EditExpense(
     val title: String,
     val description: String?,
     val type: String,
@@ -172,55 +204,6 @@ data class EditExpenseScreen(
 
 
 
-@Composable
-fun MainScreen(
-    state: ExpenseState,
-    navFilled: MutableState<String>,
-    onEvent: (ExpenseEvent) -> Unit,
-    navController: NavController? = null
-) {
-
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-
-
-        // Different screens for different navigation items
-        when (navFilled.value) {
-
-            "home" -> ALlExpenses(
-                onEvent = onEvent,
-                state = state,
-                navController = navController
-            )
-
-            "stats" -> Stats(
-                onEvent = onEvent,
-                state = state,
-                navFilled = navFilled
-            )
-
-            "add" -> AddExpense(
-                navFilled = navFilled,
-                onEvent = onEvent
-            )
-
-            else -> Settings(
-                onEvent = onEvent
-            )
-
-
-        }
-
-
-        // Bottom Navigation bar
-        NavBar(
-            navFilled = navFilled,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
-
-    }
-}
 
 
 
@@ -275,7 +258,7 @@ fun ExpenseCard(
                 .clickable {
 
                     navController?.navigate(
-                        EditExpenseScreen(
+                        EditExpense(
                             expense.title,
                             expense.description,
                             expense.type,
@@ -395,9 +378,10 @@ fun ExpenseCard(
 // Navigation Bar Buttons
 @Composable
 fun NavBarButton(
-    navFilled: MutableState<String>,
+    navController: NavController,
     buttonLogo: String,
-    filled: String
+    isSelected: Boolean,
+    route: Any
 ) {
 
 
@@ -405,25 +389,25 @@ fun NavBarButton(
     val icon =
 
         if(buttonLogo == "home")
-            if(buttonLogo == filled)
+            if(isSelected)
                  painterResource(id = R.drawable.home_filled)
             else
                 painterResource(id = R.drawable.home)
 
         else if(buttonLogo == "stats")
-            if(buttonLogo == filled)
+            if(isSelected)
                 painterResource(id = R.drawable.stats_filled)
             else
                 painterResource(id = R.drawable.stats)
 
         else if(buttonLogo == "add")
-            if(buttonLogo == filled)
+            if(isSelected)
                 painterResource(id = R.drawable.add_filled)
             else
                 painterResource(id = R.drawable.add)
 
         else
-            if(buttonLogo == filled)
+            if(isSelected)
                 painterResource(id = R.drawable.set_filled)
             else
                 painterResource(id = R.drawable.set)
@@ -431,13 +415,16 @@ fun NavBarButton(
 
     IconButton(
         modifier = Modifier
-            .width(100.dp)
             .height(60.dp),
 
         onClick = {
-
-            navFilled.value = buttonLogo
-
+            navController.navigate(route) {
+                popUpTo(navController.graph.startDestinationId) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
         }
 
     ) {
@@ -461,9 +448,12 @@ fun NavBarButton(
 // Bottom Navigation Bar
 @Composable
 fun NavBar(
-    navFilled: MutableState<String>,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
     Column(
         modifier = modifier
@@ -482,43 +472,37 @@ fun NavBar(
 
             // Home
             NavBarButton(
-                navFilled = navFilled,
+                navController = navController,
                 buttonLogo = "home",
-                filled = navFilled.value
+                isSelected = currentDestination?.hierarchy?.any { it.hasRoute<Home>() } == true,
+                route = Home
             )
 
             // Statistics (Graph)
             NavBarButton(
-                navFilled = navFilled,
+                navController = navController,
                 buttonLogo = "stats",
-                filled = navFilled.value
+                isSelected = currentDestination?.hierarchy?.any { it.hasRoute<Statistics>() } == true,
+                route = Statistics
             )
 
             // Add Expense
             NavBarButton(
-                navFilled = navFilled,
+                navController = navController,
                 buttonLogo = "add",
-                filled = navFilled.value
+                isSelected = currentDestination?.hierarchy?.any { it.hasRoute<Add>() } == true,
+                route = Add
             )
 
-            // Add Expense
+            // Settings
             NavBarButton(
-                navFilled = navFilled,
+                navController = navController,
                 buttonLogo = "set",
-                filled = navFilled.value
+                isSelected = currentDestination?.hierarchy?.any { it.hasRoute<Settings>() } == true,
+                route = Settings
             )
 
         }
-
-
-        // Bottom Space for System Navigation
-        Box(
-            modifier = Modifier
-                .height(
-                    Util.getBottomPadding()
-                )
-                .background(Color.Transparent)
-        )
 
     }
 }

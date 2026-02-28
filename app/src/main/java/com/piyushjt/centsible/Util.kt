@@ -85,6 +85,34 @@ object Util {
     }
 
 
+    // Gives date from previous month (same day of month)
+    fun getPreviousMonthDate(
+        dateForPeriod: Long
+    ): Long {
+
+        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+        val currentDate = LocalDate.parse(dateForPeriod.toString(), formatter)
+        val previousDate = currentDate.minusMonths(1)
+
+        return previousDate.format(formatter).toLong()
+
+    }
+
+
+    // Gives date from next month (same day of month)
+    fun getNextMonthDate(
+        dateForPeriod: Long
+    ): Long {
+
+        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+        val currentDate = LocalDate.parse(dateForPeriod.toString(), formatter)
+        val nextDate = currentDate.plusMonths(1)
+
+        return nextDate.format(formatter).toLong()
+
+    }
+
+
     // Date Formatter
     fun formatToMonthDayYear(dateInLong: Long): String {
 
@@ -193,15 +221,32 @@ object Util {
     }
 
 
-    // Gives day of week
-    fun dayOfWeek(dateLong: Long): Int {
-        val dateStr = dateLong.toString()
-        val year = dateStr.substring(0, 4).toInt()
-        val month = dateStr.substring(4, 6).toInt()
-        val day = dateStr.substring(6, 8).toInt()
+    // Gives dates of month
+    fun getMonthDates(
+        date: Long
+    ): List<Long> {
 
-        return LocalDate.of(year, month, day).dayOfWeek.value
+        val inputFormatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        val parsedDate = inputFormatter.parse(date.toString()) ?: throw IllegalArgumentException("Invalid date format")
 
+        val calendar = Calendar.getInstance()
+        calendar.time = parsedDate
+
+        // Move to the start of the month
+        calendar.set(Calendar.DAY_OF_MONTH, 1)
+
+        val outputFormatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        val monthDates = mutableListOf<Long>()
+
+        val totalDays = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+
+        // Add all days of the month
+        (1..totalDays).forEach { _ ->
+            monthDates.add(outputFormatter.format(calendar.time).toLong())
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+        }
+
+        return monthDates
     }
 
 
@@ -210,7 +255,13 @@ object Util {
 
         // format in Indian system.
         val formatter = DecimalFormat("#,##,##0.00")
-        return "₹${formatter.format(amount)}"
+
+        val absAmount = kotlin.math.abs(amount)
+
+        return if (amount > 0)
+            "₹${formatter.format(absAmount)}"
+        else
+            "-₹${formatter.format(absAmount)}"
 
     }
 
