@@ -18,7 +18,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -31,6 +33,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -51,6 +54,7 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
@@ -61,6 +65,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -73,6 +78,7 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavController
 import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
+import com.piyushjt.centsible.R
 import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
@@ -99,7 +105,7 @@ val expense = Expense(
 @Composable
 fun AddExpense(
     onEvent: (ExpenseEvent) -> Unit,
-    navController: NavController
+    navController: NavController,
 ) {
 
     BackHandler {
@@ -188,7 +194,7 @@ fun AddExpense(
 @Composable
 fun Title(
     focusRequester: FocusRequester,
-    focusManager: FocusManager
+    focusManager: FocusManager,
 ) {
 
     var value by remember { mutableStateOf("") }
@@ -263,11 +269,10 @@ fun Title(
 }
 
 
-
 @Composable
 fun Description(
     focusRequester: FocusRequester,
-    focusManager: FocusManager
+    focusManager: FocusManager,
 ) {
 
     var value by remember { mutableStateOf("") }
@@ -342,13 +347,12 @@ fun Description(
 }
 
 
-
 @Composable
 fun Amount(
     amount: MutableFloatState,
     focusRequester: FocusRequester,
     focusManager: FocusManager,
-    typeBoxExpanded: MutableState<Boolean>
+    typeBoxExpanded: MutableState<Boolean>,
 ) {
 
     val context = LocalContext.current
@@ -401,8 +405,7 @@ fun Amount(
                 )
                 toast?.show()
 
-            }
-            else {
+            } else {
                 // Allows only one decimal point, and up to 2 decimal places
                 val regex = "^\\d*(\\.\\d{0,2})?$".toRegex()
 
@@ -476,12 +479,10 @@ fun Amount(
 }
 
 
-
-
 @Composable
 fun TypeSelector(
     modifier: Modifier,
-    isExpanded: MutableState<Boolean>
+    isExpanded: MutableState<Boolean>,
 ) {
 
     // Background color
@@ -490,56 +491,75 @@ fun TypeSelector(
 
     Box(
         modifier
-            .width(80.dp),
+            .wrapContentWidth(),
         contentAlignment = Alignment.Center
     ) {
 
+        val type = Util.getTypeByString(expense.type)
 
         Row(
             modifier = Modifier
                 .padding(top = 20.dp)
                 .border(
-                    0.5.dp,
+                    0.3.dp,
                     color = UI.colors("hint_text"),
                     RoundedCornerShape(20.dp)
                 )
-                .height(80.dp)
+                .height(56.dp)
                 .clip(RoundedCornerShape(20.dp))
                 .background(color = UI.colors("card_background"))
                 .clickable {
                     isExpanded.value = true
                 }
+                .padding(horizontal = 12.dp),
+            verticalAlignment = CenterVertically
         ) {
 
             Box(
                 modifier = Modifier
-                    .padding(8.dp)
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(bgColor)
-
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(bgColor),
+                contentAlignment = Alignment.Center
             ) {
-
                 // Logo
                 Image(
-                    painter = Util.image(
-                        Util.getTypeByString(expense.type)
-                    ),
+                    painter = Util.image(type),
                     contentDescription = expense.type,
                     modifier = Modifier
-                        .aspectRatio(1f)
-                        .padding(10.dp)
-                        .background(bgColor)
+                        .fillMaxSize()
+                        .padding(8.dp)
                 )
-
             }
+
+            Text(
+                text = type.toString(),
+                color = UI.colors("text"),
+                fontSize = 16.sp,
+                fontFamily = readexPro,
+                modifier = Modifier.padding(start = 12.dp)
+            )
+
+            Icon(
+                painter = painterResource(id = R.drawable.back), // Reusing back icon as a placeholder for chevron if needed, or better, if there's a dropdown icon
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(20.dp)
+                    .rotate(
+                        if (isExpanded.value) 0f
+                        else -90f
+                    ),
+                tint = UI.colors("hint_text")
+            )
+
         }
 
         DropdownMenu(
 
             modifier = Modifier
                 .background(color = UI.colors("card_background"))
-                .width(80.dp)
+                .wrapContentWidth()
                 .fillMaxHeight(0.4f),
 
             expanded = isExpanded.value,
@@ -562,35 +582,37 @@ fun TypeSelector(
 
         ) {
 
-            types.forEach{ item ->
+            types.forEach { item ->
 
                 DropdownMenuItem(
-
                     onClick = {
                         expense.type = item.type
                         isExpanded.value = false
                     },
-
-                    text = {
-
+                    leadingIcon = {
                         Box(
                             modifier = Modifier
-                                .padding(vertical = 4.dp)
-                                .aspectRatio(1f)
-                                .clip(RoundedCornerShape(15.dp))
-                                .background(bgColor)
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(bgColor),
+                            contentAlignment = Alignment.Center
                         ) {
-
-                            // Logo
                             Image(
                                 painter = Util.image(item),
                                 contentDescription = item.type,
                                 modifier = Modifier
-                                    .aspectRatio(1f)
-                                    .padding(10.dp)
+                                    .fillMaxSize()
+                                    .padding(6.dp)
                             )
-
                         }
+                    },
+                    text = {
+                        Text(
+                            text = item.toString(),
+                            color = UI.colors("text"),
+                            fontSize = 14.sp,
+                            fontFamily = readexPro
+                        )
                     }
                 )
             }
@@ -671,7 +693,9 @@ fun DatePickerUI() {
 
                         val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
                         val anotherFormattedDate =
-                            Instant.ofEpochMilli(datePickerState.selectedDateMillis?: System.currentTimeMillis())
+                            Instant.ofEpochMilli(
+                                datePickerState.selectedDateMillis ?: System.currentTimeMillis()
+                            )
                                 .atZone(ZoneId.systemDefault())
                                 .format(formatter)
 
@@ -710,13 +734,12 @@ fun DatePickerUI() {
 }
 
 
-
 // Save / Update Button
 @Composable
 fun SaveButton(
     expense: Expense,
     navController: NavController,
-    onEvent: (ExpenseEvent) -> Unit
+    onEvent: (ExpenseEvent) -> Unit,
 ) {
 
     val context = LocalContext.current

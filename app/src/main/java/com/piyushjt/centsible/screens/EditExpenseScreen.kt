@@ -12,10 +12,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -48,6 +51,7 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
@@ -640,56 +644,75 @@ fun EditTypeSelector(
 
     Box(
         modifier
-            .width(80.dp),
+            .wrapContentWidth(),
         contentAlignment = Alignment.Center
     ) {
 
+        val type = Util.getTypeByString(newExpense.type)
 
         Row(
             modifier = Modifier
                 .padding(top = 20.dp)
                 .border(
-                    0.5.dp,
+                    0.3.dp,
                     color = UI.colors("hint_text"),
                     RoundedCornerShape(20.dp)
                 )
-                .height(80.dp)
+                .height(56.dp)
                 .clip(RoundedCornerShape(20.dp))
                 .background(color = UI.colors("card_background"))
                 .clickable {
                     isExpanded.value = true
                 }
+                .padding(horizontal = 12.dp),
+            verticalAlignment = CenterVertically
         ) {
 
             Box(
                 modifier = Modifier
-                    .padding(8.dp)
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(bgColor)
-
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(bgColor),
+                contentAlignment = Alignment.Center
             ) {
-
                 // Logo
                 Image(
-                    painter = Util.image(
-                        Util.getTypeByString(newExpense.type)
-                    ),
+                    painter = Util.image(type),
                     contentDescription = newExpense.type,
                     modifier = Modifier
-                        .aspectRatio(1f)
-                        .padding(10.dp)
-                        .background(bgColor)
+                        .fillMaxSize()
+                        .padding(8.dp)
                 )
-
             }
+
+            Text(
+                text = type.toString(),
+                color = UI.colors("text"),
+                fontSize = 16.sp,
+                fontFamily = readexPro,
+                modifier = Modifier.padding(start = 12.dp)
+            )
+
+            Icon(
+                painter = painterResource(id = R.drawable.back), // Reusing back icon as a placeholder for chevron
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(20.dp)
+                    .rotate(
+                        if (isExpanded.value) 0f
+                        else -90f
+                    ),
+                tint = UI.colors("hint_text")
+            )
+
         }
 
         DropdownMenu(
 
             modifier = Modifier
                 .background(color = UI.colors("card_background"))
-                .width(80.dp)
+                .wrapContentWidth()
                 .fillMaxHeight(0.4f),
 
             expanded = isExpanded.value,
@@ -712,35 +735,37 @@ fun EditTypeSelector(
 
         ) {
 
-            types.forEach{ item ->
+            types.forEach { item ->
 
                 DropdownMenuItem(
-
                     onClick = {
                         newExpense.type = item.type
                         isExpanded.value = false
                     },
-
-                    text = {
-
+                    leadingIcon = {
                         Box(
                             modifier = Modifier
-                                .padding(vertical = 4.dp)
-                                .aspectRatio(1f)
-                                .clip(RoundedCornerShape(15.dp))
-                                .background(bgColor)
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(bgColor),
+                            contentAlignment = Alignment.Center
                         ) {
-
-                            // Logo
                             Image(
                                 painter = Util.image(item),
                                 contentDescription = item.type,
                                 modifier = Modifier
-                                    .aspectRatio(1f)
-                                    .padding(10.dp)
+                                    .fillMaxSize()
+                                    .padding(6.dp)
                             )
-
                         }
+                    },
+                    text = {
+                        Text(
+                            text = item.toString(),
+                            color = UI.colors("text"),
+                            fontSize = 14.sp,
+                            fontFamily = readexPro
+                        )
                     }
                 )
             }

@@ -201,7 +201,7 @@ fun CentsibleApp(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Statistics,
+        startDestination = Add,
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
