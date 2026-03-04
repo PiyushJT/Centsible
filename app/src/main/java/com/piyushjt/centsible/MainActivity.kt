@@ -2,6 +2,7 @@ package com.piyushjt.centsible
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -21,9 +22,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -36,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,6 +56,17 @@ import com.piyushjt.centsible.screens.Settings
 import com.piyushjt.centsible.screens.Stats
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
 import kotlinx.serialization.Serializable
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.activity.SystemBarStyle
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.navigation.NavHostController
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -82,29 +90,103 @@ class MainActivity : ComponentActivity() {
         }
     )
 
+    private lateinit var appUpdateHelper: AppUpdateHelper
+
+    private val updateLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode != RESULT_OK) {
+            // If the update is cancelled or fails, you can request to start the update again.
+            Log.e("MainActivity", "Update flow failed! Result code: ${result.resultCode}")
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT
+            ),
+            navigationBarStyle = SystemBarStyle.auto(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT
+            )
+        )
         actionBar?.hide()
+
+        appUpdateHelper = AppUpdateHelper(this)
 
         setContent {
             CentsibleTheme {
                 val state by viewModel.state.collectAsState()
                 val navController = rememberNavController()
+                val snackbarHostState = remember { SnackbarHostState() }
+                val scope = rememberCoroutineScope()
+
+                val onUpdateDownloaded = {
+                    scope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            message = "An update has just been downloaded.",
+                            actionLabel = "RESTART"
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            appUpdateHelper.completeUpdate()
+                        }
+                    }
+                }
+
+                // Check for update on launch
+                remember {
+                    appUpdateHelper.checkForUpdate(this@MainActivity, updateLauncher, onUpdateDownloaded)
+                    true
+                }
 
                 Surface(
-                    modifier = Modifier
-                        .background(UI.colors("background"))
-                        .fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    color = UI.colors("background")
                 ) {
-                    CentsibleApp(
-                        state = state,
-                        onEvent = viewModel::onEvent,
-                        navController = navController
-                    )
+                    Scaffold(
+                        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+                        bottomBar = {
+                            NavBar(
+                                navController = navController,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            )
+                        }
+                    ) { paddingValues ->
+                        CentsibleApp(
+                            state = state,
+                            onEvent = viewModel::onEvent,
+                            navController = navController,
+                            paddingValues = paddingValues
+                        )
+                    }
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::appUpdateHelper.isInitialized) {
+            // Check if update is downloaded but not installed
+            appUpdateHelper.checkUpdateStatus {
+                // This will be called from any background logic if needed,
+                // but since we want to trigger the UI (Snackbar),
+                // we might need a way to trigger the same logic as in onCreate.
+                // However, checkForUpdate already handles the listener.
+                // checkUpdateStatus is specifically for when the app returns from background.
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::appUpdateHelper.isInitialized) {
+            appUpdateHelper.unregisterListener()
         }
     }
 }
@@ -114,66 +196,58 @@ class MainActivity : ComponentActivity() {
 fun CentsibleApp(
     state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit,
-    navController: androidx.navigation.NavHostController
+    navController: NavHostController,
+    paddingValues: PaddingValues
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        NavHost(
-            navController = navController,
-            startDestination = Statistics,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 42.dp, bottom = 80.dp + Util.getBottomPadding())
-        ) {
-            composable<Home> {
-                ALlExpenses(
-                    onEvent = onEvent,
-                    state = state,
-                    navController = navController
-                )
-            }
-
-            composable<Statistics> {
-                Stats(
-                    onEvent = onEvent,
-                    state = state,
-                    navController = navController
-                )
-            }
-
-            composable<Add> {
-                AddExpense(
-                    onEvent = onEvent,
-                    navController = navController
-                )
-            }
-
-            composable<Settings> {
-                Settings(
-                    onEvent = onEvent
-                )
-            }
-
-            composable<EditExpense> {
-                val args = it.toRoute<EditExpense>()
-                EditExpenseScreen(
-                    title = args.title,
-                    description = args.description,
-                    type = args.type,
-                    amount = args.amount,
-                    date = args.date,
-                    id = args.id,
-                    navController = navController,
-                    onEvent = onEvent
-                )
-            }
+    NavHost(
+        navController = navController,
+        startDestination = Statistics,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+    ) {
+        composable<Home> {
+            ALlExpenses(
+                onEvent = onEvent,
+                state = state,
+                navController = navController
+            )
         }
 
-        NavBar(
-            navController = navController,
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-        )
+        composable<Statistics> {
+            Stats(
+                onEvent = onEvent,
+                state = state,
+                navController = navController
+            )
+        }
+
+        composable<Add> {
+            AddExpense(
+                onEvent = onEvent,
+                navController = navController
+            )
+        }
+
+        composable<Settings> {
+            Settings(
+                onEvent = onEvent
+            )
+        }
+
+        composable<EditExpense> {
+            val args = it.toRoute<EditExpense>()
+            EditExpenseScreen(
+                title = args.title,
+                description = args.description,
+                type = args.type,
+                amount = args.amount,
+                date = args.date,
+                id = args.id,
+                navController = navController,
+                onEvent = onEvent
+            )
+        }
     }
 }
 
@@ -459,7 +533,8 @@ fun NavBar(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
-            .background(UI.colors("card_background")),
+            .background(UI.colors("card_background"))
+            .navigationBarsPadding(),
     ) {
 
         Row(

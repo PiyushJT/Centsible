@@ -41,6 +41,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.math.abs
 
 object Util {
 
@@ -256,12 +257,9 @@ object Util {
         // format in Indian system.
         val formatter = DecimalFormat("#,##,##0.00")
 
-        val absAmount = kotlin.math.abs(amount)
+        val pref = if (amount >= 0) "" else "-"
 
-        return if (amount > 0)
-            "₹${formatter.format(absAmount)}"
-        else
-            "-₹${formatter.format(absAmount)}"
+        return pref + "₹${formatter.format(abs(amount))}"
 
     }
 

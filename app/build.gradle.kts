@@ -13,8 +13,8 @@ android {
         applicationId = "com.piyushjt.centsible"
         minSdk = 29
         targetSdk = 36
-        versionCode = 500
-        versionName = "5.00"
+        versionCode = 550
+        versionName = "5.50"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -86,4 +86,7 @@ dependencies {
 
     // Gson for Backup
     implementation(libs.gson)
+
+    // In-App Updates
+    implementation(libs.androidx.app.update.ktx)
 }
