@@ -71,10 +71,6 @@ fun Stats(
     navController: NavController
 ) {
 
-    BackHandler {
-        navController.popBackStack()
-    }
-
 
     Column(
         modifier = Modifier

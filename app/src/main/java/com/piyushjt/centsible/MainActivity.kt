@@ -67,6 +67,12 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 
 class MainActivity : ComponentActivity() {
 
@@ -204,7 +210,19 @@ fun CentsibleApp(
         startDestination = Add,
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues)
+            .padding(paddingValues),
+        enterTransition = {
+            fadeIn(animationSpec = tween(350))
+        },
+        exitTransition = {
+            fadeOut(animationSpec = tween(350))
+        },
+        popEnterTransition = {
+            fadeIn(animationSpec = tween(350))
+        },
+        popExitTransition = {
+            fadeOut(animationSpec = tween(350))
+        }
     ) {
         composable<Home> {
             ALlExpenses(
@@ -460,31 +478,12 @@ fun NavBarButton(
 
 
     // Setting the icon (filled/unfilled)
-    val icon =
-
-        if(buttonLogo == "home")
-            if(isSelected)
-                 painterResource(id = R.drawable.home_filled)
-            else
-                painterResource(id = R.drawable.home)
-
-        else if(buttonLogo == "stats")
-            if(isSelected)
-                painterResource(id = R.drawable.stats_filled)
-            else
-                painterResource(id = R.drawable.stats)
-
-        else if(buttonLogo == "add")
-            if(isSelected)
-                painterResource(id = R.drawable.add_filled)
-            else
-                painterResource(id = R.drawable.add)
-
-        else
-            if(isSelected)
-                painterResource(id = R.drawable.set_filled)
-            else
-                painterResource(id = R.drawable.set)
+    val icon = when (buttonLogo) {
+        "home"  -> painterResource(if (isSelected) R.drawable.home_filled else R.drawable.home)
+        "stats" -> painterResource(if (isSelected) R.drawable.stats_filled else R.drawable.stats)
+        "add"   -> painterResource(if (isSelected) R.drawable.add_filled else R.drawable.add)
+        else    -> painterResource(if (isSelected) R.drawable.set_filled else R.drawable.set)
+    }
 
 
     IconButton(
@@ -545,20 +544,20 @@ fun NavBar(
             verticalAlignment = CenterVertically
         ) {
 
-            // Home
-            NavBarButton(
-                navController = navController,
-                buttonLogo = "home",
-                isSelected = currentDestination?.hierarchy?.any { it.hasRoute<Home>() } == true,
-                route = Home
-            )
-
             // Statistics (Graph)
             NavBarButton(
                 navController = navController,
                 buttonLogo = "stats",
                 isSelected = currentDestination?.hierarchy?.any { it.hasRoute<Statistics>() } == true,
                 route = Statistics
+            )
+
+            // Home
+            NavBarButton(
+                navController = navController,
+                buttonLogo = "home",
+                isSelected = currentDestination?.hierarchy?.any { it.hasRoute<Home>() } == true,
+                route = Home
             )
 
             // Add Expense

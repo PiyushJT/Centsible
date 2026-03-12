@@ -78,7 +78,9 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavController
 import com.piyushjt.centsible.Expense
 import com.piyushjt.centsible.ExpenseEvent
+import com.piyushjt.centsible.Home
 import com.piyushjt.centsible.R
+import com.piyushjt.centsible.Statistics
 import com.piyushjt.centsible.Types
 import com.piyushjt.centsible.UI
 import com.piyushjt.centsible.UI.readexPro
@@ -108,9 +110,7 @@ fun AddExpense(
     navController: NavController,
 ) {
 
-    BackHandler {
-        navController.popBackStack()
-    }
+
 
     val amount = remember { mutableFloatStateOf(expense.amount) }
 
@@ -770,7 +770,7 @@ fun SaveButton(
 
                     Util.clearExpenseData()
 
-                    navController.popBackStack()
+                    navController.navigate(Statistics)
 
                 } else {
 
@@ -834,7 +834,7 @@ fun SaveButton(
 
                     Util.clearExpenseData()
 
-                    navController.popBackStack()
+                    navController.navigate(Statistics)
 
                 } else {
 
