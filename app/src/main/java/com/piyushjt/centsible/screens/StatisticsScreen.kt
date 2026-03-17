@@ -1,8 +1,21 @@
 package com.piyushjt.centsible.screens
 
-import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
+import android.annotation.SuppressLint
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlin.math.abs
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +33,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
@@ -35,13 +49,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -68,7 +86,7 @@ import kotlin.math.absoluteValue
 fun Stats(
     state: ExpenseState,
     onEvent: (ExpenseEvent) -> Unit,
-    navController: NavController
+    navController: NavController,
 ) {
 
 
@@ -123,7 +141,7 @@ fun Stats(
 @Composable
 fun PeriodSelector(
     state: ExpenseState,
-    onEvent: (ExpenseEvent) -> Unit
+    onEvent: (ExpenseEvent) -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -148,7 +166,9 @@ fun PeriodSelector(
         ) {
             Text(
                 text = "Weekly",
-                color = if (state.periodType == PeriodType.WEEKLY) UI.colors("background") else UI.colors("light_text"),
+                color = if (state.periodType == PeriodType.WEEKLY) UI.colors("background") else UI.colors(
+                    "light_text"
+                ),
                 fontSize = 14.sp,
                 fontFamily = readexPro
             )
@@ -162,7 +182,9 @@ fun PeriodSelector(
         ) {
             Text(
                 text = "Monthly",
-                color = if (state.periodType == PeriodType.MONTHLY) UI.colors("background") else UI.colors("light_text"),
+                color = if (state.periodType == PeriodType.MONTHLY) UI.colors("background") else UI.colors(
+                    "light_text"
+                ),
                 fontSize = 14.sp,
                 fontFamily = readexPro
             )
@@ -171,10 +193,9 @@ fun PeriodSelector(
 }
 
 
-
 @Composable
 fun TotalExpense(
-    state: ExpenseState
+    state: ExpenseState,
 ) {
 
     val amount = state.amountsInPeriod.sum()
@@ -187,7 +208,7 @@ fun TotalExpense(
             ((amount - lastAmount) / lastAmount * 100).toInt()
 
 
-    Column (
+    Column(
         modifier = Modifier
             .padding(top = 12.dp)
             .fillMaxWidth()
@@ -205,7 +226,7 @@ fun TotalExpense(
             )
         }
 
-        Row (
+        Row(
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.Start
         ) {
@@ -222,12 +243,11 @@ fun TotalExpense(
 }
 
 
-
 @Composable
 fun PeriodChangeButton(
     state: ExpenseState,
     next: Boolean,
-    onEvent: (ExpenseEvent) -> Unit
+    onEvent: (ExpenseEvent) -> Unit,
 ) {
 
 
@@ -271,7 +291,7 @@ fun PeriodChangeButton(
                 .height(30.dp)
                 .width(30.dp),
 
-            painter =  painterResource(
+            painter = painterResource(
                 id = if (next) R.drawable.forward else R.drawable.back
             ),
 
@@ -292,7 +312,7 @@ fun PeriodChangeButton(
 @Composable
 fun StatsCard(
     state: ExpenseState,
-    onEvent: (ExpenseEvent) -> Unit
+    onEvent: (ExpenseEvent) -> Unit,
 ) {
 
     val dates = if (state.periodType == PeriodType.WEEKLY)
@@ -319,7 +339,7 @@ fun StatsCard(
     val density = LocalDensity.current
 
 
-    Column (
+    Column(
         modifier = Modifier
             .padding(top = 16.dp)
             .fillMaxWidth()
@@ -332,7 +352,7 @@ fun StatsCard(
 
     ) {
 
-        Row (
+        Row(
             modifier = Modifier
                 .padding(start = 24.dp, end = 24.dp, top = 12.dp)
                 .fillMaxWidth(),
@@ -364,7 +384,7 @@ fun StatsCard(
                 fontFamily = readexPro
             )
 
-            Row (
+            Row(
                 modifier = Modifier
                     .width(100.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -386,66 +406,232 @@ fun StatsCard(
             }
         }
 
-        Box(
+
+        val chartPoints = remember(state.amountsInPeriod, dates) {
+            if (state.amountsInPeriod.isEmpty()) emptyList()
+            else {
+                val maxAmount = state.amountsInPeriod.maxOrNull() ?: 1f
+                val safeMaxAmount = if (maxAmount == 0f) 1f else maxAmount
+
+                state.amountsInPeriod.mapIndexed { index, amount ->
+                    val x = if (state.amountsInPeriod.size > 1) {
+                        index.toFloat() / (state.amountsInPeriod.size - 1)
+                    } else 0.5f
+
+                    val y = amount / safeMaxAmount
+
+                    val dateLong = dates.getOrNull(index) ?: 0L
+                    val dateStr = if (dateLong != 0L) {
+                        val day = (dateLong % 100).toString().padStart(2, '0')
+                        val month = ((dateLong / 100) % 100).toString().padStart(2, '0')
+                        "$day/$month"
+                    } else ""
+
+                    val dayOfWeek = if (dateLong != 0L) {
+                        val inputFormatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+                        val date = inputFormatter.parse(dateLong.toString())
+                        val outputFormatter = SimpleDateFormat("EEEE", Locale.getDefault())
+                        outputFormatter.format(date ?: Date())
+                    } else ""
+
+                    ChartPoint(
+                        x = x,
+                        y = y,
+                        amount = amount,
+                        date = dateStr,
+                        day = dayOfWeek
+                    )
+                }
+            }
+        }
+
+        val totalExpense = state.amountsInPeriod.sum()
+        val averageExpense = if (state.periodType == PeriodType.WEEKLY) state.weeklyAverage else state.monthlyAverage
+        
+        val isOverAverage = totalExpense > averageExpense && averageExpense > 0f
+        val chartColor = if (isOverAverage) UI.colors("red") else UI.colors("lime")
+
+        InteractiveAreaChart(
+            points = chartPoints,
+            lineColor = chartColor,
+            fillColor = chartColor.copy(alpha = 0.1f)
+        )
+
+    }
+
+}
+
+data class ChartPoint(
+    val x: Float,
+    val y: Float,
+    val amount: Float,
+    val date: String,
+    val day: String,
+)
+
+
+@SuppressLint("UnusedBoxWithConstraintsScope")
+@Composable
+public fun InteractiveAreaChart(
+    points: List<ChartPoint>,
+    lineColor: Color = Color.Green,
+    fillColor: Color = Color.Green.copy(alpha = 0.5f),
+) {
+    var selectedPoint by remember { mutableStateOf<ChartPoint?>(null) }
+    var touchX by remember { mutableStateOf(-1f) }
+
+    LaunchedEffect(points) {
+        selectedPoint = null
+        touchX = -1f
+    }
+
+    if (points.isEmpty()) return
+
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        val maxWidth = constraints.maxWidth.toFloat()
+        Canvas(
             modifier = Modifier
-                .padding(horizontal = 24.dp, vertical = 12.dp)
-                .fillMaxSize(),
-        ) {
-
-            Row(
-                modifier = Modifier
-                    .fillMaxSize(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
-            ) {
-
-                for (height in values) {
-
-                    val fraction = height/ highestVal
-
-                    Column(
-                        verticalArrangement = Arrangement.Bottom,
-                        horizontalAlignment = CenterHorizontally
-                    ) {
-
-                        Box(
-                            modifier = Modifier
-                                .defaultMinSize(minHeight = 0.dp)
-                                .width(if (state.periodType == PeriodType.WEEKLY) 18.dp else 6.dp)
-                                .height((heightDp - 110.dp) * fraction)
-                                .clip(RoundedCornerShape(26.dp))
-                                .background(colorResource(id = R.color.main_text))
-                        )
-
-                        if (state.periodType == PeriodType.WEEKLY) {
-                            val days = arrayOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-                            if (ind < days.size) {
-                                Text(
-                                    modifier = Modifier
-                                        .padding(top = 4.dp),
-                                    text = days[ind],
-                                    color = UI.colors("grey"),
-                                    fontSize = 10.sp,
-                                    fontFamily = readexPro
-                                )
-                            }
+                .fillMaxSize()
+                .pointerInput(points) {
+                    detectDragGestures(
+                        onDragEnd = { /* Do nothing to retain last value */ },
+                        onDrag = { change, _ ->
+                            val x = change.position.x
+                            touchX = x
+                            // Logic to find the closest point based on x-coordinate
+                            selectedPoint = points.minByOrNull { abs((it.x * size.width) - x) }
                         }
-                        ind++
+                    )
+                }
+        ) {
+            val width = size.width
+            val height = size.height
+
+            val strokePath = Path().apply {
+                if (points.isNotEmpty()) {
+                    moveTo(points[0].x * width, (1 - points[0].y) * height)
+                    for (i in 0 until points.size - 1) {
+                        val pStart = points[i]
+                        val pEnd = points[i + 1]
+
+                        val xStart = pStart.x * width
+                        val yStart = (1 - pStart.y) * height
+                        val xEnd = pEnd.x * width
+                        val yEnd = (1 - pEnd.y) * height
+
+                        // Control points for smooth horizontal entry/exit
+                        val cx1 = xStart + (xEnd - xStart) / 2
+                        val cy1 = yStart
+                        val cx2 = xStart + (xEnd - xStart) / 2
+                        val cy2 = yEnd
+
+                        cubicTo(cx1, cy1, cx2, cy2, xEnd, yEnd)
                     }
                 }
             }
 
+            // 1. Draw the Gradient Fill
+            val fillPath = Path().apply {
+                addPath(strokePath)
+                lineTo(points.last().x * width, height)
+                lineTo(points.first().x * width, height)
+                close()
+            }
+            drawPath(fillPath, brush = Brush.verticalGradient(listOf(fillColor, Color.Transparent)))
+
+            // 2. Draw the Line
+            drawPath(strokePath, color = lineColor, style = Stroke(width = 3.dp.toPx()))
+
+            // 3. Draw Hover Indicator
+            if (selectedPoint != null) {
+                val circleX = selectedPoint!!.x * width
+                val circleY = (1 - selectedPoint!!.y) * height
+
+                // Vertical dashed line
+                drawLine(
+                    color = lineColor,
+                    start = Offset(circleX, 0f),
+                    end = Offset(circleX, height),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f))
+                )
+
+                // Selection Circle
+                drawCircle(
+                    color = lineColor,
+                    radius = 8.dp.toPx(),
+                    center = Offset(circleX, circleY)
+                )
+            }
         }
 
+        // --- 5. Tooltip Popup ---
+        selectedPoint?.let { pt ->
+            ChartTooltip(pt, touchX, maxWidth) // Pass maxWidth
+        }
     }
+}
 
+@Composable
+fun ChartTooltip(point: ChartPoint, touchX: Float, maxWidth: Float) {
+    var tooltipWidth by remember { mutableStateOf(0) }
+
+    Box(
+        modifier = Modifier
+            .onGloballyPositioned {
+                tooltipWidth = it.size.width
+            }
+            .offset {
+                val halfWidth = tooltipWidth / 2
+                val x = (touchX - halfWidth).coerceIn(0f, maxWidth - tooltipWidth)
+                IntOffset(x.toInt(), -5)
+            }
+            .shadow(4.dp, RoundedCornerShape(8.dp))
+            .background(UI.colors("card_background").copy(alpha = 0.8f), RoundedCornerShape(8.dp))
+            .border(0.5.dp, Color.Gray.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+            .padding(8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = CenterHorizontally) {
+            Text(
+                text = Util.formatInIndianSystem(point.amount),
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp, // Smaller font
+                color = UI.colors("main_text"),
+                fontFamily = readexPro
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = point.date,
+                    fontSize = 10.sp, // Smaller font
+                    color = UI.colors("light_text"),
+                    fontFamily = readexPro
+                )
+                Text(
+                    text = " • ",
+                    fontSize = 10.sp,
+                    color = UI.colors("light_text")
+                )
+                Text(
+                    text = point.day,
+                    fontSize = 10.sp, // Smaller font
+                    color = UI.colors("light_text"),
+                    fontFamily = readexPro
+                )
+            }
+        }
+    }
 }
 
 
 @Composable
 fun ExpensesInPeriod(
     state: ExpenseState,
-    navController: NavController
+    navController: NavController,
 ) {
 
     var selectedCategory by remember { mutableStateOf<Types?>(null) }
@@ -483,7 +669,8 @@ fun ExpensesInPeriod(
                     CategoryCard(
                         category = category,
                         onClick = {
-                            selectedCategory = if (selectedCategory == category.type) null else category.type
+                            selectedCategory =
+                                if (selectedCategory == category.type) null else category.type
                         }
                     )
                 }
@@ -508,9 +695,7 @@ fun ExpensesInPeriod(
                     )
                 }
             }
-        }
-
-        else  {
+        } else {
             Text(
                 text = "No Expenses",
                 color = UI.colors("heading_text"),
@@ -528,7 +713,7 @@ fun ExpensesInPeriod(
 @Composable
 fun CategoryCard(
     category: CategorySummary,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val bgColor = Util.getRandomColor()
 
@@ -587,13 +772,12 @@ fun CategoryCard(
 data class CategorySummary(
     val type: Types,
     val totalAmount: Float,
-    val transactionCount: Int
+    val transactionCount: Int,
 )
 
 
-
 fun getTextOfWeek(
-    periodDate: Long
+    periodDate: Long,
 ): String {
     val firstDate = Util.getWeekDates(periodDate).first()
     val lastDate = Util.getWeekDates(periodDate).last()
@@ -607,7 +791,6 @@ fun getTextOfWeek(
     return "$fDay/$fM - $lDay/$lM"
 
 }
-
 
 
 @Preview

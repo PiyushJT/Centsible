@@ -14,6 +14,8 @@ data class ExpenseState(
     val amountsInLastPeriod: List<Float> = emptyList(),
 
     val totalAmount: Float = 0f,
+    val weeklyAverage: Float = 0f,
+    val monthlyAverage: Float = 0f,
 
     val periodType: PeriodType = PeriodType.WEEKLY
 

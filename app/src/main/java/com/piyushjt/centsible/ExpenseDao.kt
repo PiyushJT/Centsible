@@ -32,6 +32,12 @@ interface ExpenseDao {
     @Query("SELECT date, 0 - SUM(amount) as amount FROM expense WHERE date BETWEEN :startDate AND :endDate AND amount < 0 GROUP BY date")
     suspend fun getAmountsInRange(startDate: Long, endDate: Long) : List<DateAmount>
 
+    @Query("SELECT AVG(weekly_sum) FROM (SELECT SUM(0 - amount) as weekly_sum FROM expense WHERE amount < 0 GROUP BY strftime('%Y-%W', substr(CAST(date AS TEXT), 1, 4) || '-' || substr(CAST(date AS TEXT), 5, 2) || '-' || substr(CAST(date AS TEXT), 7, 2)))")
+    suspend fun getWeeklyAverage() : Float?
+
+    @Query("SELECT AVG(monthly_sum) FROM (SELECT SUM(0 - amount) as monthly_sum FROM expense WHERE amount < 0 GROUP BY substr(CAST(date AS TEXT), 1, 6))")
+    suspend fun getMonthlyAverage() : Float?
+
 }
 
 data class DateAmount(

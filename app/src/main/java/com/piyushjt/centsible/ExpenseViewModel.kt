@@ -35,6 +35,24 @@ class ExpenseViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ExpenseState())
 
+    init {
+        updateAverages()
+    }
+
+    private fun updateAverages() {
+        viewModelScope.launch {
+            val weeklyAvg = dao.getWeeklyAverage() ?: 0f
+            val monthlyAvg = dao.getMonthlyAverage() ?: 0f
+
+            _state.update {
+                it.copy(
+                    weeklyAverage = weeklyAvg,
+                    monthlyAverage = monthlyAvg
+                )
+            }
+        }
+    }
+
 
     // Main Events
     fun onEvent(event: ExpenseEvent) {
@@ -141,6 +159,7 @@ class ExpenseViewModel(
                         periodType = event.periodType
                     )
                 }
+                updateAverages()
             }
 
 
