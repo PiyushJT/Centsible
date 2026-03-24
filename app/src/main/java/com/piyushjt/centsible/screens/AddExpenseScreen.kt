@@ -770,7 +770,13 @@ fun SaveButton(
 
                     Util.clearExpenseData()
 
-                    navController.navigate(Statistics)
+                    navController.navigate(Statistics) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
 
                 } else {
 
@@ -834,7 +840,13 @@ fun SaveButton(
 
                     Util.clearExpenseData()
 
-                    navController.navigate(Statistics)
+                    navController.navigate(Statistics) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
 
                 } else {
 
