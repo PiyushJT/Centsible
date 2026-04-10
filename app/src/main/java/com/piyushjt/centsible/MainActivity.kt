@@ -406,7 +406,8 @@ fun ExpenseCard(
 
                     // Title
                     Text(
-                        text = expense.title,
+                        text = expense.title.take(20) +
+                                if (expense.title.length > 20) "..." else "",
                         color = UI.colors("text"),
                         fontSize = 12.sp,
                         fontFamily = readexPro
@@ -417,8 +418,8 @@ fun ExpenseCard(
                         text = if(expense.description.isNullOrEmpty())
                             expense.type
                         else
-                            expense.description!!,
-
+                            expense.description!!.take(20) +
+                                    if (expense.description!!.length > 20) "..." else "",
                         color = UI.colors("light_text"),
                         fontSize = 10.sp,
                         fontFamily = readexPro

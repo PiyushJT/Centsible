@@ -65,8 +65,8 @@ class ExpenseViewModel(
                 val data = event.expense
 
                 // Declaring the values
-                val title = data.title
-                val description = data.description
+                val title = data.title.trim()
+                val description = data.description!!.trim()
                 val type = data.type
                 val amount = data.amount
                 val date = data.date
@@ -101,8 +101,8 @@ class ExpenseViewModel(
 
                 // To Update the Expense
                 val updateExpense = Expense(
-                    title = data.title,
-                    description = data.description,
+                    title = data.title.trim(),
+                    description = data.description!!.trim(),
                     type = data.type,
                     amount = data.amount,
                     date = data.date,
