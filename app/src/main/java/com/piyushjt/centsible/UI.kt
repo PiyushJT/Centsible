@@ -120,6 +120,7 @@ object UI {
             "ext_link_icon" to stringResource(id = R.string.ext_link_icon),
             "open_source_license" to stringResource(id = R.string.open_source_license),
             "github_repo" to stringResource(id = R.string.github_repo),
+            "app_lock" to stringResource(id = R.string.app_lock),
 
         )
 

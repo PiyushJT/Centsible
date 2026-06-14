@@ -13,8 +13,8 @@ android {
         applicationId = "com.piyushjt.centsible"
         minSdk = 29
         targetSdk = 36
-        versionCode = 603
-        versionName = "6.03"
+        versionCode = 700
+        versionName = "7.00"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -89,4 +89,9 @@ dependencies {
 
     // In-App Updates
     implementation(libs.androidx.app.update.ktx)
+
+    // Biometric Authentication
+    implementation(libs.androidx.biometric)
+    implementation(libs.androidx.fragment.ktx)
+
 }

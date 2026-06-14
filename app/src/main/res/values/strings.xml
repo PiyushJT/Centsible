@@ -57,6 +57,7 @@
     <string name="ext_link_icon">external link icon</string>
     <string name="open_source_license">Open-Source License</string>
     <string name="github_repo">Github Repo.</string>
+    <string name="app_lock">App Lock</string>
 
 
     // View Model

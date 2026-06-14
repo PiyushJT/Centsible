@@ -6,6 +6,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
+import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +24,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -34,8 +39,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import androidx.navigation.NavController
+import androidx.fragment.app.FragmentActivity
+import com.piyushjt.centsible.AppLockPrefs
 import com.piyushjt.centsible.ExpenseEvent
 import com.piyushjt.centsible.R
 import com.piyushjt.centsible.UI
@@ -77,6 +84,8 @@ fun Settings(
             DataManager(
                 onEvent = onEvent
             )
+
+            AppLockSection()
 
             PolicyAndLicense()
 
@@ -285,6 +294,81 @@ fun DeleteAllData(
 
 }
 
+
+@Composable
+fun AppLockSection() {
+
+    val context = LocalContext.current
+    val isAppLockEnabled = remember {
+        mutableStateOf(AppLockPrefs.isAppLockEnabled(context))
+    }
+    val activity = context as? FragmentActivity
+
+    Column(
+        modifier = Modifier
+            .padding(top = 24.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(UI.colors("card_background"))
+    ) {
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+
+            Text(
+                text = UI.strings("app_lock"),
+                color = UI.colors("main_text"),
+                fontSize = 16.sp,
+                fontFamily = UI.readexPro
+            )
+
+            Switch(
+                checked = isAppLockEnabled.value,
+                onCheckedChange = { enabled ->
+                    if (activity != null) {
+                        val executor = ContextCompat.getMainExecutor(activity)
+                        val callback = object : BiometricPrompt.AuthenticationCallback() {
+                            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                                super.onAuthenticationSucceeded(result)
+                                isAppLockEnabled.value = enabled
+                                AppLockPrefs.setAppLockEnabled(context, enabled)
+                            }
+                            // Do nothing on failure/error so switch remains unchanged
+                        }
+
+                        val biometricPrompt = BiometricPrompt(activity, executor, callback)
+                        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                            .setTitle("Authenticate")
+                            .setSubtitle(if (enabled) "Verify your identity to enable App Lock" else "Verify your identity to disable App Lock")
+                            .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
+                            .build()
+
+                        biometricPrompt.authenticate(promptInfo)
+                    } else {
+                        isAppLockEnabled.value = enabled
+                        AppLockPrefs.setAppLockEnabled(context, enabled)
+                    }
+                },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = UI.colors("black"),
+                    checkedTrackColor = UI.colors("lime"),
+                    uncheckedThumbColor = UI.colors("main_text"),
+                    uncheckedTrackColor = UI.colors("background"),
+                    uncheckedBorderColor = UI.colors("hint_text")
+                )
+            )
+
+        }
+
+    }
+
+}
 
 
 @Composable

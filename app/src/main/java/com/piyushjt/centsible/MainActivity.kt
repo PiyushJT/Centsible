@@ -3,45 +3,67 @@ package com.piyushjt.centsible
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
+import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+import androidx.biometric.BiometricPrompt
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -55,26 +77,13 @@ import com.piyushjt.centsible.screens.EditExpenseScreen
 import com.piyushjt.centsible.screens.Settings
 import com.piyushjt.centsible.screens.Stats
 import com.piyushjt.centsible.ui.theme.CentsibleTheme
-import kotlinx.serialization.Serializable
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.activity.SystemBarStyle
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import kotlinx.serialization.Serializable
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
+
+    // App lock state
+    private var isUnlocked = mutableStateOf(true)
 
     // Initializing Database
     private val db by lazy {
@@ -124,6 +133,12 @@ class MainActivity : ComponentActivity() {
 
         appUpdateHelper = AppUpdateHelper(this)
 
+        // Check app lock
+        if (AppLockPrefs.isAppLockEnabled(this)) {
+            isUnlocked.value = false
+            showBiometricPrompt()
+        }
+
         setContent {
             CentsibleTheme {
                 val state by viewModel.state.collectAsState()
@@ -171,8 +186,46 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
+
+                // Lock screen overlay
+                if (!isUnlocked.value) {
+                    LockScreen(
+                        onUnlockClick = { showBiometricPrompt() }
+                    )
+                }
             }
         }
+    }
+
+    private fun showBiometricPrompt() {
+        val executor = ContextCompat.getMainExecutor(this)
+
+        val callback = object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                super.onAuthenticationSucceeded(result)
+                isUnlocked.value = true
+            }
+
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                super.onAuthenticationError(errorCode, errString)
+                // User cancelled or error — keep locked
+            }
+
+            override fun onAuthenticationFailed() {
+                super.onAuthenticationFailed()
+                // Biometric not recognized — prompt stays open for retry
+            }
+        }
+
+        val biometricPrompt = BiometricPrompt(this, executor, callback)
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Unlock Centsible")
+            .setSubtitle("Verify your identity to continue")
+            .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
+            .build()
+
+        biometricPrompt.authenticate(promptInfo)
     }
 
     override fun onResume() {
@@ -294,6 +347,74 @@ data class EditExpense(
 )
 
 
+
+
+// Lock Screen Overlay
+@Composable
+fun LockScreen(
+    onUnlockClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(UI.colors("background")),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            // App icon
+            Image(
+                painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                contentDescription = "Centsible",
+                modifier = Modifier
+                    .size(120.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // App name
+            Text(
+                text = "Centsible",
+                color = UI.colors("main_text"),
+                fontSize = 24.sp,
+                fontFamily = readexPro,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Tap to unlock",
+                color = UI.colors("hint_main_text"),
+                fontSize = 14.sp,
+                fontFamily = readexPro
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Unlock button
+            FilledTonalButton(
+                onClick = onUnlockClick,
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = UI.colors("card_background"),
+                    contentColor = UI.colors("main_text")
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    text = "Unlock",
+                    fontSize = 16.sp,
+                    fontFamily = readexPro
+                )
+            }
+
+        }
+    }
+}
 
 
 

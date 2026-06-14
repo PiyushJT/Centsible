@@ -48,6 +48,7 @@
     <string name="ext_link_icon">बाहरी लिंक आइकन</string>
     <string name="open_source_license">ओपन-सोर्स लाइसेंस</string>
     <string name="github_repo">गिटहब रिपोजिटरी</string>
+    <string name="app_lock">ऐप लॉक</string>
 
 
     <string name="data_saved_to_downloads">डेटा डाउनलोड फ़ोल्डर में सेव हो गया हे</string>
