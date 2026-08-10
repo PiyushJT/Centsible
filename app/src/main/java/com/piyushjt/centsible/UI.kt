@@ -93,6 +93,8 @@ object UI {
             // Main Screen
             "recent_transactions" to stringResource(id = R.string.recent_transactions),
             "total_balance" to stringResource(id = R.string.total_balance),
+            "search_transactions" to stringResource(id = R.string.search_transactions),
+            "search_results" to stringResource(id = R.string.search_results),
 
 
             // Statistics Screen

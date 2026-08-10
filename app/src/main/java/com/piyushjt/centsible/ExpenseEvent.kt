@@ -4,6 +4,7 @@ import android.content.Context
 
 sealed interface ExpenseEvent {
 
+    data class SetSearchQuery(val query: String) : ExpenseEvent
     data class SaveExpense(val expense: Expense) : ExpenseEvent
     data class UpdateExpense(val expense: Expense): ExpenseEvent
     data class DeleteExpense(val expense: Expense): ExpenseEvent
@@ -11,7 +12,6 @@ sealed interface ExpenseEvent {
     data class ChangeDateForPeriod(val date: Long): ExpenseEvent
     data class SetAmounts(val dates: List<Long>): ExpenseEvent
     data class SetLastAmounts(val dates: List<Long>): ExpenseEvent
-    object SetTotalAmount: ExpenseEvent
 
     data class ChangePeriodType(val periodType: PeriodType): ExpenseEvent
 

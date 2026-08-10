@@ -24,6 +24,8 @@
 
     <string name="recent_transactions">पुराने खर्च/कमाई</string>
     <string name="total_balance">कुल शेष राशि</string>
+    <string name="search_transactions">लेन-देन खोजें…</string>
+    <string name="search_results">खोज परिणाम</string>
 
 
     <string name="statistics">सांख्यिकी</string>

@@ -7,6 +7,7 @@ enum class PeriodType {
 data class ExpenseState(
 
     val expenses: List<Expense> = emptyList(),
+    val searchQuery: String = "",
 
     val expensesInPeriod: List<Expense> = emptyList(),
     val dateForPeriod: Long = Util.getCurrentDate(),

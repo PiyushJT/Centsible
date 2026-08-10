@@ -13,8 +13,8 @@ android {
         applicationId = "com.piyushjt.centsible"
         minSdk = 29
         targetSdk = 36
-        versionCode = 700
-        versionName = "7.00"
+        versionCode = 702
+        versionName = "7.02"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

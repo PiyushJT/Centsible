@@ -29,8 +29,21 @@ class ExpenseViewModel(
 
 
     val state = combine(_state, _expenses, _totalAmount) { state, expenses, totalAmount ->
+        val filteredExpenses = if (state.searchQuery.isBlank()) {
+            expenses
+        } else {
+            val q = state.searchQuery.lowercase()
+            expenses.filter { expense ->
+                expense.title.lowercase().contains(q) ||
+                (expense.description?.lowercase()?.contains(q) == true) ||
+                expense.type.lowercase().contains(q) ||
+                expense.amount.toString().contains(q) ||
+                Util.formatToMonthDayYear(expense.date).lowercase().contains(q) ||
+                expense.date.toString().contains(q)
+            }
+        }
         state.copy(
-            expenses = expenses,
+            expenses = filteredExpenses,
             totalAmount = totalAmount ?: 0f
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ExpenseState())
@@ -58,6 +71,11 @@ class ExpenseViewModel(
     fun onEvent(event: ExpenseEvent) {
 
         when (event) {
+
+            // Set search query
+            is ExpenseEvent.SetSearchQuery -> {
+                _state.update { it.copy(searchQuery = event.query) }
+            }
 
             // Save or Update an Expense
             is ExpenseEvent.SaveExpense -> {
@@ -275,10 +293,6 @@ class ExpenseViewModel(
                     }
                 }
                 Log.d("Delete All Expenses", "All expenses deleted")
-            }
-
-            else -> {
-
             }
 
         }

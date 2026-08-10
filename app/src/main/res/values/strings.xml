@@ -31,6 +31,8 @@
     // Main Screen
     <string name="recent_transactions">Recent Transactions</string>
     <string name="total_balance">Total Balance</string>
+    <string name="search_transactions">Search transactions…</string>
+    <string name="search_results">Search Results</string>
 
 
     // Statistics Screen
